@@ -4,7 +4,7 @@ pragma solidity 0.6.11;
 import { SafeMath }          from "../../../../lib/openzeppelin-contracts/contracts/math/SafeMath.sol";
 import { IERC20, SafeERC20 } from "../../../../lib/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
 
-import { ILoan } from "../../loan/v1/interfaces/ILoan.sol";
+import { ILoan } from "../../loan/contracts/interfaces/ILoan.sol";
 
 import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
 
