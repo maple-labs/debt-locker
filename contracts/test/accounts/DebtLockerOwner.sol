@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { IDebtLocker } from "../../interfaces/IDebtLocker.sol";
-
-import { DebtLockerFactory } from "../../DebtLockerFactory.sol";
+import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
+import { IDebtLockerFactory } from "../../interfaces/IDebtLockerFactory.sol";
 
 contract DebtLockerOwner {
 
     function debtLockerFactory_newLocker(address factory, address loan) external returns (address) {
-        return DebtLockerFactory(factory).newLocker(loan);
+        return IDebtLockerFactory(factory).newLocker(loan);
     }
 
     function try_debtLockerFactory_newLocker(address factory, address loan) external returns (bool ok) {
