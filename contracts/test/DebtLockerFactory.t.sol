@@ -14,7 +14,7 @@ contract MintableToken is ERC20 {
 
     constructor (string memory name, string memory symbol) ERC20(name, symbol) public {}
 
-    function mint(address account, uint256 amount) public {
+    function mint(address account, uint256 amount) external {
         _mint(account, amount);
     }
 
@@ -37,12 +37,12 @@ contract Loan {
 
 contract DebtLockerFactoryTest is DSTest {
 
-    function test_newLocker() public {
-        DebtLockerFactory  factory = new DebtLockerFactory();
-        MintableToken        token = new MintableToken("TKN", "TKN");
-        DebtLockerOwner      owner = new DebtLockerOwner();
+    function test_newLocker() external {
+        DebtLockerFactory factory  = new DebtLockerFactory();
+        MintableToken     token    = new MintableToken("TKN", "TKN");
+        DebtLockerOwner   owner    = new DebtLockerOwner();
         DebtLockerOwner   nonOwner = new DebtLockerOwner();
-        Loan                  loan = new Loan(address(token));
+        Loan              loan     = new Loan(address(token));
 
         IDebtLocker locker = IDebtLocker(owner.debtLockerFactory_newLocker(address(factory), address(loan)));
 
@@ -51,8 +51,8 @@ contract DebtLockerFactoryTest is DSTest {
         assertTrue(factory.isLocker(address(locker)),            "Invalid isLocker");
 
         // Validate the storage of locker.
-        assertEq(address(locker.loan()), address(loan),            "Incorrect loan address");
-        assertEq(locker.pool(), address(owner),                    "Incorrect pool address");
+        assertEq(address(locker.loan()),           address(loan),  "Incorrect loan address");
+        assertEq(locker.pool(),                    address(owner), "Incorrect pool address");
         assertEq(address(locker.liquidityAsset()), address(token), "Incorrect address of liquidity asset");
 
         // Assert that only the DebtLocker owner can trigger default

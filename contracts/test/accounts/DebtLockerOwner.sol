@@ -8,7 +8,7 @@ import { DebtLockerFactory } from "../../DebtLockerFactory.sol";
 contract DebtLockerOwner {
 
     function debtLockerFactory_newLocker(address factory, address loan) external returns (address) {
-        return address(IDebtLocker(DebtLockerFactory(factory).newLocker(loan)));
+        return DebtLockerFactory(factory).newLocker(loan);
     }
 
     function try_debtLockerFactory_newLocker(address factory, address loan) external returns (bool ok) {
