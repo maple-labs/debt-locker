@@ -3,8 +3,7 @@ pragma solidity 0.6.11;
 
 import { IERC20 } from "../../modules/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-// NOTE: ILoan exists to prevent circular dependency tree, for now.
-interface ILoan is IERC20 {
+interface ILoanLike is IERC20 {
 
     function amountRecovered() external view returns (uint256);
 
