@@ -1,32 +1,63 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
-pragma experimental ABIEncoderV2;
 
-import { TestUtil } from "../../../../test/TestUtil.sol";
+import { DSTest } from "../../modules/ds-test/src/test.sol";
+import { ERC20 }  from "../../modules/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 import { IDebtLocker } from "../interfaces/IDebtLocker.sol";
 
-contract DebtLockerFactoryTest is TestUtil {
+import { DebtLockerFactory } from "../DebtLockerFactory.sol";
 
-    function setUp() public {
-        setUpGlobals();
-        setUpTokens();
-        createBorrower();
-        setUpFactories();
-        setUpCalcs();
-        createLoan();
+import { DebtLockerOwner } from "./accounts/DebtLockerOwner.sol";
+
+contract MintableToken is ERC20 {
+
+    constructor (string memory name, string memory symbol) ERC20(name, symbol) public {}
+
+    function mint(address account, uint256 amount) external {
+        _mint(account, amount);
     }
 
-    function test_newLocker() public {
-        IDebtLocker dl  = IDebtLocker(dlFactory1.newLocker(address(loan1)));
-        // Validate the storage of dlfactory.
-        assertEq(  dlFactory1.owner(address(dl)), address(this));
-        assertTrue(dlFactory1.isLocker(address(dl)));
+}
 
-        // Validate the storage of dl.
-        assertEq(address(dl.loan()), address(loan1),  "Incorrect loan address");
-        assertEq(dl.pool(), address(this),            "Incorrect owner of the DebtLocker");
-        assertEq(address(dl.liquidityAsset()),  USDC, "Incorrect address of loan asset");
+// NOTE: Loan exists to prevent circular dependency tree.
+contract Loan {
+
+    address public liquidityAsset;
+
+    constructor(address _liquidityAsset) public {
+        liquidityAsset = _liquidityAsset;
+    }
+
+    function claim() external {}
+
+    function triggerDefault() external {}
+
+}
+
+contract DebtLockerFactoryTest is DSTest {
+
+    function test_newLocker() external {
+        DebtLockerFactory factory  = new DebtLockerFactory();
+        MintableToken     token    = new MintableToken("TKN", "TKN");
+        DebtLockerOwner   owner    = new DebtLockerOwner();
+        DebtLockerOwner   nonOwner = new DebtLockerOwner();
+        Loan              loan     = new Loan(address(token));
+
+        IDebtLocker locker = IDebtLocker(owner.debtLockerFactory_newLocker(address(factory), address(loan)));
+
+        // Validate the storage of factory.
+        assertEq(factory.owner(address(locker)), address(owner), "Invalid owner");
+        assertTrue(factory.isLocker(address(locker)),            "Invalid isLocker");
+
+        // Validate the storage of locker.
+        assertEq(address(locker.loan()),           address(loan),  "Incorrect loan address");
+        assertEq(locker.pool(),                    address(owner), "Incorrect pool address");
+        assertEq(address(locker.liquidityAsset()), address(token), "Incorrect address of liquidity asset");
+
+        // Assert that only the DebtLocker owner can trigger default
+        assertTrue(!nonOwner.try_debtLocker_triggerDefault(address(locker)), "Trigger Default succeeded from nonOwner");
+        assertTrue(    owner.try_debtLocker_triggerDefault(address(locker)), "Trigger Default failed from owner");
     }
 
 }

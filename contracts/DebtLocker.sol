@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { SafeMath }          from "../../../../lib/openzeppelin-contracts/contracts/math/SafeMath.sol";
-import { IERC20, SafeERC20 } from "../../../../lib/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
+import { SafeMath }          from "../modules/openzeppelin-contracts/contracts/math/SafeMath.sol";
+import { IERC20, SafeERC20 } from "../modules/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
 
-import { ILoan } from "../../loan/contracts/interfaces/ILoan.sol";
-
-import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
+import { IDebtLocker, ILoan } from "./interfaces/IDebtLocker.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 contract DebtLocker is IDebtLocker {
