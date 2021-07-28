@@ -3,7 +3,7 @@ pragma solidity 0.6.11;
 
 import { IERC20 } from "../../modules/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { ILoan } from "./ILoan.sol";
+import { ILoanLike } from "./ILoanLike.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 interface IDebtLocker {
@@ -11,7 +11,7 @@ interface IDebtLocker {
     /**
         @dev The Loan contract this locker is holding tokens for.
      */
-    function loan() external view returns (ILoan);
+    function loan() external view returns (ILoanLike);
 
     /**
         @dev The Liquidity Asset this locker can claim.

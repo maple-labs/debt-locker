@@ -10,7 +10,7 @@ import { DebtLockerFactory } from "../DebtLockerFactory.sol";
 
 import { DebtLockerOwner } from "./accounts/DebtLockerOwner.sol";
 
-contract MintableToken is ERC20 {
+contract MockToken is ERC20 {
 
     constructor (string memory name, string memory symbol) ERC20(name, symbol) public {}
 
@@ -20,8 +20,7 @@ contract MintableToken is ERC20 {
 
 }
 
-// NOTE: Loan exists to prevent circular dependency tree.
-contract Loan {
+contract MockLoan {
 
     address public liquidityAsset;
 
@@ -39,10 +38,10 @@ contract DebtLockerFactoryTest is DSTest {
 
     function test_newLocker() external {
         DebtLockerFactory factory  = new DebtLockerFactory();
-        MintableToken     token    = new MintableToken("TKN", "TKN");
+        MockToken         token    = new MockToken("TKN", "TKN");
         DebtLockerOwner   owner    = new DebtLockerOwner();
         DebtLockerOwner   nonOwner = new DebtLockerOwner();
-        Loan              loan     = new Loan(address(token));
+        MockLoan          loan     = new MockLoan(address(token));
 
         IDebtLocker locker = IDebtLocker(owner.debtLockerFactory_newLocker(address(factory), address(loan)));
 
