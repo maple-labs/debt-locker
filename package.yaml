@@ -1,0 +1,11 @@
+name: debt-locker
+version: 1.0.0
+source: contracts
+packages:
+  - path: contracts/DebtLockerFactory.sol
+    contractName: DebtLockerFactory
+    customChecksum: 0x93a65040f17c2fb1f87852e44c7487b33fe450f9c572ce57055095e48347c2c1
+  - path: contracts/DebtLocker.sol
+    contractName: DebtLocker
+    customChecksum: 0x08f89a0fa3f7d1fca2ff8e0656df02277a6475ca6b960785325d53ecc838d559
+customDescription: Debt Locker Artifacts and ABIs
