@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { SafeMath }          from "../../../../lib/openzeppelin-contracts/contracts/math/SafeMath.sol";
-import { IERC20, SafeERC20 } from "../../../../lib/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
-
-import { ILoan } from "../../loan/contracts/interfaces/ILoan.sol";
+import { SafeMath }          from "../modules/openzeppelin-contracts/contracts/math/SafeMath.sol";
+import { IERC20, SafeERC20 } from "../modules/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
 
 import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
+import { ILoanLike }   from "./interfaces/ILoanLike.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 contract DebtLocker is IDebtLocker {
@@ -16,9 +15,9 @@ contract DebtLocker is IDebtLocker {
 
     uint256 constant WAD = 10 ** 18;
 
-    ILoan   public override immutable loan;
-    IERC20  public override immutable liquidityAsset;
-    address public override immutable pool;
+    ILoanLike public override immutable loan;
+    IERC20    public override immutable liquidityAsset;
+    address   public override immutable pool;
 
     uint256 public override lastPrincipalPaid;
     uint256 public override lastInterestPaid;
@@ -36,9 +35,9 @@ contract DebtLocker is IDebtLocker {
     }
 
     constructor(address _loan, address _pool) public {
-        loan           = ILoan(_loan);
+        loan           = ILoanLike(_loan);
         pool           = _pool;
-        liquidityAsset = IERC20(ILoan(_loan).liquidityAsset());
+        liquidityAsset = IERC20(ILoanLike(_loan).liquidityAsset());
     }
 
     // Note: If newAmt > 0, totalNewAmt will always be greater than zero.
