@@ -15,7 +15,7 @@ interface ILoanLike is IERC20 {
 
     function interestPaid() external view returns (uint256);
 
-    function liquidityAsset() external view returns (IERC20);
+    function liquidityAsset() external view returns (address);
 
     function principalPaid() external view returns (uint256);
 
