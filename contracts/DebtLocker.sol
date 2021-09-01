@@ -86,7 +86,7 @@ contract DebtLocker is IDebtLocker {
 
         // Withdraw all claimable funds via LoanFDT.
         uint256 beforeBal = IERC20(liquidityAsset).balanceOf(address(this));                 // Current balance of DebtLocker (accounts for direct inflows).
-        ILoanLike(loan).withdrawFunds();                                                        // Transfer funds from Loan to DebtLocker.
+        ILoanLike(loan).withdrawFunds();                                                     // Transfer funds from Loan to DebtLocker.
         uint256 claimBal  = IERC20(liquidityAsset).balanceOf(address(this)).sub(beforeBal);  // Amount claimed from Loan using LoanFDT.
 
         // Calculate sum of all deltas, to be used to calculate portions for metadata.
