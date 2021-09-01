@@ -15,8 +15,8 @@ contract DebtLocker is IDebtLocker {
 
     uint256 constant WAD = 10 ** 18;
 
-    address public override immutable liquidityAsset;
     address public override immutable loan;
+    address public override immutable liquidityAsset;
     address public override immutable pool;
 
     uint256 public override lastPrincipalPaid;
