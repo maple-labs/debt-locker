@@ -1,22 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.6.11;
 
-import { IERC20 } from "../../modules/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-
-import { ILoanLike } from "./ILoanLike.sol";
-
 /// @title DebtLocker holds custody of LoanFDT tokens.
 interface IDebtLocker {
 
     /**
         @dev The Loan contract this locker is holding tokens for.
      */
-    function loan() external view returns (ILoanLike);
+    function loan() external view returns (address);
 
     /**
         @dev The Liquidity Asset this locker can claim.
      */
-    function liquidityAsset() external view returns (IERC20);
+    function liquidityAsset() external view returns (address);
 
     /**
         @dev The owner of this Locker (the Pool).

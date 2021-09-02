@@ -8,7 +8,7 @@ import { IDebtLocker } from "../interfaces/IDebtLocker.sol";
 
 import { DebtLockerFactory } from "../DebtLockerFactory.sol";
 
-import { DebtLockerOwner } from "./accounts/DebtLockerOwner.sol";
+import { Pool } from "./accounts/Pool.sol";
 
 contract MockToken is ERC20 {
 
@@ -37,26 +37,27 @@ contract MockLoan {
 contract DebtLockerFactoryTest is DSTest {
 
     function test_newLocker() external {
-        DebtLockerFactory factory  = new DebtLockerFactory();
-        MockToken         token    = new MockToken("TKN", "TKN");
-        DebtLockerOwner   owner    = new DebtLockerOwner();
-        DebtLockerOwner   nonOwner = new DebtLockerOwner();
-        MockLoan          loan     = new MockLoan(address(token));
+        DebtLockerFactory factory = new DebtLockerFactory();
+        MockToken         token   = new MockToken("TKN", "TKN");
+        Pool              pool    = new Pool();
+        Pool              notPool = new Pool();
 
-        IDebtLocker locker = IDebtLocker(owner.debtLockerFactory_newLocker(address(factory), address(loan)));
+        MockLoan loan = new MockLoan(address(token));
+
+        IDebtLocker locker = IDebtLocker(pool.debtLockerFactory_newLocker(address(factory), address(loan)));
 
         // Validate the storage of factory.
-        assertEq(factory.owner(address(locker)), address(owner), "Invalid owner");
+        assertEq(factory.owner(address(locker)), address(pool), "Invalid owner");
         assertTrue(factory.isLocker(address(locker)),            "Invalid isLocker");
 
         // Validate the storage of locker.
         assertEq(address(locker.loan()),           address(loan),  "Incorrect loan address");
-        assertEq(locker.pool(),                    address(owner), "Incorrect pool address");
+        assertEq(locker.pool(),                    address(pool),  "Incorrect pool address");
         assertEq(address(locker.liquidityAsset()), address(token), "Incorrect address of liquidity asset");
 
-        // Assert that only the DebtLocker owner can trigger default
-        assertTrue(!nonOwner.try_debtLocker_triggerDefault(address(locker)), "Trigger Default succeeded from nonOwner");
-        assertTrue(    owner.try_debtLocker_triggerDefault(address(locker)), "Trigger Default failed from owner");
+        // Assert that only the DebtLocker owner (pool) can trigger default
+        assertTrue(!notPool.try_debtLocker_triggerDefault(address(locker)), "Trigger Default succeeded from notPool");
+        assertTrue(    pool.try_debtLocker_triggerDefault(address(locker)), "Trigger Default failed from pool");
     }
 
 }

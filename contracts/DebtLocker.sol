@@ -15,9 +15,9 @@ contract DebtLocker is IDebtLocker {
 
     uint256 constant WAD = 10 ** 18;
 
-    ILoanLike public override immutable loan;
-    IERC20    public override immutable liquidityAsset;
-    address   public override immutable pool;
+    address public override immutable loan;
+    address public override immutable liquidityAsset;
+    address public override immutable pool;
 
     uint256 public override lastPrincipalPaid;
     uint256 public override lastInterestPaid;
@@ -35,9 +35,9 @@ contract DebtLocker is IDebtLocker {
     }
 
     constructor(address _loan, address _pool) public {
-        loan           = ILoanLike(_loan);
+        loan           = _loan;
         pool           = _pool;
-        liquidityAsset = IERC20(ILoanLike(_loan).liquidityAsset());
+        liquidityAsset = ILoanLike(_loan).liquidityAsset();
     }
 
     // Note: If newAmt > 0, totalNewAmt will always be greater than zero.
@@ -48,36 +48,36 @@ contract DebtLocker is IDebtLocker {
     function claim() external override isPool returns (uint256[7] memory) {
 
         uint256 newDefaultSuffered   = uint256(0);
-        uint256 loan_defaultSuffered = loan.defaultSuffered();
+        uint256 loan_defaultSuffered = ILoanLike(loan).defaultSuffered();
 
         // If a default has occurred, update storage variable and update memory variable from zero for return.
         // `newDefaultSuffered` represents the proportional loss that the DebtLocker registers based on its balance
         // of LoanFDTs in comparison to the total supply of LoanFDTs.
         // Default will occur only once, so below statement will only be `true` once.
         if (lastDefaultSuffered == uint256(0) && loan_defaultSuffered > uint256(0)) {
-            newDefaultSuffered = lastDefaultSuffered = _calcAllotment(loan.balanceOf(address(this)), loan_defaultSuffered, loan.totalSupply());
+            newDefaultSuffered = lastDefaultSuffered = _calcAllotment(ILoanLike(loan).balanceOf(address(this)), loan_defaultSuffered, ILoanLike(loan).totalSupply());
         }
 
         // Account for any transfers into Loan that have occurred since last call.
-        loan.updateFundsReceived();
+        ILoanLike(loan).updateFundsReceived();
 
         // Handles case where no claimable funds are present but a default must be registered (zero-collateralized loans defaulting).
-        if (loan.withdrawableFundsOf(address(this)) == uint256(0)) return([0, 0, 0, 0, 0, 0, newDefaultSuffered]);
+        if (ILoanLike(loan).withdrawableFundsOf(address(this)) == uint256(0)) return([0, 0, 0, 0, 0, 0, newDefaultSuffered]);
 
         // If there are claimable funds, calculate portions and claim using LoanFDT.
 
         // Calculate payment deltas.
-        uint256 newInterest  = loan.interestPaid() - lastInterestPaid;    // `loan.interestPaid`  updated in `loan._makePayment()`
-        uint256 newPrincipal = loan.principalPaid() - lastPrincipalPaid;  // `loan.principalPaid` updated in `loan._makePayment()`
+        uint256 newInterest  = ILoanLike(loan).interestPaid() - lastInterestPaid;    // `loan.interestPaid`  updated in `loan._makePayment()`
+        uint256 newPrincipal = ILoanLike(loan).principalPaid() - lastPrincipalPaid;  // `loan.principalPaid` updated in `loan._makePayment()`
 
         // Update storage variables for next delta calculation.
-        lastInterestPaid  = loan.interestPaid();
-        lastPrincipalPaid = loan.principalPaid();
+        lastInterestPaid  = ILoanLike(loan).interestPaid();
+        lastPrincipalPaid = ILoanLike(loan).principalPaid();
 
         // Calculate one-time deltas if storage variables have not yet been updated.
-        uint256 newFee             = lastFeePaid         == uint256(0) ? loan.feePaid()         : uint256(0);  // `loan.feePaid`          updated in `loan.drawdown()`
-        uint256 newExcess          = lastExcessReturned  == uint256(0) ? loan.excessReturned()  : uint256(0);  // `loan.excessReturned`   updated in `loan.unwind()` OR `loan.drawdown()` if `amt < fundingLockerBal`
-        uint256 newAmountRecovered = lastAmountRecovered == uint256(0) ? loan.amountRecovered() : uint256(0);  // `loan.amountRecovered`  updated in `loan.triggerDefault()`
+        uint256 newFee             = lastFeePaid         == uint256(0) ? ILoanLike(loan).feePaid()         : uint256(0);  // `loan.feePaid`          updated in `loan.drawdown()`
+        uint256 newExcess          = lastExcessReturned  == uint256(0) ? ILoanLike(loan).excessReturned()  : uint256(0);  // `loan.excessReturned`   updated in `loan.unwind()` OR `loan.drawdown()` if `amt < fundingLockerBal`
+        uint256 newAmountRecovered = lastAmountRecovered == uint256(0) ? ILoanLike(loan).amountRecovered() : uint256(0);  // `loan.amountRecovered`  updated in `loan.triggerDefault()`
 
         // Update DebtLocker storage variables if Loan storage variables has been updated since last claim.
         if (newFee > 0)             lastFeePaid         = newFee;
@@ -85,9 +85,9 @@ contract DebtLocker is IDebtLocker {
         if (newAmountRecovered > 0) lastAmountRecovered = newAmountRecovered;
 
         // Withdraw all claimable funds via LoanFDT.
-        uint256 beforeBal = liquidityAsset.balanceOf(address(this));                 // Current balance of DebtLocker (accounts for direct inflows).
-        loan.withdrawFunds();                                                        // Transfer funds from Loan to DebtLocker.
-        uint256 claimBal  = liquidityAsset.balanceOf(address(this)).sub(beforeBal);  // Amount claimed from Loan using LoanFDT.
+        uint256 beforeBal = IERC20(liquidityAsset).balanceOf(address(this));                 // Current balance of DebtLocker (accounts for direct inflows).
+        ILoanLike(loan).withdrawFunds();                                                     // Transfer funds from Loan to DebtLocker.
+        uint256 claimBal  = IERC20(liquidityAsset).balanceOf(address(this)).sub(beforeBal);  // Amount claimed from Loan using LoanFDT.
 
         // Calculate sum of all deltas, to be used to calculate portions for metadata.
         uint256 sum = newInterest.add(newPrincipal).add(newFee).add(newExcess).add(newAmountRecovered);
@@ -101,7 +101,7 @@ contract DebtLocker is IDebtLocker {
         newExcess          = _calcAllotment(newExcess,          claimBal, sum);
         newAmountRecovered = _calcAllotment(newAmountRecovered, claimBal, sum);
 
-        liquidityAsset.safeTransfer(pool, claimBal);  // Transfer entire amount claimed using LoanFDT.
+        IERC20(liquidityAsset).safeTransfer(pool, claimBal);  // Transfer entire amount claimed using LoanFDT.
 
         // Return claim amount plus all relevant metadata, to be used by Pool for further claim logic.
         // Note: newInterest + newPrincipal + newFee + newExcess + newAmountRecovered = claimBal - dust
@@ -110,7 +110,7 @@ contract DebtLocker is IDebtLocker {
     }
 
     function triggerDefault() external override isPool {
-        loan.triggerDefault();
+        ILoanLike(loan).triggerDefault();
     }
 
 }
