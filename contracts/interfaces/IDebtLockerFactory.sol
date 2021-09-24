@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity 0.6.11;
+pragma solidity ^0.8.7;
 
 import { ISubFactory } from "../../modules/subfactory/contracts/interfaces/ISubFactory.sol";
 
@@ -13,6 +13,8 @@ interface IDebtLockerFactory is ISubFactory {
         @param loan       The Loan tied to the DebtLocker.
      */
     event DebtLockerCreated(address indexed owner, address debtLocker, address loan);
+
+    function globals() external view returns (address);
 
     /**
         @param  debtLocker The address of a DebtLocker.
