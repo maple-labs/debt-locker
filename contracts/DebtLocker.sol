@@ -1,116 +1,147 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
-import { SafeMath }          from "../modules/openzeppelin-contracts/contracts/math/SafeMath.sol";
-import { IERC20, SafeERC20 } from "../modules/openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
+import { IERC20 } from "../modules/erc20/src/interfaces/IERC20.sol";
 
-import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
-import { ILoanLike }   from "./interfaces/ILoanLike.sol";
+import { ERC20Helper } from "../modules/erc20-helper/src/ERC20Helper.sol";
+
+import { IDebtLocker }        from "./interfaces/IDebtLocker.sol";
+import { IDebtLockerFactory } from "./interfaces/IDebtLockerFactory.sol";
+
+import { IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IUniswapRouterLike }  from "./interfaces/Interfaces.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 contract DebtLocker is IDebtLocker {
 
-    using SafeMath  for uint256;
-    using SafeERC20 for IERC20;
+    address public constant UNISWAP_ROUTER = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
-    uint256 constant WAD = 10 ** 18;
-
+    address public override immutable factory;
     address public override immutable loan;
-    address public override immutable liquidityAsset;
     address public override immutable pool;
 
-    uint256 public override lastPrincipalPaid;
-    uint256 public override lastInterestPaid;
-    uint256 public override lastFeePaid;
-    uint256 public override lastExcessReturned;
-    uint256 public override lastDefaultSuffered;
-    uint256 public override lastAmountRecovered;
+    bool public override hasMadeFirstClaim;
 
-    /**
-        @dev Checks that `msg.sender` is the Pool.
-     */
-    modifier isPool() {
-        require(msg.sender == pool, "DL:NOT_P");
-        _;
+    uint256 public override principalRemainingAtLastClaim;
+
+    constructor(address loan_, address pool_) {
+        factory                       = msg.sender;
+        loan                          = loan_;
+        pool                          = pool_;
+        principalRemainingAtLastClaim = IMapleLoanLike(loan_).principalRequested();
     }
 
-    constructor(address _loan, address _pool) public {
-        loan           = _loan;
-        pool           = _pool;
-        liquidityAsset = ILoanLike(_loan).liquidityAsset();
-    }
+    function claim() external override returns (uint256[7] memory details_) {
+        if (IMapleLoanLike(loan).lender() == address(0)) return _handleDefaultClaim();
 
-    // Note: If newAmt > 0, totalNewAmt will always be greater than zero.
-    function _calcAllotment(uint256 newAmt, uint256 totalClaim, uint256 totalNewAmt) internal pure returns (uint256) {
-        return newAmt == uint256(0) ? uint256(0) : newAmt.mul(totalClaim).div(totalNewAmt);
-    }
+        // Get loan state variables we need
+        uint256 claimableFunds = IMapleLoanLike(loan).claimableFunds();
+        require(claimableFunds > 0, "DL:C:NOTHING_TO_CLAIM");
 
-    function claim() external override isPool returns (uint256[7] memory) {
+        uint256 currentPrincipalRemaining = IMapleLoanLike(loan).principal();
 
-        uint256 newDefaultSuffered   = uint256(0);
-        uint256 loan_defaultSuffered = ILoanLike(loan).defaultSuffered();
+        // Get Globals variables
+        address globals         = IDebtLockerFactory(factory).globals();
+        uint256 investorFeeRate = IMapleGlobalsLike(globals).investorFee();
 
-        // If a default has occurred, update storage variable and update memory variable from zero for return.
-        // `newDefaultSuffered` represents the proportional loss that the DebtLocker registers based on its balance
-        // of LoanFDTs in comparison to the total supply of LoanFDTs.
-        // Default will occur only once, so below statement will only be `true` once.
-        if (lastDefaultSuffered == uint256(0) && loan_defaultSuffered > uint256(0)) {
-            newDefaultSuffered = lastDefaultSuffered = _calcAllotment(ILoanLike(loan).balanceOf(address(this)), loan_defaultSuffered, ILoanLike(loan).totalSupply());
+        // Determine how much of claimableFunds are principal and fees
+        uint256 principalPortion = principalRemainingAtLastClaim - currentPrincipalRemaining;
+        uint256 feePortion       = claimableFunds - principalPortion;
+
+        // Determine the the split of fees between the treasury, pool delegate, and pool
+        uint256 poolDelegateFees;
+        uint256 treasuryFees;
+
+        // Determine if this claim includes proceeds from initial funding
+        if (!hasMadeFirstClaim) {
+            hasMadeFirstClaim = true;
+            poolDelegateFees  = (principalRemainingAtLastClaim * investorFeeRate) / uint256(10_000);
+            treasuryFees      = (principalRemainingAtLastClaim * IMapleGlobalsLike(globals).treasuryFee()) / uint256(10_000);
         }
 
-        // Account for any transfers into Loan that have occurred since last call.
-        ILoanLike(loan).updateFundsReceived();
+        // Determine the the split of fees
+        poolDelegateFees += (feePortion * investorFeeRate) / uint256(10_000);
 
-        // Handles case where no claimable funds are present but a default must be registered (zero-collateralized loans defaulting).
-        if (ILoanLike(loan).withdrawableFundsOf(address(this)) == uint256(0)) return([0, 0, 0, 0, 0, 0, newDefaultSuffered]);
+        uint256 poolFees = feePortion - poolDelegateFees - treasuryFees;
 
-        // If there are claimable funds, calculate portions and claim using LoanFDT.
+        // Send funds to pool and treasury
+        if (poolFees > uint256(0)) {
+            IMapleLoanLike(loan).claimFunds(claimableFunds - treasuryFees, pool);
+        }
 
-        // Calculate payment deltas.
-        uint256 newInterest  = ILoanLike(loan).interestPaid() - lastInterestPaid;    // `loan.interestPaid`  updated in `loan._makePayment()`
-        uint256 newPrincipal = ILoanLike(loan).principalPaid() - lastPrincipalPaid;  // `loan.principalPaid` updated in `loan._makePayment()`
+        if (treasuryFees > uint256(0)) {
+            IMapleLoanLike(loan).claimFunds(treasuryFees, IMapleGlobalsLike(globals).mapleTreasury());
+        }
 
-        // Update storage variables for next delta calculation.
-        lastInterestPaid  = ILoanLike(loan).interestPaid();
-        lastPrincipalPaid = ILoanLike(loan).principalPaid();
+        // Update state variables
+        principalRemainingAtLastClaim = currentPrincipalRemaining;
 
-        // Calculate one-time deltas if storage variables have not yet been updated.
-        uint256 newFee             = lastFeePaid         == uint256(0) ? ILoanLike(loan).feePaid()         : uint256(0);  // `loan.feePaid`          updated in `loan.drawdown()`
-        uint256 newExcess          = lastExcessReturned  == uint256(0) ? ILoanLike(loan).excessReturned()  : uint256(0);  // `loan.excessReturned`   updated in `loan.unwind()` OR `loan.drawdown()` if `amt < fundingLockerBal`
-        uint256 newAmountRecovered = lastAmountRecovered == uint256(0) ? ILoanLike(loan).amountRecovered() : uint256(0);  // `loan.amountRecovered`  updated in `loan.triggerDefault()`
-
-        // Update DebtLocker storage variables if Loan storage variables has been updated since last claim.
-        if (newFee > 0)             lastFeePaid         = newFee;
-        if (newExcess > 0)          lastExcessReturned  = newExcess;
-        if (newAmountRecovered > 0) lastAmountRecovered = newAmountRecovered;
-
-        // Withdraw all claimable funds via LoanFDT.
-        uint256 beforeBal = IERC20(liquidityAsset).balanceOf(address(this));                 // Current balance of DebtLocker (accounts for direct inflows).
-        ILoanLike(loan).withdrawFunds();                                                     // Transfer funds from Loan to DebtLocker.
-        uint256 claimBal  = IERC20(liquidityAsset).balanceOf(address(this)).sub(beforeBal);  // Amount claimed from Loan using LoanFDT.
-
-        // Calculate sum of all deltas, to be used to calculate portions for metadata.
-        uint256 sum = newInterest.add(newPrincipal).add(newFee).add(newExcess).add(newAmountRecovered);
-
-        // Calculate payment portions based on LoanFDT claim.
-        newInterest  = _calcAllotment(newInterest,  claimBal, sum);
-        newPrincipal = _calcAllotment(newPrincipal, claimBal, sum);
-
-        // Calculate one-time portions based on LoanFDT claim.
-        newFee             = _calcAllotment(newFee,             claimBal, sum);
-        newExcess          = _calcAllotment(newExcess,          claimBal, sum);
-        newAmountRecovered = _calcAllotment(newAmountRecovered, claimBal, sum);
-
-        IERC20(liquidityAsset).safeTransfer(pool, claimBal);  // Transfer entire amount claimed using LoanFDT.
-
-        // Return claim amount plus all relevant metadata, to be used by Pool for further claim logic.
-        // Note: newInterest + newPrincipal + newFee + newExcess + newAmountRecovered = claimBal - dust
-        //       The dust on the right side of the equation gathers in the pool after transfers are made.
-        return([claimBal, newInterest, newPrincipal, newFee, newExcess, newAmountRecovered, newDefaultSuffered]);
+        // Set return vales
+        details_[0] = claimableFunds - treasuryFees;
+        details_[1] = poolFees;
+        details_[2] = principalPortion;
+        details_[3] = poolDelegateFees;
     }
 
-    function triggerDefault() external override isPool {
-        ILoanLike(loan).triggerDefault();
+    function triggerDefault() external override {
+        require(msg.sender == pool, "DL:TD:NOT_POOL");
+
+        ( uint256 collateralAssetAmount_, ) = IMapleLoanLike(loan).repossess(address(this), address(this));
+
+        _swap(
+            collateralAssetAmount_,
+            IMapleLoanLike(loan).collateralAsset(),
+            IMapleLoanLike(loan).fundsAsset(),
+            address(this)
+        );
     }
 
+    function _swap(uint256 fromAmount_, address fromAsset_, address toAsset_, address destination) internal returns (uint256 toAmount_) {
+        if (fromAsset_ == toAsset_ || fromAmount_ == uint256(0)) return uint256(0);
+
+        require(ERC20Helper.approve(fromAsset_, UNISWAP_ROUTER, fromAmount_), "DL:LC:FAILED_TO_SWAP");
+
+        // Generate Uniswap path.
+        address intermediateAsset = IMapleGlobalsLike(IDebtLockerFactory(factory).globals()).defaultUniswapPath(fromAsset_, toAsset_);
+
+        bool middleAsset = intermediateAsset != toAsset_ && intermediateAsset != address(0);
+
+        address[] memory path = new address[](middleAsset ? 3 : 2);
+
+        path[0] = fromAsset_;
+        path[1] = middleAsset ? intermediateAsset : toAsset_;
+
+        if (middleAsset) {
+            path[2] = toAsset_;
+        }
+
+        // Swap fromAsset_ for Liquidity Asset.
+        return IUniswapRouterLike(UNISWAP_ROUTER).swapExactTokensForTokens(fromAmount_, 0, path, destination, block.timestamp)[path.length - 1];
+    }
+
+    function _handleDefaultClaim() internal returns (uint256[7] memory details_) {
+        address fundsAsset     = IMapleLoanLike(loan).fundsAsset();
+        uint256 recoveredFunds = IERC20(fundsAsset).balanceOf(address(this));
+
+        ERC20Helper.transfer(fundsAsset, pool, recoveredFunds);
+
+        // Either all of principalRemainingAtLastClaim was recovered, or just recoveredFunds amount of it
+        uint256 recoveredPrincipal = recoveredFunds >= principalRemainingAtLastClaim
+            ? principalRemainingAtLastClaim
+            : recoveredFunds;
+
+        uint256 recoveredFees = recoveredFunds - principalRemainingAtLastClaim;
+
+        uint256 poolDelegateFees = (recoveredFees * IMapleGlobalsLike(IDebtLockerFactory(factory).globals()).investorFee()) / uint256(10_000);
+
+        // Update state variables
+        principalRemainingAtLastClaim = 0;
+
+        // Set return vales
+        details_[0] = recoveredFunds;
+        details_[1] = recoveredFees - poolDelegateFees;
+        details_[2] = recoveredPrincipal;
+        details_[3] = poolDelegateFees;
+        details_[5] = 0;
+        details_[6] = principalRemainingAtLastClaim - recoveredPrincipal;
+    }
 }

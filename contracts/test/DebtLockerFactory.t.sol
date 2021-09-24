@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity 0.6.11;
+pragma solidity ^0.8.7;
 
 import { DSTest } from "../../modules/ds-test/src/test.sol";
 import { ERC20 }  from "../../modules/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
