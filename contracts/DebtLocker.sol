@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
-import { IERC20 } from "../modules/erc20/src/interfaces/IERC20.sol";
-
-import { ERC20Helper } from "../modules/erc20-helper/src/ERC20Helper.sol";
+import { ERC20Helper, IERC20 } from "../modules/erc20-helper/src/ERC20Helper.sol";
 
 import { IDebtLocker }        from "./interfaces/IDebtLocker.sol";
 import { IDebtLockerFactory } from "./interfaces/IDebtLockerFactory.sol";
@@ -27,6 +25,7 @@ contract DebtLocker is IDebtLocker {
         factory                       = msg.sender;
         loan                          = loan_;
         pool                          = pool_;
+        hasMadeFirstClaim             = false;
         principalRemainingAtLastClaim = IMapleLoanLike(loan_).principalRequested();
     }
 
@@ -35,7 +34,7 @@ contract DebtLocker is IDebtLocker {
 
         // Get loan state variables we need
         uint256 claimableFunds = IMapleLoanLike(loan).claimableFunds();
-        require(claimableFunds > 0, "DL:C:NOTHING_TO_CLAIM");
+        require(claimableFunds > uint256(0), "DL:C:NOTHING_TO_CLAIM");
 
         uint256 currentPrincipalRemaining = IMapleLoanLike(loan).principal();
 
@@ -128,13 +127,14 @@ contract DebtLocker is IDebtLocker {
         uint256 recoveredPrincipal = recoveredFunds >= principalRemainingAtLastClaim
             ? principalRemainingAtLastClaim
             : recoveredFunds;
+        
+        uint256 recoveredFees;
+        uint256 poolDelegateFees;
 
-        uint256 recoveredFees = recoveredFunds - principalRemainingAtLastClaim;
-
-        uint256 poolDelegateFees = (recoveredFees * IMapleGlobalsLike(IDebtLockerFactory(factory).globals()).investorFee()) / uint256(10_000);
-
-        // Update state variables
-        principalRemainingAtLastClaim = 0;
+        if (recoveredFunds > principalRemainingAtLastClaim) {
+            recoveredFees    = recoveredFunds - principalRemainingAtLastClaim;
+            poolDelegateFees = (recoveredFees * IMapleGlobalsLike(IDebtLockerFactory(factory).globals()).investorFee()) / uint256(10_000);
+        } 
 
         // Set return vales
         details_[0] = recoveredFunds;
@@ -143,5 +143,8 @@ contract DebtLocker is IDebtLocker {
         details_[3] = poolDelegateFees;
         details_[5] = 0;
         details_[6] = principalRemainingAtLastClaim - recoveredPrincipal;
+
+        // Update state variables
+        principalRemainingAtLastClaim = 0;
     }
 }
