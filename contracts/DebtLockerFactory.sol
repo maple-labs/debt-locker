@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity 0.6.11;
+pragma solidity ^0.8.7;
 
 import { IDebtLockerFactory } from "./interfaces/IDebtLockerFactory.sol";
 
@@ -13,12 +13,12 @@ contract DebtLockerFactory is IDebtLockerFactory {
 
     uint8 public override constant factoryType = 1;
 
-    function newLocker(address loan) external override returns (address debtLocker) {
-        debtLocker           = address(new DebtLocker(loan, msg.sender));
-        owner[debtLocker]    = msg.sender;
-        isLocker[debtLocker] = true;
+    function newLocker(address loan_) external override returns (address debtLocker_) {
+        debtLocker_           = address(new DebtLocker(loan_, msg.sender));
+        owner[debtLocker_]    = msg.sender;
+        isLocker[debtLocker_] = true;
 
-        emit DebtLockerCreated(msg.sender, debtLocker, loan);
+        emit DebtLockerCreated(msg.sender, debtLocker_, loan_);
     }
 
 }

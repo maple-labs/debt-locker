@@ -1,9 +1,12 @@
-[submodule "modules/ds-test"]
-	path = modules/ds-test
-	url = https://github.com/dapphub/ds-test.git
-[submodule "modules/openzeppelin-contracts"]
-	path = modules/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts.git
 [submodule "modules/subfactory"]
 	path = modules/subfactory
 	url = https://github.com/maple-labs/subfactory.git
+[submodule "modules/erc20"]
+	path = modules/erc20
+	url = https://github.com/maple-labs/erc20.git
+[submodule "modules/erc20-helper"]
+	path = modules/erc20-helper
+	url = https://github.com/maple-labs/erc20-helper.git
+[submodule "modules/contract-test-utils"]
+	path = modules/contract-test-utils
+	url = https://github.com/maple-labs/contract-test-utils.git

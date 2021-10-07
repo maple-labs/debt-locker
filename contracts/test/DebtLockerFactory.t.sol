@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity 0.6.11;
+pragma solidity ^0.8.7;
 
-import { DSTest } from "../../modules/ds-test/src/test.sol";
-import { ERC20 }  from "../../modules/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import { TestUtils } from "../../modules/contract-test-utils/contracts/test.sol";
+import { ERC20 }     from "../../modules/erc20/src/ERC20.sol";
 
 import { IDebtLocker } from "../interfaces/IDebtLocker.sol";
 
@@ -12,7 +12,7 @@ import { Pool } from "./accounts/Pool.sol";
 
 contract MockToken is ERC20 {
 
-    constructor (string memory name, string memory symbol) ERC20(name, symbol) public {}
+    constructor (string memory name, string memory symbol) ERC20(name, symbol, uint8(18)) {}
 
     function mint(address account, uint256 amount) external {
         _mint(account, amount);
@@ -20,44 +20,36 @@ contract MockToken is ERC20 {
 
 }
 
-contract MockLoan {
+contract MockMapleLoan {
 
-    address public liquidityAsset;
+    uint256 public principalRequested;
 
-    constructor(address _liquidityAsset) public {
-        liquidityAsset = _liquidityAsset;
+    constructor(uint256 principalRequested_) {
+        principalRequested = principalRequested_;
     }
-
-    function claim() external {}
-
-    function triggerDefault() external {}
 
 }
 
-contract DebtLockerFactoryTest is DSTest {
+contract DebtLockerFactoryTest is TestUtils {
 
     function test_newLocker() external {
         DebtLockerFactory factory = new DebtLockerFactory();
-        MockToken         token   = new MockToken("TKN", "TKN");
         Pool              pool    = new Pool();
-        Pool              notPool = new Pool();
 
-        MockLoan loan = new MockLoan(address(token));
+        MockMapleLoan loan = new MockMapleLoan(uint256(1_000_000));
 
         IDebtLocker locker = IDebtLocker(pool.debtLockerFactory_newLocker(address(factory), address(loan)));
 
         // Validate the storage of factory.
         assertEq(factory.owner(address(locker)), address(pool), "Invalid owner");
-        assertTrue(factory.isLocker(address(locker)),            "Invalid isLocker");
+        assertTrue(factory.isLocker(address(locker)),           "Invalid isLocker");
 
         // Validate the storage of locker.
-        assertEq(address(locker.loan()),           address(loan),  "Incorrect loan address");
-        assertEq(locker.pool(),                    address(pool),  "Incorrect pool address");
-        assertEq(address(locker.liquidityAsset()), address(token), "Incorrect address of liquidity asset");
+        assertEq(locker.factory(), address(factory), "Incorrect factory address");
+        assertEq(locker.loan(),    address(loan),    "Incorrect loan address");
+        assertEq(locker.pool(),     address(pool),   "Incorrect pool address");
 
-        // Assert that only the DebtLocker owner (pool) can trigger default
-        assertTrue(!notPool.try_debtLocker_triggerDefault(address(locker)), "Trigger Default succeeded from notPool");
-        assertTrue(    pool.try_debtLocker_triggerDefault(address(locker)), "Trigger Default failed from pool");
+        assertEq(locker.principalRemainingAtLastClaim(), uint256(1_000_000), "Incorrect principal remaining at last claim");
     }
 
 }

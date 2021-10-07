@@ -1,71 +1,43 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity 0.6.11;
+pragma solidity ^0.8.7;
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 interface IDebtLocker {
 
-    /**
-        @dev The Loan contract this locker is holding tokens for.
-     */
-    function loan() external view returns (address);
+    function factory() external view returns (address factory_);
 
     /**
-        @dev The Liquidity Asset this locker can claim.
+     * @dev The Loan contract this locker is holding tokens for.
      */
-    function liquidityAsset() external view returns (address);
+    function loan() external view returns (address loan_);
 
     /**
-        @dev The owner of this Locker (the Pool).
+     * @dev The owner of this Locker (the Pool).
      */
-    function pool() external view returns (address);
+    function pool() external view returns (address pool_);
 
     /**
-        @dev The Loan total principal paid at last time `claim()` was called.
+     * @dev Returns the principal that was present at the time of last claim.
      */
-    function lastPrincipalPaid() external view returns (uint256);
+    function principalRemainingAtLastClaim() external view returns (uint256 principalRemainingAtLastClaim_);
 
     /**
-        @dev The Loan total interest paid at last time `claim()` was called.
+     *  @dev Return the pool delegate address of the pool.
      */
-    function lastInterestPaid() external view returns (uint256);
+    function poolDelegate() external view returns(address);
 
     /**
-        @dev The Loan total fees paid at last time `claim()` was called.
+        @dev    Claims funds distribution for Loan via LoanFDT.
+        @dev    Only the Pool can call this function.
+        @return details_
+                    [0] => Total Claimed.
+                    [1] => Interest Claimed.
+                    [2] => Principal Claimed.
+                    [3] => Pool Delegate Fees Claimed.
+                    [4] => Excess Returned Claimed.
+                    [5] => Amount Recovered (from Liquidation).
+                    [6] => Default Suffered.
      */
-    function lastFeePaid() external view returns (uint256);
-
-    /**
-        @dev The Loan total excess returned at last time `claim()` was called.
-     */
-    function lastExcessReturned() external view returns (uint256);
-
-    /**
-        @dev The Loan total default suffered at last time `claim()` was called.
-     */
-    function lastDefaultSuffered() external view returns (uint256);
-
-    /**
-        @dev Then Liquidity Asset (a.k.a. loan asset) recovered from liquidation of Loan collateral.
-     */
-    function lastAmountRecovered() external view returns (uint256);
-
-    /**
-        @dev    Claims funds distribution for Loan via LoanFDT. 
-        @dev    Only the Pool can call this function. 
-        @return [0] => Total Claimed.
-                [1] => Interest Claimed.
-                [2] => Principal Claimed.
-                [3] => Pool Delegate Fee Claimed.
-                [4] => Excess Returned Claimed.
-                [5] => Amount Recovered (from Liquidation).
-                [6] => Default Suffered.
-     */
-    function claim() external returns (uint256[7] memory);
-
-    /**
-        @dev Liquidates a Loan that is held by this contract. 
-        @dev Only the Pool can call this function. 
-     */
-    function triggerDefault() external;
+    function claim() external returns (uint256[7] memory details_);
 
 }
