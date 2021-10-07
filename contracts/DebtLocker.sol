@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 
 import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
 
-import { IMapleLoanLike }  from "./interfaces/Interfaces.sol";
+import { IMapleLoanLike, IPoolLike }  from "./interfaces/Interfaces.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 contract DebtLocker is IDebtLocker {
@@ -49,6 +49,10 @@ contract DebtLocker is IDebtLocker {
         details_[0] = claimableFunds;
         details_[1] = claimableFunds - principalPortion;
         details_[2] = principalPortion;
+    }
+
+    function poolDelegate() external override view returns(address) {
+        return IPoolLike(pool).poolDelegate();
     }
 
 }

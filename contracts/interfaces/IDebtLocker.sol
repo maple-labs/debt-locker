@@ -22,6 +22,11 @@ interface IDebtLocker {
     function principalRemainingAtLastClaim() external view returns (uint256 principalRemainingAtLastClaim_);
 
     /**
+     *  @dev Return the pool delegate address of the pool.
+     */
+    function poolDelegate() external view returns(address);
+
+    /**
         @dev    Claims funds distribution for Loan via LoanFDT.
         @dev    Only the Pool can call this function.
         @return details_
