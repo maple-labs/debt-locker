@@ -6,6 +6,9 @@
     },
     "contracts/test/DebtLockerFactory.t.sol": {
       "urls": ["contracts/test/DebtLockerFactory.t.sol"]
+    },
+    "contracts/test/DebtLocker.t.sol": {
+      "urls": ["contracts/test/DebtLocker.t.sol"]
     }
   },
   "settings": {

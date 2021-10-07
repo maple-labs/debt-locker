@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
-import { DSTest } from "../../modules/ds-test/src/test.sol";
-import { ERC20 }  from "../../modules/erc20/src/ERC20.sol";
+import { TestUtils } from "../../modules/contract-test-utils/contracts/test.sol";
+import { ERC20 }     from "../../modules/erc20/src/ERC20.sol";
 
 import { IDebtLocker } from "../interfaces/IDebtLocker.sol";
 
@@ -30,7 +30,7 @@ contract MockMapleLoan {
 
 }
 
-contract DebtLockerFactoryTest is DSTest {
+contract DebtLockerFactoryTest is TestUtils {
 
     function test_newLocker() external {
         DebtLockerFactory factory = new DebtLockerFactory(address(8888));
@@ -48,8 +48,6 @@ contract DebtLockerFactoryTest is DSTest {
         assertEq(locker.factory(), address(factory), "Incorrect factory address");
         assertEq(locker.loan(),    address(loan),    "Incorrect loan address");
         assertEq(locker.pool(),     address(pool),   "Incorrect pool address");
-
-        assertTrue(!locker.hasMadeFirstClaim(), "Should have not made first claim");
 
         assertEq(locker.principalRemainingAtLastClaim(), uint256(1_000_000), "Incorrect principal remaining at last claim");
     }

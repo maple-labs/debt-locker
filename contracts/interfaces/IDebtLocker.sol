@@ -16,8 +16,6 @@ interface IDebtLocker {
      */
     function pool() external view returns (address pool_);
 
-    function hasMadeFirstClaim() external view returns (bool hasMadeFirstClaim_);
-
     function principalRemainingAtLastClaim() external view returns (uint256 principalRemainingAtLastClaim_);
 
     /**
@@ -35,9 +33,8 @@ interface IDebtLocker {
     function claim() external returns (uint256[7] memory details_);
 
     /**
-        @dev Liquidates a Loan that is held by this contract.
-        @dev Only the Pool can call this function.
+        @dev Return the pool delegate address of the pool.
      */
-    function triggerDefault() external;
+    function poolDelegate() external view returns(address);
 
 }

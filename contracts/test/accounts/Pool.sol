@@ -18,10 +18,6 @@ contract Pool {
         IDebtLocker(locker_).claim();
     }
 
-    function debtLocker_triggerDefault(address locker_) external {
-        IDebtLocker(locker_).triggerDefault();
-    }
-
     /*********************/
     /*** Try Functions ***/
     /*********************/
@@ -32,10 +28,6 @@ contract Pool {
 
     function try_debtLocker_claim(address locker_) external returns (bool ok_) {
         ( ok_, ) = locker_.call(abi.encodeWithSelector(IDebtLocker.claim.selector));
-    }
-
-    function try_debtLocker_triggerDefault(address locker_) external returns (bool ok_) {
-        ( ok_, ) = locker_.call(abi.encodeWithSelector(IDebtLocker.triggerDefault.selector));
     }
 
 }
