@@ -115,22 +115,21 @@ contract DebtLockerTest is TestUtils {
         collateralAsset = new MockToken("Collateral Asset", "CA", 18);
     }
 
-    function test_claim(uint256 principalRequested_, uint256 claimableFunds_, uint256 principal_, uint256 noOfPayments_, uint256 interestRate_) public {
+    function test_claim(uint256 principalRequested_, uint256 claimableFunds_, uint256 noOfPayments_, uint256 interestRate_) public {
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, 1_000_000_000);
-        principal_          = constrictToRange(principal_, 1_000_000, principalRequested_);
         noOfPayments_       = constrictToRange(noOfPayments_, 1, 12);
         interestRate_       = constrictToRange(interestRate_, 100, 4000);  // Maximum 40 % return.
-        claimableFunds_     = constrictToRange(claimableFunds_, (1_000_000 * interestRate_ / 10_000) * noOfPayments_, principal_ + (principal_ * interestRate_ / 10_000) * noOfPayments_);
+        claimableFunds_     = constrictToRange(claimableFunds_, (principalRequested_ * interestRate_ / 10_000) * noOfPayments_, principalRequested_ + (principalRequested_ * interestRate_ / 10_000) * noOfPayments_);
         // Create the loan 
-        loan = new MockLoan(principalRequested_, claimableFunds_, principal_, address(fundsAsset), address(collateralAsset), address(321));
+        loan = new MockLoan(principalRequested_, claimableFunds_, principalRequested_, address(fundsAsset), address(collateralAsset), address(321));
         // Mint funds directly to loan.
         fundsAsset.mint(address(loan), claimableFunds_);
         uint256 principalPortion;
 
-        if (claimableFunds_ > (principal_ * interestRate_ / 10_000) * noOfPayments_) {
-            principalPortion = claimableFunds_ - (principal_ * interestRate_ / 10_000) * noOfPayments_;
+        if (claimableFunds_ > (principalRequested_ * interestRate_ / 10_000) * noOfPayments_) {
+            principalPortion = claimableFunds_ - (principalRequested_ * interestRate_ / 10_000) * noOfPayments_;
         }
-        loan.putFunds(principalPortion);
+        loan.putFunds(principalPortion > principalRequested_ ? principalRequested_: principalPortion);
 
         // Create debt Locker 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(loan)));
