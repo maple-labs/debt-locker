@@ -33,7 +33,7 @@ contract MockMapleLoan {
 contract DebtLockerFactoryTest is TestUtils {
 
     function test_newLocker() external {
-        DebtLockerFactory factory = new DebtLockerFactory(address(8888));
+        DebtLockerFactory factory = new DebtLockerFactory();
         Pool              pool    = new Pool();
 
         MockMapleLoan loan = new MockMapleLoan(uint256(1_000_000));

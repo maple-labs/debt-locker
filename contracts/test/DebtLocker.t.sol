@@ -9,28 +9,12 @@ import { DebtLockerFactory, DebtLocker, IDebtLockerFactory } from "../DebtLocker
 
 contract MockToken is ERC20 {
 
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol, _decimals) {
-
-    }
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol, _decimals) {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
 
-}
-
-contract MockGlobal {
-
-    uint256 public treasuryFee;
-    uint256 public investorFee;
-
-    address public mapleTreasury;
-
-    constructor(uint256 treasuryFee_, uint256 investorFee_, address mapleTreasury_) {
-        treasuryFee   = treasuryFee_;
-        investorFee   = investorFee_;
-        mapleTreasury = mapleTreasury_;
-    }
 }
 
 contract MockLoan {
@@ -98,18 +82,14 @@ contract MockPool {
 
 contract DebtLockerTest is TestUtils {
 
-    MockGlobal        global;
     MockLoan          loan;
     MockPool          pool;
     DebtLockerFactory dlFactory;
     MockToken         fundsAsset;
     MockToken         collateralAsset;
 
-    address mapleTreasury = address(123);
-
     function setUp() public {
-        global          = new MockGlobal(500, 500, address(123));
-        dlFactory       = new DebtLockerFactory(address(global));
+        dlFactory       = new DebtLockerFactory();
         pool            = new MockPool(address(dlFactory));
         fundsAsset      = new MockToken("Funds Asset", "FA", 18);
         collateralAsset = new MockToken("Collateral Asset", "CA", 18);
@@ -120,8 +100,10 @@ contract DebtLockerTest is TestUtils {
         noOfPayments_       = constrictToRange(noOfPayments_, 1, 11);
         interestRate_       = constrictToRange(interestRate_, 100, 4000);  // Maximum 40 % return.
         claimableFunds_     = constrictToRange(claimableFunds_, (principalRequested_ * interestRate_ / 10_000) * noOfPayments_, principalRequested_ + (principalRequested_ * interestRate_ / 10_000) * noOfPayments_);
+        
         // Create the loan 
         loan = new MockLoan(principalRequested_, claimableFunds_, principalRequested_, address(fundsAsset), address(collateralAsset), address(321));
+        
         // Mint funds directly to loan.
         fundsAsset.mint(address(loan), claimableFunds_);
         uint256 principalPortion;
@@ -140,29 +122,29 @@ contract DebtLockerTest is TestUtils {
         uint256[7] memory details = pool.claim(debtLocker);
 
         assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_, "Invalid amount of funds transferred to the pool");
-        assertEq(details[0], claimableFunds_,  "Details_0 set incorrectly");
-        assertEq(details[1], uint256(0),       "Details_1 set incorrectly");
-        assertEq(details[2], principalPortion, "Details_2 set incorrectly");
-        assertEq(details[3], uint256(0),       "Details_3 set incorrectly");
+        assertEq(details[0], claimableFunds_,                    "Details_0 set incorrectly");
+        assertEq(details[1], claimableFunds_ - principalPortion, "Details_1 set incorrectly");
+        assertEq(details[2], principalPortion,                   "Details_2 set incorrectly");
 
         // Do a second round of claim
         if (debtLocker.principalRemainingAtLastClaim() == loan.principal()) {
             return;
         }
+
         uint256 noOfPaymentsRemaining = 12 - noOfPayments_;
         uint256 principalPortionLeft  = loan.principal() - debtLocker.principalRemainingAtLastClaim();
         uint256 newClaimableFunds     = (principalRequested_ * interestRate_ / 10_000) * noOfPaymentsRemaining + principalPortionLeft;
         // Mint funds directly to loan.
         fundsAsset.mint(address(loan), newClaimableFunds);
+        
         // Reduce the principal in loan
         loan.putFunds(principalPortionLeft);
 
         details = pool.claim(debtLocker);
 
         assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_ + newClaimableFunds, "Invalid amount of funds transferred to the pool");
-        assertEq(details[0], newClaimableFunds,    "Second Tranche: Details_0 set incorrectly");
-        assertEq(details[1], uint256(0),           "Second Tranche: Details_1 set incorrectly");
-        assertEq(details[2], principalPortionLeft, "Second Tranche: Details_2 set incorrectly");
-        assertEq(details[3], uint256(0),           "Second Tranche: Details_3 set incorrectly");
+        assertEq(details[0], newClaimableFunds,                        "Second Tranche: Details_0 set incorrectly");
+        assertEq(details[1], newClaimableFunds - principalPortionLeft, "Second Tranche: Details_1 set incorrectly");
+        assertEq(details[2], principalPortionLeft,                     "Second Tranche: Details_2 set incorrectly");
     }
 }

@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
-import { ERC20Helper, IERC20 } from "../modules/erc20-helper/src/ERC20Helper.sol";
+import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
 
-import { IDebtLocker }        from "./interfaces/IDebtLocker.sol";
-import { IDebtLockerFactory } from "./interfaces/IDebtLockerFactory.sol";
-
-import { IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IUniswapRouterLike }  from "./interfaces/Interfaces.sol";
+import { IMapleLoanLike, IPoolLike }  from "./interfaces/Interfaces.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 contract DebtLocker is IDebtLocker {
@@ -38,20 +35,21 @@ contract DebtLocker is IDebtLocker {
 
         uint256 currentPrincipalRemaining = IMapleLoanLike(loan).principal();
 
-        // Determine how much of claimableFunds are principal and fees
+        // Determine how much of claimableFunds are principal
         uint256 principalPortion = principalRemainingAtLastClaim - currentPrincipalRemaining;
 
-        // Send funds to pool and treasury
+        // Send funds to pool
         IMapleLoanLike(loan).claimFunds(claimableFunds, pool);
 
         // Update state variables
         principalRemainingAtLastClaim = currentPrincipalRemaining;
 
-        // Set return vales
+        // Set return values
+        // Note - All fees get deducted and transferred during the `loan.fundLoan()` that omits the need to
+        // return the fees distribution to the pool.
         details_[0] = claimableFunds;
-        details_[1] = uint256(0);
+        details_[1] = claimableFunds - principalPortion;
         details_[2] = principalPortion;
-        details_[3] = uint256(0);
     }
 
     function poolDelegate() external override view returns(address) {

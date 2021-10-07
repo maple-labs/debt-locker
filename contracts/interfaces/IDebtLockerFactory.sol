@@ -14,8 +14,6 @@ interface IDebtLockerFactory is ISubFactory {
      */
     event DebtLockerCreated(address indexed owner, address debtLocker, address loan);
 
-    function globals() external view returns (address);
-
     /**
         @param  debtLocker The address of a DebtLocker.
         @return The address of the owner of DebtLocker at `debtLocker`.

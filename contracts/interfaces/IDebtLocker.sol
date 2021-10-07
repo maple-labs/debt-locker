@@ -23,7 +23,7 @@ interface IDebtLocker {
         @dev    Only the Pool can call this function.
         @return details_
                     [0] => Total Claimed.
-                    [1] => Fees Claimed.
+                    [1] => Interest Claimed.
                     [2] => Principal Claimed.
                     [3] => Pool Delegate Fees Claimed.
                     [4] => Excess Returned Claimed.
