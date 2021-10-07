@@ -3,12 +3,10 @@ pragma solidity ^0.8.7;
 
 import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
 
-import { IMapleLoanLike, IPoolLike }  from "./interfaces/Interfaces.sol";
+import { IMapleLoanLike }  from "./interfaces/Interfaces.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 contract DebtLocker is IDebtLocker {
-
-    address internal constant UNISWAP_ROUTER = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
     address public override immutable factory;
     address public override immutable loan;
@@ -22,9 +20,10 @@ contract DebtLocker is IDebtLocker {
     }
 
     constructor(address loan_, address pool_) {
-        factory                       = msg.sender;
-        loan                          = loan_;
-        pool                          = pool_;
+        factory = msg.sender;
+        loan    = loan_;
+        pool    = pool_;
+        
         principalRemainingAtLastClaim = IMapleLoanLike(loan_).principalRequested();
     }
 
@@ -35,7 +34,7 @@ contract DebtLocker is IDebtLocker {
 
         uint256 currentPrincipalRemaining = IMapleLoanLike(loan).principal();
 
-        // Determine how much of claimableFunds are principal
+        // Determine how much of `claimableFunds` is principal
         uint256 principalPortion = principalRemainingAtLastClaim - currentPrincipalRemaining;
 
         // Send funds to pool
@@ -45,15 +44,11 @@ contract DebtLocker is IDebtLocker {
         principalRemainingAtLastClaim = currentPrincipalRemaining;
 
         // Set return values
-        // Note - All fees get deducted and transferred during the `loan.fundLoan()` that omits the need to
+        // Note - All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
         // return the fees distribution to the pool.
         details_[0] = claimableFunds;
         details_[1] = claimableFunds - principalPortion;
         details_[2] = principalPortion;
-    }
-
-    function poolDelegate() external override view returns(address) {
-        return IPoolLike(pool).poolDelegate();
     }
 
 }

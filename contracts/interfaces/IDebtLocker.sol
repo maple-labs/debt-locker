@@ -7,15 +7,18 @@ interface IDebtLocker {
     function factory() external view returns (address factory_);
 
     /**
-        @dev The Loan contract this locker is holding tokens for.
+     * @dev The Loan contract this locker is holding tokens for.
      */
     function loan() external view returns (address loan_);
 
     /**
-        @dev The owner of this Locker (the Pool).
+     * @dev The owner of this Locker (the Pool).
      */
     function pool() external view returns (address pool_);
 
+    /**
+     * @dev Returns the principal that was present at the time of last claim.
+     */
     function principalRemainingAtLastClaim() external view returns (uint256 principalRemainingAtLastClaim_);
 
     /**
@@ -31,10 +34,5 @@ interface IDebtLocker {
                     [6] => Default Suffered.
      */
     function claim() external returns (uint256[7] memory details_);
-
-    /**
-        @dev Return the pool delegate address of the pool.
-     */
-    function poolDelegate() external view returns(address);
 
 }

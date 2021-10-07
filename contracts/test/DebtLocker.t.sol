@@ -36,6 +36,10 @@ contract MockLoan {
         lender             = lender_;
     }
 
+    function setClaimableFunds(uint256 claimableFunds_) external {
+        claimableFunds = claimableFunds_;
+    }
+
     function claimFunds(uint256 amount_, address destination_) public returns (bool success_) {
         claimableFunds -= amount_;
         return ERC20Helper.transfer(fundsAsset, destination_, amount_);
@@ -88,63 +92,76 @@ contract DebtLockerTest is TestUtils {
     MockToken         fundsAsset;
     MockToken         collateralAsset;
 
+    uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
+
     function setUp() public {
         dlFactory       = new DebtLockerFactory();
         pool            = new MockPool(address(dlFactory));
-        fundsAsset      = new MockToken("Funds Asset", "FA", 18);
+        fundsAsset      = new MockToken("Funds Asset",      "FA", 18);
         collateralAsset = new MockToken("Collateral Asset", "CA", 18);
     }
 
-    function test_claim(uint256 principalRequested_, uint256 claimableFunds_, uint256 noOfPayments_, uint256 interestRate_) public {
-        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, 1_000_000_000);
-        noOfPayments_       = constrictToRange(noOfPayments_, 1, 11);
-        interestRate_       = constrictToRange(interestRate_, 100, 4000);  // Maximum 40 % return.
-        claimableFunds_     = constrictToRange(claimableFunds_, (principalRequested_ * interestRate_ / 10_000) * noOfPayments_, principalRequested_ + (principalRequested_ * interestRate_ / 10_000) * noOfPayments_);
+    function test_claim(uint256 principalRequested_, uint256 endingPrincipal_, uint256 claimableFunds_, uint256 noOfPayments_, uint256 interestRate_) public {
+
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
+        endingPrincipal_    = constrictToRange(endingPrincipal_,    0,         principalRequested_);
+        noOfPayments_       = constrictToRange(noOfPayments_,       1,         10);
+        interestRate_       = constrictToRange(interestRate_,       1,         10_000);  // 0.01% to 100%
+
+        uint256 interestAmount = (principalRequested_ * interestRate_ / 10_000);  // Mock interest amount
+
+        claimableFunds_ = constrictToRange(claimableFunds_, interestAmount, principalRequested_ + interestAmount);
         
         // Create the loan 
         loan = new MockLoan(principalRequested_, claimableFunds_, principalRequested_, address(fundsAsset), address(collateralAsset), address(321));
         
         // Mint funds directly to loan.
         fundsAsset.mint(address(loan), claimableFunds_);
+
         uint256 principalPortion;
 
-        if (claimableFunds_ > (principalRequested_ * interestRate_ / 10_000) * noOfPayments_) {
-            principalPortion = claimableFunds_ - (principalRequested_ * interestRate_ / 10_000) * noOfPayments_;
+        if (claimableFunds_ > interestAmount) {
+            principalPortion = claimableFunds_ - interestAmount;
         }
+
         loan.putFunds(principalPortion > principalRequested_ ? principalRequested_: principalPortion);
 
         // Create debt Locker 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(loan)));
 
-        assertEq(fundsAsset.balanceOf(address(loan)), claimableFunds_, "Incorrect no. of funds in the loan");
-        assertEq(fundsAsset.balanceOf(address(pool)), 0, "Incorrect no. of funds in the pool");
+        assertEq(fundsAsset.balanceOf(address(loan)), claimableFunds_);
+        assertEq(fundsAsset.balanceOf(address(pool)), 0);
+
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
 
         uint256[7] memory details = pool.claim(debtLocker);
 
-        assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_, "Invalid amount of funds transferred to the pool");
-        assertEq(details[0], claimableFunds_,                    "Details_0 set incorrectly");
-        assertEq(details[1], claimableFunds_ - principalPortion, "Details_1 set incorrectly");
-        assertEq(details[2], principalPortion,                   "Details_2 set incorrectly");
+        assertEq(fundsAsset.balanceOf(address(loan)), 0);
+        assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_);
 
-        // Do a second round of claim
-        if (debtLocker.principalRemainingAtLastClaim() == loan.principal()) {
-            return;
-        }
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principal());
 
-        uint256 noOfPaymentsRemaining = 12 - noOfPayments_;
-        uint256 principalPortionLeft  = loan.principal() - debtLocker.principalRemainingAtLastClaim();
-        uint256 newClaimableFunds     = (principalRequested_ * interestRate_ / 10_000) * noOfPaymentsRemaining + principalPortionLeft;
+        assertEq(details[0], claimableFunds_);
+        assertEq(details[1], claimableFunds_ - principalPortion);
+        assertEq(details[2], principalPortion);
+
+        uint256 principalPortionLeft = loan.principal();
+        uint256 newClaimableFunds    = principalPortionLeft + (principalRequested_ * interestRate_ / 10_000) * noOfPayments_;  // Different mock interest amount plus remaining principal
+
         // Mint funds directly to loan.
         fundsAsset.mint(address(loan), newClaimableFunds);
         
-        // Reduce the principal in loan
+        // Reduce the principal in loan and set claimableFunds
+        loan.setClaimableFunds(newClaimableFunds);
         loan.putFunds(principalPortionLeft);
 
         details = pool.claim(debtLocker);
 
-        assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_ + newClaimableFunds, "Invalid amount of funds transferred to the pool");
-        assertEq(details[0], newClaimableFunds,                        "Second Tranche: Details_0 set incorrectly");
-        assertEq(details[1], newClaimableFunds - principalPortionLeft, "Second Tranche: Details_1 set incorrectly");
-        assertEq(details[2], principalPortionLeft,                     "Second Tranche: Details_2 set incorrectly");
+        assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_ + newClaimableFunds);
+
+        assertEq(details[0], newClaimableFunds);
+        assertEq(details[1], newClaimableFunds - principalPortionLeft);
+        assertEq(details[2], principalPortionLeft);
     }
+    
 }
