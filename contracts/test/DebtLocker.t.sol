@@ -2,103 +2,27 @@
 pragma solidity ^0.8.7;
 
 import { TestUtils }   from "../../modules/contract-test-utils/contracts/test.sol";
-import { ERC20Helper } from "../../modules/erc20-helper/src/ERC20Helper.sol";
-import { ERC20 }       from "../../modules/erc20/src/ERC20.sol";
+import { MockERC20 }   from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 
 import { DebtLockerFactory, DebtLocker, IDebtLockerFactory } from "../DebtLockerFactory.sol";
 
-contract MockToken is ERC20 {
-
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol, _decimals) {}
-
-    function mint(address to, uint256 amount) external {
-        _mint(to, amount);
-    }
-
-}
-
-contract MockLoan {
-
-    uint256 public principalRequested;
-    uint256 public claimableFunds;
-    uint256 public principal;
-
-    address public fundsAsset;
-    address public collateralAsset;
-    address public lender;
-
-    constructor(uint256 principalRequested_, uint256 claimableFunds_, uint256 principal_, address fundsAsset_, address collateralAsset_, address lender_) {
-        principalRequested = principalRequested_;
-        claimableFunds     = claimableFunds_;
-        principal          = principal_;
-        fundsAsset         = fundsAsset_;
-        collateralAsset    = collateralAsset_;
-        lender             = lender_;
-    }
-
-    function setClaimableFunds(uint256 claimableFunds_) external {
-        claimableFunds = claimableFunds_;
-    }
-
-    function claimFunds(uint256 amount_, address destination_) public returns (bool success_) {
-        claimableFunds -= amount_;
-        return ERC20Helper.transfer(fundsAsset, destination_, amount_);
-    }
-
-    function repossess() internal virtual returns (bool success_) {
-        claimableFunds = uint256(0);
-        principal      = uint256(0);
-        return true;
-    }
-
-    function changeParams(uint256 principalRequested_, uint256 claimableFunds_, uint256 principal_, address fundsAsset_, address collateralAsset_, address lender_) external {
-        principalRequested = principalRequested_;
-        claimableFunds     = claimableFunds_;
-        principal          = principal_;
-        fundsAsset         = fundsAsset_;
-        collateralAsset    = collateralAsset_;
-        lender             = lender_;
-    }
-
-    function putFunds(uint256 fundsTo_) external {
-        principal -= fundsTo_;
-    }
-
-}
-
-contract MockPool {
-
-    address public dlFactory;
-
-    constructor(address dlFactory_) {
-        dlFactory = dlFactory_;
-    }
-
-    function createDebtLocker(address loan) public returns(address) {
-        return IDebtLockerFactory(dlFactory).newLocker(loan);
-    }
-
-    function claim(DebtLocker dl) public returns(uint256[7] memory) {
-        return dl.claim();
-    }
-
-}
+import { MockLoan, MockPool } from "./mocks/Mocks.sol";
 
 contract DebtLockerTest is TestUtils {
 
     MockLoan          loan;
     MockPool          pool;
     DebtLockerFactory dlFactory;
-    MockToken         fundsAsset;
-    MockToken         collateralAsset;
+    MockERC20         fundsAsset;
+    MockERC20         collateralAsset;
 
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
     function setUp() public {
         dlFactory       = new DebtLockerFactory();
         pool            = new MockPool(address(dlFactory));
-        fundsAsset      = new MockToken("Funds Asset",      "FA", 18);
-        collateralAsset = new MockToken("Collateral Asset", "CA", 18);
+        fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
+        collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
     }
 
     function test_claim(uint256 principalRequested_, uint256 endingPrincipal_, uint256 claimableFunds_, uint256 noOfPayments_, uint256 interestRate_) public {
@@ -134,7 +58,7 @@ contract DebtLockerTest is TestUtils {
 
         assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
 
-        uint256[7] memory details = pool.claim(debtLocker);
+        uint256[7] memory details = pool.claim(address(debtLocker));
 
         assertEq(fundsAsset.balanceOf(address(loan)), 0);
         assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_);
@@ -155,7 +79,7 @@ contract DebtLockerTest is TestUtils {
         loan.setClaimableFunds(newClaimableFunds);
         loan.putFunds(principalPortionLeft);
 
-        details = pool.claim(debtLocker);
+        details = pool.claim(address(debtLocker));
 
         assertEq(fundsAsset.balanceOf(address(pool)), claimableFunds_ + newClaimableFunds);
 
