@@ -51,6 +51,11 @@ contract DebtLocker is IDebtLocker {
         details_[2] = principalPortion;
     }
 
+    function triggerDefault() external /*override*/ isPool {
+        IMapleLoanLike(loan).repossess(address(this), address(this));  // Get collateral and funds
+        
+    }
+
     function poolDelegate() external override view returns(address) {
         return IPoolLike(pool).poolDelegate();
     }

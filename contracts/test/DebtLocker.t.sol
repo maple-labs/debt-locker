@@ -37,7 +37,7 @@ contract DebtLockerTest is TestUtils {
         claimableFunds_ = constrictToRange(claimableFunds_, interestAmount, principalRequested_ + interestAmount);
         
         // Create the loan 
-        loan = new MockLoan(principalRequested_, claimableFunds_, principalRequested_, address(fundsAsset), address(collateralAsset), address(321));
+        loan = new MockLoan(principalRequested_, claimableFunds_, principalRequested_, address(fundsAsset), address(collateralAsset));
         
         // Mint funds directly to loan.
         fundsAsset.mint(address(loan), claimableFunds_);
@@ -52,6 +52,8 @@ contract DebtLockerTest is TestUtils {
 
         // Create debt Locker 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(loan)));
+
+        loan.setLender(address(debtLocker));
 
         assertEq(fundsAsset.balanceOf(address(loan)), claimableFunds_);
         assertEq(fundsAsset.balanceOf(address(pool)), 0);
@@ -86,6 +88,22 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], newClaimableFunds);
         assertEq(details[1], newClaimableFunds - principalPortionLeft);
         assertEq(details[2], principalPortionLeft);
+    }
+
+    function test_liquidation() public {
+        // Repossess
+        // Send funds to liquidator
+        // Claim funds
+        // Assert losses
+
+        loan = new MockLoan(1_000_000, 10_000, 1_000_000, address(fundsAsset), address(collateralAsset));
+
+        // Mint funds directly to loan, simulating drawdown and payment
+        fundsAsset.mint(address(loan), 10_000);
+
+        collateralAsset.mint(address(loan), 200_000);  // Mint collateral into loan
+
+        debtLocker.triggerDefault();
     }
     
 }
