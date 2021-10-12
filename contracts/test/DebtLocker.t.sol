@@ -6,12 +6,14 @@ import { MockERC20 }   from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 
 import { DebtLockerFactory, DebtLocker, IDebtLockerFactory } from "../DebtLockerFactory.sol";
 
-import { MockLoan, MockPool } from "./mocks/Mocks.sol";
+import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
 
 contract DebtLockerTest is TestUtils {
 
+    MockGlobals       globals;
     MockLoan          loan;
     MockPool          pool;
+    MockPoolFactory   poolFactory;
     DebtLockerFactory dlFactory;
     MockERC20         fundsAsset;
     MockERC20         collateralAsset;
@@ -19,10 +21,16 @@ contract DebtLockerTest is TestUtils {
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
     function setUp() public {
-        dlFactory       = new DebtLockerFactory();
-        pool            = new MockPool(address(dlFactory));
+        dlFactory   = new DebtLockerFactory();
+        globals     = new MockGlobals();
+        poolFactory = new MockPoolFactory(address(globals));
+        pool        = MockPool(poolFactory.createPool(address(this)));
+
         fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
+
+        globals.setPrice(address(collateralAsset), 10 * 10 ** 8);  // 10 USD
+        globals.setPrice(address(fundsAsset),      1  * 10 ** 8);  // 1 USD
     }
 
     function test_claim(uint256 principalRequested_, uint256 endingPrincipal_, uint256 claimableFunds_, uint256 noOfPayments_, uint256 interestRate_) public {
@@ -51,7 +59,7 @@ contract DebtLockerTest is TestUtils {
         loan.putFunds(principalPortion > principalRequested_ ? principalRequested_: principalPortion);
 
         // Create debt Locker 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(loan)));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), address(loan)));
 
         loan.setLender(address(debtLocker));
 
@@ -96,14 +104,55 @@ contract DebtLockerTest is TestUtils {
         // Claim funds
         // Assert losses
 
-        loan = new MockLoan(1_000_000, 10_000, 1_000_000, address(fundsAsset), address(collateralAsset));
+        loan = new MockLoan(1_000_000, 50_000, 1_000_000, address(fundsAsset), address(collateralAsset));
 
         // Mint funds directly to loan, simulating drawdown and payment
-        fundsAsset.mint(address(loan), 10_000);
+        fundsAsset.mint(address(loan), 50_000);
 
-        collateralAsset.mint(address(loan), 200_000);  // Mint collateral into loan
+        // Mint collateral into loan, representing $100k USD at market prices
+        collateralAsset.mint(address(loan), 10_000);  
 
-        debtLocker.triggerDefault();
+        // Create Debt Locker 
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        loan.setLender(address(debtLocker));
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       10_000);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            50_000);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
+
+        pool.triggerDefault(address(debtLocker));
+
+        address liquidator = debtLocker.liquidator();
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          10_000);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      50_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               0);
+
+        MockLiquidationStrategy mockLiquidationStrategy = new MockLiquidationStrategy();
+
+        mockLiquidationStrategy.flashBorrowLiquidation(liquidator, 10_000, address(collateralAsset), address(fundsAsset));
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      50_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               100_000);
+
+        debtLocker.pullFunds(address(fundsAsset), address(debtLocker), 100_000);
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      150_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               0);
+        
     }
     
 }
