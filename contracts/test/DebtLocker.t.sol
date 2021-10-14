@@ -141,18 +141,8 @@ contract DebtLockerTest is TestUtils {
         assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
         assertEq(collateralAsset.balanceOf(liquidator),          0);
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
-        assertEq(fundsAsset.balanceOf(address(debtLocker)),      50_000);
-        assertEq(fundsAsset.balanceOf(liquidator),               100_000);
-
-        debtLocker.pullFunds(address(fundsAsset), address(debtLocker), 100_000);
-
-        assertEq(collateralAsset.balanceOf(address(loan)),       0);
-        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
-        assertEq(collateralAsset.balanceOf(liquidator),          0);
-        assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      150_000);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
-        
     }
     
 }

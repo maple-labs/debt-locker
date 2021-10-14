@@ -5,6 +5,8 @@ interface IERC20Like {
     
     function decimals() external view returns (uint256);
 
+    function balanceOf(address account_) external view returns (uint256);
+
 }
 
 interface IMapleGlobalsLike {

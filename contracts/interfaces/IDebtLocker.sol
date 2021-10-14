@@ -36,6 +36,16 @@ interface IDebtLocker {
     function claim() external returns (uint256[7] memory details_);
 
     /**
+     * @dev Returns the 
+     */
+    function repossessed() external view returns (bool repossessed_);
+
+    /**
+     * @dev Returns the amount of funds recovered from a liquidation.
+     */
+    function amountRecovered() external view returns (uint256 amountRecovered_);
+
+    /**
      * @dev Returns the basis points representation of allowed slippage in a liquidation.
      */
     function allowedSlippage() external view returns (uint256 allowedSlippage_);
@@ -80,14 +90,6 @@ interface IDebtLocker {
      * @param auctioneer_ Address of auctioneer contract.
      */
     function setAuctioneer(address auctioneer_) external;
-
-    /**
-     * @dev Pulls funds from the Liquidator and sends them to a location of the sender's choosing.
-     * @param token_       Address of ERC-20 token contract.
-     * @param destination_ Where funds are to be sent.
-     * @param amount_      Amount of funds to send.
-     */
-    function pullFunds(address token_, address destination_, uint256 amount_) external;
 
     /**
      * @dev Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.

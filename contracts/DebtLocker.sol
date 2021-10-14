@@ -15,13 +15,15 @@ contract DebtLocker is IDebtLocker {
     address public override immutable loan;
     address public override immutable pool;
 
-    uint256 public override allowedSlippage;
-    uint256 public override minRatio;
-    uint256 public override principalRemainingAtLastClaim;
-
     address public override liquidator;
 
+    bool public override repossessed;
 
+    uint256 public override allowedSlippage;
+    uint256 public override amountRecovered;
+    uint256 public override minRatio;
+    uint256 public override principalRemainingAtLastClaim;
+    
     constructor(address loan_, address pool_) {
         factory = msg.sender;
         loan    = loan_;
@@ -35,33 +37,57 @@ contract DebtLocker is IDebtLocker {
     /*******************************/
 
     function claim() external override returns (uint256[7] memory details_) {
-        require(_isPool(msg.sender), "DL:C:NOT_POOL");
+        require(_isPool(msg.sender),   "DL:C:NOT_POOL");
+        require(!_activeLiquidation(), "DL:C:LIQ_NOT_FINISHED");
 
-        // Get loan state variables we need
-        uint256 claimableFunds = IMapleLoanLike(loan).claimableFunds();
-        require(claimableFunds > uint256(0), "DL:C:NOTHING_TO_CLAIM");
+        if (!repossessed) {
+            // Get loan state variables we need
+            uint256 claimableFunds = IMapleLoanLike(loan).claimableFunds();
+            require(claimableFunds > uint256(0), "DL:C:NOTHING_TO_CLAIM");
 
-        uint256 currentPrincipalRemaining = IMapleLoanLike(loan).principal();
+            uint256 currentPrincipalRemaining = IMapleLoanLike(loan).principal();
 
-        // Determine how much of `claimableFunds` is principal
-        uint256 principalPortion = principalRemainingAtLastClaim - currentPrincipalRemaining;
+            // Determine how much of `claimableFunds` is principal
+            uint256 principalPortion = principalRemainingAtLastClaim - currentPrincipalRemaining;
 
-        // Send funds to pool
-        IMapleLoanLike(loan).claimFunds(claimableFunds, pool);
+            // Send funds to pool
+            IMapleLoanLike(loan).claimFunds(claimableFunds, pool);
 
-        // Update state variables
-        principalRemainingAtLastClaim = currentPrincipalRemaining;
+            // Update state variables
+            principalRemainingAtLastClaim = currentPrincipalRemaining;
 
-        // Set return values
-        // Note - All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
-        // return the fees distribution to the pool.
-        details_[0] = claimableFunds;
-        details_[1] = claimableFunds - principalPortion;
-        details_[2] = principalPortion;
+            // Set return values
+            // Note - All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
+            // return the fees distribution to the pool.
+            details_[0] = claimableFunds;
+            details_[1] = claimableFunds - principalPortion;
+            details_[2] = principalPortion;
+        } else {
+            address fundsAsset       = IMapleLoanLike(loan).fundsAsset();
+            uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this));  // Funds recovered from liquidation
+            uint256 principalToCover = principalRemainingAtLastClaim;                    // Principal remaining at time of liquidation
+            
+            // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
+            // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
+            details_[0] = recoveredFunds;
+            details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
+            details_[2] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
+            details_[5] = recoveredFunds;
+            details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
+
+            require(ERC20Helper.transfer(pool, fundsAsset, recoveredFunds), "DL:C:TRANSFER");
+
+            repossessed = false;
+        }
     }
 
     function triggerDefault() external override {
-        require(_isPool(msg.sender), "DL:TD:NOT_PD");
+        require(_isPool(msg.sender), "DL:TD:NOT_POOL");
+
+        repossessed = true;
+
+        // Capture principal before repossess for shortfall calculation
+        principalRemainingAtLastClaim = IMapleLoanLike(loan).principal();
 
         // Repossess collateral and funds from Loan
         ( uint256 collateralAssetAmount, ) = IMapleLoanLike(loan).repossess(address(this), address(this));
@@ -69,10 +95,10 @@ contract DebtLocker is IDebtLocker {
         address collateralAsset = IMapleLoanLike(loan).collateralAsset();
         address fundsAsset      = IMapleLoanLike(loan).fundsAsset();
         
-        if (collateralAsset == fundsAsset) return;
+        if (collateralAsset == fundsAsset || collateralAssetAmount == 0) return;
 
         // Deploy Liquidator contract and transfer collateral
-        liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this)));
+        liquidator = address(new Liquidator(_poolDelegate(), collateralAsset, fundsAsset, address(this), address(this)));
         require(ERC20Helper.transfer(collateralAsset, address(liquidator), collateralAssetAmount), "DL:TD:TRANSFER");
     }
 
@@ -81,11 +107,7 @@ contract DebtLocker is IDebtLocker {
         Liquidator(liquidator).setAuctioneer(auctioneer_);
     }
 
-    // TODO: Discuss pros/cons of calculating balance in function instead of using amount param.
-    function pullFunds(address token_, address destination_, uint256 amount_) external override {
-        require(_isPoolDelegate(msg.sender), "DL:PF:NOT_PD");
-        Liquidator(liquidator).pullFunds(token_, destination_, amount_);
-    }
+    // TODO: Add setters for allowed slippage and minRatio
 
     /**********************/
     /*** View Functions ***/
@@ -129,12 +151,12 @@ contract DebtLocker is IDebtLocker {
     /*** Internal Functions ***/
     /**************************/
 
-    function _globals() internal view returns (address) {
-        return IPoolFactoryLike(IPoolLike(pool).superFactory()).globals();
+    function _activeLiquidation() internal view returns (bool) {
+        return liquidator != address(0) && IERC20Like(IMapleLoanLike(loan).collateralAsset()).balanceOf(liquidator) > 0;
     }
 
-    function _poolDelegate() internal view returns(address) {
-        return IPoolLike(pool).poolDelegate();
+    function _globals() internal view returns (address) {
+        return IPoolFactoryLike(IPoolLike(pool).superFactory()).globals();
     }
 
     function _isPool(address account_) internal view returns (bool) {
@@ -143,6 +165,10 @@ contract DebtLocker is IDebtLocker {
 
     function _isPoolDelegate(address account_) internal view returns (bool) {
         return account_ == _poolDelegate();
+    }
+
+    function _poolDelegate() internal view returns(address) {
+        return IPoolLike(pool).poolDelegate();
     }
 
 }
