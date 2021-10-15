@@ -19,16 +19,11 @@ contract MockLoan {
     address public collateralAsset;
     address public lender;
 
-    constructor(uint256 principalRequested_, uint256 claimableFunds_, uint256 principal_, address fundsAsset_, address collateralAsset_) {
+    constructor(uint256 principalRequested_, address fundsAsset_, address collateralAsset_) {
         principalRequested = principalRequested_;
-        claimableFunds     = claimableFunds_;
-        principal          = principal_;
+        principal          = principalRequested_;
         fundsAsset         = fundsAsset_;
         collateralAsset    = collateralAsset_;
-    }
-
-    function setClaimableFunds(uint256 claimableFunds_) external {
-        claimableFunds = claimableFunds_;
     }
 
     function setLender(address lender_) external {
@@ -51,17 +46,10 @@ contract MockLoan {
         require(ERC20Helper.transfer(fundsAsset,      fundsAssetDestination_,      fundsAssetAmount_),      "MOCK_LOAN:R:FA_TRANSFER");
     }
 
-    function changeParams(uint256 principalRequested_, uint256 claimableFunds_, uint256 principal_, address fundsAsset_, address collateralAsset_, address lender_) external {
-        principalRequested = principalRequested_;
-        claimableFunds     = claimableFunds_;
-        principal          = principal_;
-        fundsAsset         = fundsAsset_;
-        collateralAsset    = collateralAsset_;
-        lender             = lender_;
-    }
-
-    function putFunds(uint256 fundsTo_) external {
-        principal -= fundsTo_;
+    function makePayment(uint256 principal_, uint256 interest_) external {
+        principal      -= principal_;
+        claimableFunds += principal_ + interest_;
+        ERC20Helper.transferFrom(fundsAsset, msg.sender, address(this), principal_ + interest_);
     }
 
 }

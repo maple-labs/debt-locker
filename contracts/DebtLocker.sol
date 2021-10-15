@@ -64,7 +64,7 @@ contract DebtLocker is IDebtLocker {
             details_[2] = principalPortion;
         } else {
             address fundsAsset       = IMapleLoanLike(loan).fundsAsset();
-            uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this));  // Funds recovered from liquidation
+            uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this));  // Funds recovered from liquidation and any unclaimed previous payment amounts 
             uint256 principalToCover = principalRemainingAtLastClaim;                    // Principal remaining at time of liquidation
             
             // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
@@ -84,7 +84,8 @@ contract DebtLocker is IDebtLocker {
     }
 
     function triggerDefault() external override {
-        require(_isPool(msg.sender), "DL:TD:NOT_POOL");
+        require(_isPool(msg.sender),                        "DL:TD:NOT_POOL");
+        require(IMapleLoanLike(loan).claimableFunds() == 0, "DL:TD:NEED_TO_CLAIM");
 
         repossessed = true;
 
