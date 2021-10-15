@@ -75,9 +75,11 @@ contract DebtLocker is IDebtLocker {
             details_[5] = recoveredFunds;
             details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
 
-            require(ERC20Helper.transfer(pool, fundsAsset, recoveredFunds), "DL:C:TRANSFER");
+            require(ERC20Helper.transfer(fundsAsset, pool, recoveredFunds), "DL:C:TRANSFER");
 
             repossessed = false;
+
+            // TODO: Consider loan principal after liquidation, if this is called again after being set to zero it would overflow.
         }
     }
 

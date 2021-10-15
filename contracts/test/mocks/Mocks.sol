@@ -73,9 +73,11 @@ contract MockPoolFactory {
     constructor(address globals_) {
         globals = globals_;
     }
+
     function createPool(address poolDelegate_) external returns (address) {
         return address(new MockPool(poolDelegate_));
     }
+
 }
 
 contract MockPool {
@@ -100,11 +102,10 @@ contract MockPool {
         return IDebtLocker(debtLocker).triggerDefault();
     }
 
-
-
 }
 
 contract MockLiquidationStrategy {
+
     function flashBorrowLiquidation(address lender_, uint256 swapAmount_, address collateralAsset_, address fundsAsset_) external {
         uint256 repaymentAmount = IDebtLocker(lender_).getExpectedAmount(swapAmount_);
 
@@ -120,6 +121,7 @@ contract MockLiquidationStrategy {
         MockERC20(fundsAsset_).mint(address(this), repaymentAmount_);
         MockERC20(collateralAsset_).burn(address(this), swapAmount_);
     }
+
 }
 
 contract MockGlobals {
@@ -133,4 +135,5 @@ contract MockGlobals {
     function setPrice(address asset_, uint256 price_) external {
         assetPrices[asset_] = price_;
     }
+    
 }

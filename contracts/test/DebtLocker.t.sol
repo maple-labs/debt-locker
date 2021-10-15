@@ -96,9 +96,13 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], newClaimableFunds);
         assertEq(details[1], newClaimableFunds - principalPortionLeft);
         assertEq(details[2], principalPortionLeft);
+        assertEq(details[3], 0);
+        assertEq(details[4], 0);
+        assertEq(details[5], 0);
+        assertEq(details[6], 0);
     }
 
-    function test_liquidation() public {
+    function test_liquidation_shortfall() public {
         // Repossess
         // Send funds to liquidator
         // Claim funds
@@ -121,6 +125,7 @@ contract DebtLockerTest is TestUtils {
         assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
         assertEq(fundsAsset.balanceOf(address(loan)),            50_000);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
+        assertTrue(!debtLocker.repossessed());
 
         pool.triggerDefault(address(debtLocker));
 
@@ -132,6 +137,7 @@ contract DebtLockerTest is TestUtils {
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      50_000);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
+        assertTrue(debtLocker.repossessed());
 
         MockLiquidationStrategy mockLiquidationStrategy = new MockLiquidationStrategy();
 
@@ -143,6 +149,150 @@ contract DebtLockerTest is TestUtils {
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      150_000);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
+        assertEq(fundsAsset.balanceOf(address(pool)),            0);
+
+        uint256[7] memory details = pool.claim(address(debtLocker));
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(fundsAsset.balanceOf(address(pool)),       150_000);
+        assertTrue(!debtLocker.repossessed());
+
+        assertEq(details[0], 150_000);
+        assertEq(details[1], 0);
+        assertEq(details[2], 150_000);
+        assertEq(details[3], 0);
+        assertEq(details[4], 0);
+        assertEq(details[5], 150_000);
+        assertEq(details[6], 850_000);
     }
+
+    function test_liquidation_equalToPrincipal() public {
+        // Repossess
+        // Send funds to liquidator
+        // Claim funds
+        // Assert losses
+
+        loan = new MockLoan(1_000_000, 50_000, 1_000_000, address(fundsAsset), address(collateralAsset));
+
+        // Mint funds directly to loan, simulating drawdown and payment
+        fundsAsset.mint(address(loan), 50_000);
+
+        // Mint collateral into loan, representing $950k USD at market prices
+        collateralAsset.mint(address(loan), 95_000);  
+
+        // Create Debt Locker 
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        loan.setLender(address(debtLocker));
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       95_000);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            50_000);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
+        assertTrue(!debtLocker.repossessed());
+
+        pool.triggerDefault(address(debtLocker));
+
+        address liquidator = debtLocker.liquidator();
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          95_000);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      50_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               0);
+        assertTrue(debtLocker.repossessed());
+
+        MockLiquidationStrategy mockLiquidationStrategy = new MockLiquidationStrategy();
+
+        mockLiquidationStrategy.flashBorrowLiquidation(liquidator, 95_000, address(collateralAsset), address(fundsAsset));
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      1_000_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               0);
+        assertEq(fundsAsset.balanceOf(address(pool)),            0);
+
+        uint256[7] memory details = pool.claim(address(debtLocker));
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(fundsAsset.balanceOf(address(pool)),       1_000_000);
+        assertTrue(!debtLocker.repossessed());
+
+        assertEq(details[0], 1_000_000);
+        assertEq(details[1], 0);
+        assertEq(details[2], 1_000_000);
+        assertEq(details[3], 0);
+        assertEq(details[4], 0);
+        assertEq(details[5], 1_000_000);
+        assertEq(details[6], 0);
+    }
+
+    function test_liquidation_greaterThanPrincipal() public {
+        // Repossess
+        // Send funds to liquidator
+        // Claim funds
+        // Assert losses
+
+        loan = new MockLoan(1_000_000, 50_000, 1_000_000, address(fundsAsset), address(collateralAsset));
+
+        // Mint funds directly to loan, simulating drawdown and payment
+        fundsAsset.mint(address(loan), 50_000);
+
+        // Mint collateral into loan, representing $975k USD at market prices
+        collateralAsset.mint(address(loan), 97_500);  
+
+        // Create Debt Locker 
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        loan.setLender(address(debtLocker));
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       97_500);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            50_000);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
+        assertTrue(!debtLocker.repossessed());
+
+        pool.triggerDefault(address(debtLocker));
+
+        address liquidator = debtLocker.liquidator();
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          97_500);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      50_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               0);
+        assertTrue(debtLocker.repossessed());
+
+        MockLiquidationStrategy mockLiquidationStrategy = new MockLiquidationStrategy();
+
+        mockLiquidationStrategy.flashBorrowLiquidation(liquidator, 97_500, address(collateralAsset), address(fundsAsset));
+
+        assertEq(collateralAsset.balanceOf(address(loan)),       0);
+        assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(collateralAsset.balanceOf(liquidator),          0);
+        assertEq(fundsAsset.balanceOf(address(loan)),            0);
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),      1_025_000);
+        assertEq(fundsAsset.balanceOf(liquidator),               0);
+        assertEq(fundsAsset.balanceOf(address(pool)),            0);
+
+        uint256[7] memory details = pool.claim(address(debtLocker));
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)), 0);
+        assertEq(fundsAsset.balanceOf(address(pool)),       1_025_000);
+        assertTrue(!debtLocker.repossessed());
+
+        assertEq(details[0], 1_025_000);
+        assertEq(details[1], 25_000);
+        assertEq(details[2], 1_000_000);
+        assertEq(details[3], 0);
+        assertEq(details[4], 0);
+        assertEq(details[5], 1_025_000);
+        assertEq(details[6], 0);
+    }
+    
     
 }
