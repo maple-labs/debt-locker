@@ -22,7 +22,7 @@ interface IDebtLocker {
     function principalRemainingAtLastClaim() external view returns (uint256 principalRemainingAtLastClaim_);
 
     /**
-        @dev    Claims funds distribution for Loan via LoanFDT.
+        @dev    Claims funds to send to Pool. Handles funds from payments and liquidations.
         @dev    Only the Pool can call this function.
         @return details_
                     [0] => Total Claimed.

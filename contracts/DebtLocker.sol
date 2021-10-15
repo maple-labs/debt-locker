@@ -41,7 +41,7 @@ contract DebtLocker is IDebtLocker {
         require(!_activeLiquidation(), "DL:C:LIQ_NOT_FINISHED");
 
         if (!repossessed) {
-            // Get loan state variables we need
+            // Get loan state variables needed
             uint256 claimableFunds = IMapleLoanLike(loan).claimableFunds();
             require(claimableFunds > uint256(0), "DL:C:NOTHING_TO_CLAIM");
 
