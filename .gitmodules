@@ -10,3 +10,6 @@
 [submodule "modules/contract-test-utils"]
 	path = modules/contract-test-utils
 	url = https://github.com/maple-labs/contract-test-utils.git
+[submodule "modules/liquidations"]
+	path = modules/liquidations
+	url = https://github.com/maple-labs/liquidations

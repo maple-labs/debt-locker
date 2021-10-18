@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
+interface IERC20Like {
+    
+    function decimals() external view returns (uint256);
+
+    function balanceOf(address account_) external view returns (uint256);
+
+}
+
 interface IMapleGlobalsLike {
 
    function defaultUniswapPath(address fromAsset_, address toAsset_) external view returns (address intermediateAsset_);
@@ -10,6 +18,8 @@ interface IMapleGlobalsLike {
    function mapleTreasury() external view returns (address mapleTreasury_);
 
    function treasuryFee() external view returns (uint256 treasuryFee_);
+
+   function getLatestPrice(address asset_) external view returns (uint256 price_);
 
 }
 
@@ -38,7 +48,21 @@ interface IMapleLoanLike {
 
 interface IPoolLike {
 
-    function poolDelegate() external pure returns (address poolDelegate_);
+    function investorFee() external view returns (uint256 investorFee_);
+
+    function mapleTreasury() external view returns (address mapleTreasury_);
+
+    function poolDelegate() external view returns (address poolDelegate_);
+
+    function superFactory() external view returns (address superFactory_);
+
+    function treasuryFee() external view returns (uint256 treasuryFee_);
+    
+}
+
+interface IPoolFactoryLike {
+
+    function globals() external pure returns (address globals_);
 
 }
 
