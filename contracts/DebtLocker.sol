@@ -37,7 +37,6 @@ contract DebtLocker is IDebtLocker {
 
     function claim() external override returns (uint256[7] memory details_) {
         require(msg.sender == pool,      "DL:C:NOT_POOL");
-        require(!_isLiquidationActive(), "DL:C:LIQ_NOT_FINISHED");
 
         return repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
@@ -80,6 +79,8 @@ contract DebtLocker is IDebtLocker {
     }
 
     function _handleClaimOfRepossessed() internal returns (uint256[7] memory details_) {
+        require(!_isLiquidationActive(), "DL:C:LIQ_NOT_FINISHED");
+        
         address fundsAsset       = IMapleLoanLike(loan).fundsAsset();
         uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this));  // Funds recovered from liquidation and any unclaimed previous payment amounts 
         uint256 principalToCover = principalRemainingAtLastClaim;                    // Principal remaining at time of liquidation
