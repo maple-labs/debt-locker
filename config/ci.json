@@ -1,11 +1,17 @@
 {
   "language": "Solidity",
   "sources": {
-    "contracts/DebtLockerFactory.sol": {
-      "urls": ["contracts/DebtLockerFactory.sol"]
+    "contracts/DebtLocker.sol": {
+      "urls": ["contracts/DebtLocker.sol"]
     },
-    "contracts/test/DebtLockerFactory.t.sol": {
-      "urls": ["contracts/test/DebtLockerFactory.t.sol"]
+    "contracts/test/DebtLocker.t.sol": {
+      "urls": ["contracts/test/DebtLocker.t.sol"]
+    },
+    "contracts/DebtLockerInitializer.sol": {
+      "urls": ["contracts/DebtLockerInitializer.sol"]
+    },
+    "contracts/DebtLockerStorage.sol": {
+      "urls": ["contracts/DebtLockerStorage.sol"]
     }
   },
   "settings": {
