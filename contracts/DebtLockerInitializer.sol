@@ -13,14 +13,14 @@ contract DebtLockerInitializer is DebtLockerStorage {
     }
 
     function decodeArguments(bytes calldata encodedArguments_) public pure returns (address loan_, address pool_) {
-        (loan_,pool_) = abi.decode(encodedArguments_, (address, address));
+        ( loan_,pool_ ) = abi.decode(encodedArguments_, (address, address));
     }
 
     fallback() external {
         (address loan_, address pool_) = decodeArguments(msg.data);
 
-        loan    = loan_;
-        pool    = pool_;
+        loan = loan_;
+        pool = pool_;
         
         principalRemainingAtLastClaim = IMapleLoanLike(loan_).principalRequested();
     }
