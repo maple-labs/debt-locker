@@ -10,6 +10,7 @@ import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
 
 import { Governor } from "./accounts/Governor.sol";
+
 import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
 
 contract DebtLockerTest is TestUtils {

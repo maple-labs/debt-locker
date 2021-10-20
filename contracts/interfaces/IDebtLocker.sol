@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
+import { IMapleProxied } from "../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol";
+
 import "./IDebtLockerStorage.sol";
 
-import { IMapleProxied } from "../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
 interface IDebtLocker is IDebtLockerStorage, IMapleProxied {
-
-    // function factory() external view returns (address factory_);
 
     /**
         @dev    Claims funds to send to Pool. Handles funds from payments and liquidations.
