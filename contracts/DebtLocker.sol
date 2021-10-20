@@ -6,7 +6,7 @@ import { Liquidator } from "../modules/liquidations/contracts/Liquidator.sol";
 import { ERC20Helper } from "../modules/erc20-helper/src/ERC20Helper.sol";
 
 import { IMapleProxyFactory } from "../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
-import { Proxied }            from "../modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxied.sol";
+import { MapleProxied }       from "../modules/maple-proxy-factory/contracts/MapleProxied.sol";
 
 import { IDebtLocker } from "./interfaces/IDebtLocker.sol"; 
 
@@ -16,7 +16,7 @@ import { DebtLockerStorage } from "./DebtLockerStorage.sol";
 import { IERC20Like, IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IPoolFactoryLike }  from "./interfaces/Interfaces.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
-contract DebtLocker is IDebtLocker, DebtLockerStorage, Proxied {
+contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
      /********************************/
     /*** Administrative Functions ***/

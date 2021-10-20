@@ -40,8 +40,8 @@ contract DebtLockerTest is TestUtils {
         address implementation = address(new DebtLocker());
         address initializer    = address(new DebtLockerInitializer());
 
-        governor.debtLockerFactory_registerImplementation(address(dlFactory), 1, implementation, initializer);
-        governor.debtLockerFactory_setDefaultVersion(address(dlFactory), 1);
+        governor.mapleProxyFactory_registerImplementation(address(dlFactory), 1, implementation, initializer);
+        governor.mapleProxyFactory_setDefaultVersion(address(dlFactory), 1);
 
         globals.setPrice(address(collateralAsset), 10 * 10 ** 8);  // 10 USD
         globals.setPrice(address(fundsAsset),      1  * 10 ** 8);  // 1 USD
