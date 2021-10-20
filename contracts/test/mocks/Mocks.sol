@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
-import { IERC20 }          from "../../../modules/erc20/src/interfaces/IERC20.sol";
-import { MockERC20 }       from "../../../modules/erc20/src/test/mocks/MockERC20.sol";
-import { ERC20Helper }     from "../../../modules/erc20-helper/src/ERC20Helper.sol";
-import { ILiquidatorLike } from "../../../modules/liquidations/contracts/interfaces/Interfaces.sol";
+import { IERC20 }             from "../../../modules/erc20/src/interfaces/IERC20.sol";
+import { ILiquidatorLike }    from "../../../modules/liquidations/contracts/interfaces/Interfaces.sol";
 import { IMapleProxyFactory } from "../../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
 
-import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
+import { ERC20Helper } from "../../../modules/erc20-helper/src/ERC20Helper.sol";
+import { MockERC20 }   from "../../../modules/erc20/src/test/mocks/MockERC20.sol";
+
+import { IDebtLocker } from "../../interfaces/IDebtLocker.sol";
 
 contract MockLoan {
 
@@ -100,7 +101,7 @@ contract MockLiquidationStrategy {
         ERC20Helper.approve(fundsAsset_, lender_, repaymentAmount);
 
         ILiquidatorLike(lender_).liquidatePortion(
-            swapAmount_, 
+            swapAmount_,
             abi.encodeWithSelector(this.swap.selector, collateralAsset_, fundsAsset_, swapAmount_, repaymentAmount)
         );
     }
@@ -129,5 +130,5 @@ contract MockGlobals {
     function setPrice(address asset_, uint256 price_) external {
         assetPrices[asset_] = price_;
     }
-    
+
 }

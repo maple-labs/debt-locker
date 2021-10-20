@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
-import { TestUtils }   from "../../modules/contract-test-utils/contracts/test.sol";
-import { MockERC20 }   from "../../modules/erc20/src/test/mocks/MockERC20.sol";
+import { MockERC20 } from "../../modules/erc20/src/test/mocks/MockERC20.sol";
+import { TestUtils } from "../../modules/contract-test-utils/contracts/test.sol";
 
 import { MapleProxyFactory } from "../../modules/maple-proxy-factory/contracts/MapleProxyFactory.sol";
 
@@ -15,14 +15,14 @@ import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFacto
 
 contract DebtLockerTest is TestUtils {
 
-    Governor          governor;
-    MockGlobals       globals;
-    MockLoan          loan;
-    MockPool          pool;
-    MockPoolFactory   poolFactory;
-    MapleProxyFactory dlFactory;
-    MockERC20         fundsAsset;
-    MockERC20         collateralAsset;
+    Governor          internal governor;
+    MapleProxyFactory internal dlFactory;
+    MockERC20         internal fundsAsset;
+    MockERC20         internal collateralAsset;
+    MockGlobals       internal globals;
+    MockLoan          internal loan;
+    MockPool          internal pool;
+    MockPoolFactory   internal poolFactory;
 
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
@@ -33,8 +33,8 @@ contract DebtLockerTest is TestUtils {
         dlFactory   = new MapleProxyFactory(address(globals));
         pool        = MockPool(poolFactory.createPool(address(this)));
 
-        fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
+        fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
 
         // Deploying and registering DebtLocker implementation and initializer
         address implementation = address(new DebtLocker());
@@ -74,7 +74,7 @@ contract DebtLockerTest is TestUtils {
         /*************************/
         /*** Make two payments ***/
         /*************************/
-        
+
         // Mock a payment amount with interest and principal
         fundsAsset.mint(address(this),    paymentAmount1_);
         fundsAsset.approve(address(loan), paymentAmount1_);  // Mock payment amount
@@ -89,7 +89,7 @@ contract DebtLockerTest is TestUtils {
 
         uint256 principalPortion2 = paymentAmount2_ - interestAmount;
 
-        loan.makePayment(principalPortion2, interestAmount);        
+        loan.makePayment(principalPortion2, interestAmount);
 
         assertEq(fundsAsset.balanceOf(address(loan)), paymentAmount1_ + paymentAmount2_);
         assertEq(fundsAsset.balanceOf(address(pool)), 0);
@@ -106,8 +106,8 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], paymentAmount1_ + paymentAmount2_);      // Total amount of funds claimed
         assertEq(details[1], interestAmount * 2);                     // Excess funds go towards interest
         assertEq(details[2], principalPortion1 + principalPortion2);  // Principal amount
-        assertEq(details[3], 0);                                      // `feePaid` is always zero since PD estab fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                                      // `excessReturned` is always zero since new loans cannot be overfunded
+        assertEq(details[3], 0);                                      // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+        assertEq(details[4], 0);                                      // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], 0);                                      // Total recovered from liquidation is zero
         assertEq(details[6], 0);                                      // Zero shortfall since no liquidation
 
@@ -131,8 +131,8 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], principalPortion3 + interestAmount);  // Total amount of funds claimed
         assertEq(details[1], interestAmount);                      // Excess funds go towards interest
         assertEq(details[2], principalPortion3);                   // Principal amount
-        assertEq(details[3], 0);                                   // `feePaid` is always zero since PD estab fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be overfunded
+        assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+        assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], 0);                                   // Total recovered from liquidation is zero
         assertEq(details[6], 0);                                   // Zero shortfall since no liquidation
     }
@@ -157,7 +157,7 @@ contract DebtLockerTest is TestUtils {
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
         // Mint collateral into loan, representing 10x value since market value is $10
-        collateralAsset.mint(address(loan), collateralRequired_);  
+        collateralAsset.mint(address(loan), collateralRequired_);
 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
@@ -231,20 +231,20 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], amountRecovered);                     // Total amount of funds claimed
         assertEq(details[1], 0);                                   // Interest is zero since all funds go towards principal in a shortfall
         assertEq(details[2], amountRecovered);                     // All funds are registered as principal in a shortfall
-        assertEq(details[3], 0);                                   // `feePaid` is always zero since PD estab fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be overfunded
+        assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+        assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], amountRecovered);                     // Total recovered from liquidation
         assertEq(details[6], principalToCover - amountRecovered);  // Shortfall to be covered by burning BPTs
     }
 
     function test_liquidation_equalToPrincipal(uint256 principalRequested_) public {
-        
+
         /*************************/
         /*** Set up parameters ***/
         /*************************/
 
         // Round to nearest tenth so no rounding error for collateral
-        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;  
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;
         uint256 collateralRequired = principalRequested_ / 10;  // Amount recovered equal to principal to cover
 
         /**********************************/
@@ -254,7 +254,7 @@ contract DebtLockerTest is TestUtils {
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
         // Mint collateral into loan, representing 10x value since market value is $10
-        collateralAsset.mint(address(loan), collateralRequired);  
+        collateralAsset.mint(address(loan), collateralRequired);
 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
@@ -317,20 +317,20 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], amountRecovered);  // Total amount of funds claimed
         assertEq(details[1], 0);                // Interest is zero since all funds go towards principal
         assertEq(details[2], amountRecovered);  // All funds are registered as principal
-        assertEq(details[3], 0);                // `feePaid` is always zero since PD estab fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                // `excessReturned` is always zero since new loans cannot be overfunded
+        assertEq(details[3], 0);                // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+        assertEq(details[4], 0);                // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], amountRecovered);  // Total recovered from liquidation
         assertEq(details[6], 0);                // Zero shortfall since principalToCover == amountRecovered
     }
 
     function test_liquidation_greaterThanPrincipal(uint256 principalRequested_, uint256 excessRecovered_) public {
-        
+
         /*************************/
         /*** Set up parameters ***/
         /*************************/
 
         // Round to nearest tenth so no rounding error for collateral
-        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;  
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;
         excessRecovered_    = constrictToRange(excessRecovered_,    1,         principalRequested_);  // Amount recovered that is excess
         uint256 collateralRequired = principalRequested_ / 10 + excessRecovered_;                     // Amount recovered greater than principal to cover
 
@@ -341,7 +341,7 @@ contract DebtLockerTest is TestUtils {
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
         // Mint collateral into loan, representing 10x value since market value is $10
-        collateralAsset.mint(address(loan), collateralRequired);  
+        collateralAsset.mint(address(loan), collateralRequired);
 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
@@ -402,10 +402,10 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[0], amountRecovered);                     // Total amount of funds claimed
         assertEq(details[1], amountRecovered - principalToCover);  // Excess funds go towards interest
         assertEq(details[2], principalToCover);                    // Principal is fully covered
-        assertEq(details[3], 0);                                   // `feePaid` is always zero since PD estab fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be overfunded
+        assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+        assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], amountRecovered);                     // Total recovered from liquidation
         assertEq(details[6], 0);                                   // Zero shortfall since principalToCover == amountRecovered
-    }    
-    
+    }
+
 }
