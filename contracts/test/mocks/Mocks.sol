@@ -5,9 +5,9 @@ import { IERC20 }          from "../../../modules/erc20/src/interfaces/IERC20.so
 import { MockERC20 }       from "../../../modules/erc20/src/test/mocks/MockERC20.sol";
 import { ERC20Helper }     from "../../../modules/erc20-helper/src/ERC20Helper.sol";
 import { ILiquidatorLike } from "../../../modules/liquidations/contracts/interfaces/Interfaces.sol";
+import { IMapleProxyFactory } from "../../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
 
 import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
-import { IDebtLockerFactory } from "../../interfaces/IDebtLockerFactory.sol";
 
 contract MockLoan {
 
@@ -78,8 +78,8 @@ contract MockPool {
         superFactory = msg.sender;
     }
 
-    function createDebtLocker(address dlFactory, address loan) external returns (address) {
-        return IDebtLockerFactory(dlFactory).newLocker(loan);
+    function createDebtLocker(address dlFactory, bytes calldata arguments_) external returns (address) {
+        return IMapleProxyFactory(dlFactory).createInstance(arguments_);
     }
 
     function claim(address debtLocker) external returns (uint256[7] memory) {
@@ -114,7 +114,13 @@ contract MockLiquidationStrategy {
 
 contract MockGlobals {
 
+    address public governor;
+
     mapping(address => uint256) assetPrices;
+
+    constructor (address governor_) {
+        governor = governor_;
+    }
 
     function getLatestPrice(address asset_) external view returns (uint256 price_) {
         return assetPrices[asset_];

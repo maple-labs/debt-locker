@@ -4,30 +4,43 @@ pragma solidity ^0.8.7;
 import { TestUtils }   from "../../modules/contract-test-utils/contracts/test.sol";
 import { MockERC20 }   from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 
-import { DebtLockerFactory, DebtLocker, IDebtLockerFactory } from "../DebtLockerFactory.sol";
+import { MapleProxyFactory } from "../../modules/maple-proxy-factory/contracts/MapleProxyFactory.sol";
 
+import { DebtLocker }            from "../DebtLocker.sol";
+import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
+
+import { Governor } from "./accounts/Governor.sol";
 import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
 
 contract DebtLockerTest is TestUtils {
 
+    Governor          governor;
     MockGlobals       globals;
     MockLoan          loan;
     MockPool          pool;
     MockPoolFactory   poolFactory;
-    DebtLockerFactory dlFactory;
+    MapleProxyFactory dlFactory;
     MockERC20         fundsAsset;
     MockERC20         collateralAsset;
 
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
     function setUp() public {
-        dlFactory   = new DebtLockerFactory();
-        globals     = new MockGlobals();
+        governor    = new Governor();
+        globals     = new MockGlobals(address(governor));
         poolFactory = new MockPoolFactory(address(globals));
+        dlFactory   = new MapleProxyFactory(address(globals));
         pool        = MockPool(poolFactory.createPool(address(this)));
 
         fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
+
+        // Deploying and registering DebtLocker implementation and initializer
+        address implementation = address(new DebtLocker());
+        address initializer    = address(new DebtLockerInitializer());
+
+        governor.debtLockerFactory_registerImplementation(address(dlFactory), 1, implementation, initializer);
+        governor.debtLockerFactory_setDefaultVersion(address(dlFactory), 1);
 
         globals.setPrice(address(collateralAsset), 10 * 10 ** 8);  // 10 USD
         globals.setPrice(address(fundsAsset),      1  * 10 ** 8);  // 1 USD
@@ -53,7 +66,7 @@ contract DebtLockerTest is TestUtils {
 
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), address(loan)));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
         loan.setLender(address(debtLocker));
 
@@ -145,7 +158,7 @@ contract DebtLockerTest is TestUtils {
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired_);  
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), address(loan)));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
         loan.setLender(address(debtLocker));
 
@@ -242,7 +255,7 @@ contract DebtLockerTest is TestUtils {
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired);  
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), address(loan)));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
         loan.setLender(address(debtLocker));
 
@@ -329,7 +342,7 @@ contract DebtLockerTest is TestUtils {
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired);  
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), address(loan)));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
 
         loan.setLender(address(debtLocker));
 

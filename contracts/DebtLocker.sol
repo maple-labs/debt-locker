@@ -3,33 +3,39 @@ pragma solidity ^0.8.7;
 
 import { Liquidator }  from "../modules/liquidations/contracts/Liquidator.sol";
 import { ERC20Helper } from "../modules/erc20-helper/src/ERC20Helper.sol";
+import { IMapleProxyFactory } from "../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
+import { Proxied }    from "../modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxied.sol";
 
-import { IDebtLocker } from "./interfaces/IDebtLocker.sol";
+import { IDebtLocker } from "./interfaces/IDebtLocker.sol"; 
+
+import { DebtLockerStorage } from "./DebtLockerStorage.sol";
+
 
 import { IERC20Like, IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IPoolFactoryLike }  from "./interfaces/Interfaces.sol";
 
 /// @title DebtLocker holds custody of LoanFDT tokens.
-contract DebtLocker is IDebtLocker {
+contract DebtLocker is IDebtLocker, DebtLockerStorage, Proxied {
 
-    address public override factory;
-    address public override liquidator;
-    address public override loan;
-    address public override pool;
+     /********************************/
+    /*** Administrative Functions ***/
+    /********************************/
 
-    bool public override repossessed;
-
-    uint256 public override allowedSlippage;
-    uint256 public override amountRecovered;
-    uint256 public override minRatio;
-    uint256 public override principalRemainingAtLastClaim;
-    
-    constructor(address loan_, address pool_) {
-        factory = msg.sender;
-        loan    = loan_;
-        pool    = pool_;
-        
-        principalRemainingAtLastClaim = IMapleLoanLike(loan_).principalRequested();
+    function migrate(address migrator_, bytes calldata arguments_) external override {
+        require(msg.sender == _factory(),        "DL:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "DL:M:FAILED");
     }
+
+    function setImplementation(address newImplementation_) external override {
+        require(msg.sender == _factory(),               "DL:SI:NOT_FACTORY");
+        require(_setImplementation(newImplementation_), "DL:SI:FAILED");
+    }
+
+    function upgrade(uint256 toVersion_, bytes calldata arguments_) external override {
+        require(msg.sender == IPoolLike(pool).poolDelegate(), "DL:U:NOT_POOL_DELEGATE");
+
+        IMapleProxyFactory(_factory()).upgradeInstance(toVersion_, arguments_);
+    }
+
 
     /*******************************/
     /*** Pool Delegate Functions ***/
@@ -130,6 +136,10 @@ contract DebtLocker is IDebtLocker {
     /*** View Functions ***/
     /**********************/
 
+    function factory() external view override returns (address) {
+        return _factory();
+    }
+
     function getExpectedAmount(uint256 swapAmount_) external view override returns (uint256 returnAmount_) {
         address collateralAsset = IMapleLoanLike(loan).collateralAsset();
         address fundsAsset      = IMapleLoanLike(loan).fundsAsset();
@@ -146,6 +156,10 @@ contract DebtLocker is IDebtLocker {
         uint256 minRatioAmount = swapAmount_ * minRatio / 10 ** IERC20Like(collateralAsset).decimals();
 
         return oracleAmount > minRatioAmount ? oracleAmount : minRatioAmount;
+    }
+
+    function implementation() external view override returns (address) {
+        return _implementation();
     }
 
     function investorFee() external view override returns (uint256 investorFee_) {

@@ -1,25 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
+import "./IDebtLockerStorage.sol";
+
+import { IMapleProxied } from "../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol";
+
 /// @title DebtLocker holds custody of LoanFDT tokens.
-interface IDebtLocker {
+interface IDebtLocker is IDebtLockerStorage, IMapleProxied {
 
-    function factory() external view returns (address factory_);
-
-    /**
-     * @dev The Loan contract this locker is holding tokens for.
-     */
-    function loan() external view returns (address loan_);
-
-    /**
-     * @dev The owner of this Locker (the Pool).
-     */
-    function pool() external view returns (address pool_);
-
-    /**
-     * @dev Returns the principal that was present at the time of last claim.
-     */
-    function principalRemainingAtLastClaim() external view returns (uint256 principalRemainingAtLastClaim_);
+    // function factory() external view returns (address factory_);
 
     /**
         @dev    Claims funds to send to Pool. Handles funds from payments and liquidations.
@@ -34,31 +23,6 @@ interface IDebtLocker {
                     [6] => Default Suffered.
      */
     function claim() external returns (uint256[7] memory details_);
-
-    /**
-     * @dev Returns the 
-     */
-    function repossessed() external view returns (bool repossessed_);
-
-    /**
-     * @dev Returns the amount of funds recovered from a liquidation.
-     */
-    function amountRecovered() external view returns (uint256 amountRecovered_);
-
-    /**
-     * @dev Returns the basis points representation of allowed slippage in a liquidation.
-     */
-    function allowedSlippage() external view returns (uint256 allowedSlippage_);
-
-    /**
-     * @dev Returns the basis points representation of minimum ratio of fundsAsset that must be returned per collateralAsset unit.
-     */
-    function minRatio() external view returns (uint256 allowedSlippage_);
-
-    /**
-     * @dev Returns the address of the liquidator contract.
-     */
-    function liquidator() external view returns (address liquidator_);
 
     /**
      * @dev Returns the annualized establishment fee that will go to the PoolDelegate.
