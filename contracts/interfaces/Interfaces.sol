@@ -2,10 +2,10 @@
 pragma solidity ^0.8.7;
 
 interface IERC20Like {
-    
-    function decimals() external view returns (uint256);
 
-    function balanceOf(address account_) external view returns (uint256);
+    function decimals() external view returns (uint256 decimals_);
+
+    function balanceOf(address account_) external view returns (uint256 balanceOf_);
 
 }
 
@@ -57,7 +57,7 @@ interface IPoolLike {
     function superFactory() external view returns (address superFactory_);
 
     function treasuryFee() external view returns (uint256 treasuryFee_);
-    
+
 }
 
 interface IPoolFactoryLike {
