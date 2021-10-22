@@ -479,4 +479,58 @@ contract DebtLockerTest is TestUtils {
         assertEq(debtLocker.minRatio(), 100 * 10 ** 6);
     }
 
+    function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 principalIncrease_) external {
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;
+        principalIncrease_  = constrictToRange(principalIncrease_, 1, 1e12);
+        
+        /**********************************/
+        /*** Create Loan and DebtLocker ***/
+        /**********************************/
+
+
+        loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
+
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
+
+        loan.setLender(address(debtLocker));
+
+        /**********************/
+        /*** Make a payment ***/
+        /**********************/
+
+        uint256 paymentAmount     = principalRequested_ / 10;
+        uint256 interestAmount    = principalRequested_ / 20;
+        uint256 principalPortion_ = paymentAmount - interestAmount;
+
+        fundsAsset.mint(address(this),    paymentAmount);
+        fundsAsset.approve(address(loan), paymentAmount);
+
+        loan.makePayment(principalPortion_, interestAmount);
+
+        /******************/
+        /*** Refinance ***/
+        /****************/
+
+        address refinancer  = address(2);
+        bytes[] memory data = new bytes[](1);
+        data[0] = abi.encodeWithSignature("increasePrincipal(uint256)", principalIncrease_);
+
+        loan.setProposedNewTermsHash(keccak256(abi.encode(refinancer, data)));
+
+        fundsAsset.mint(address(debtLocker), principalIncrease_);
+
+        // should fail due to pending claim
+        try debtLocker.acceptNewTerms(refinancer, data, true) { fail(); } catch { }
+
+        pool.claim(address(debtLocker));
+
+        uint256 principalBefore = loan.principal();
+
+        debtLocker.acceptNewTerms(refinancer, data, true);
+
+        uint256 principalAfter = loan.principal();
+
+        assertEq(principalBefore + principalIncrease_, principalAfter);
+    }
+
 }

@@ -39,6 +39,21 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Pool Delegate Functions ***/
     /*******************************/
 
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, bool sendFunds) external {
+        require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
+        require(
+            IMapleLoanLike(_loan).claimableFunds() == 0 &&
+            IMapleLoanLike(_loan).principal() == _principalRemainingAtLastClaim,
+            "DL:TD:NEED_TO_CLAIM"
+        );
+
+        address fundsAsset = IMapleLoanLike(_loan).fundsAsset();
+
+        if (sendFunds) ERC20Helper.transfer(fundsAsset, address(_loan), IERC20Like(fundsAsset).balanceOf(address(this)));
+
+        IMapleLoanLike(_loan).acceptNewTerms(refinancer_, calls_);
+    }
+
     function claim() external override returns (uint256[7] memory details_) {
         require(msg.sender == _pool, "DL:C:NOT_POOL");
 
