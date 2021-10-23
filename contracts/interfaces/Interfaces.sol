@@ -48,15 +48,9 @@ interface IMapleLoanLike {
 
 interface IPoolLike {
 
-    function investorFee() external view returns (uint256 investorFee_);
-
-    function mapleTreasury() external view returns (address mapleTreasury_);
-
     function poolDelegate() external view returns (address poolDelegate_);
 
     function superFactory() external view returns (address superFactory_);
-
-    function treasuryFee() external view returns (uint256 treasuryFee_);
 
 }
 
