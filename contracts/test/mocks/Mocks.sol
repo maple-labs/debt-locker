@@ -10,7 +10,6 @@ import { MockERC20 }   from "../../../modules/erc20/src/test/mocks/MockERC20.sol
 import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
 import { IDebtLockerFactory } from "../../interfaces/IDebtLockerFactory.sol";
 
-
 contract MockPoolFactory {
 
     address public globals;
