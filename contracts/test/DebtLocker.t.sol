@@ -4,9 +4,8 @@ pragma solidity ^0.8.7;
 import { MockERC20 } from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 import { TestUtils } from "../../modules/contract-test-utils/contracts/test.sol";
 
-import { MapleProxyFactory } from "../../modules/maple-proxy-factory/contracts/MapleProxyFactory.sol";
-
 import { DebtLocker }            from "../DebtLocker.sol";
+import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
 import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
 
 import { Governor } from "./accounts/Governor.sol";
@@ -16,7 +15,7 @@ import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFacto
 contract DebtLockerTest is TestUtils {
 
     Governor          internal governor;
-    MapleProxyFactory internal dlFactory;
+    DebtLockerFactory internal dlFactory;
     MockERC20         internal fundsAsset;
     MockERC20         internal collateralAsset;
     MockGlobals       internal globals;
@@ -30,7 +29,7 @@ contract DebtLockerTest is TestUtils {
         governor    = new Governor();
         globals     = new MockGlobals(address(governor));
         poolFactory = new MockPoolFactory(address(globals));
-        dlFactory   = new MapleProxyFactory(address(globals));
+        dlFactory   = new DebtLockerFactory(address(globals));
         pool        = MockPool(poolFactory.createPool(address(this)));
 
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
@@ -67,7 +66,7 @@ contract DebtLockerTest is TestUtils {
 
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         loan.setLender(address(debtLocker));
 
@@ -159,7 +158,7 @@ contract DebtLockerTest is TestUtils {
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired_);
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         loan.setLender(address(debtLocker));
 
@@ -256,7 +255,7 @@ contract DebtLockerTest is TestUtils {
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired);
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         loan.setLender(address(debtLocker));
 
@@ -343,7 +342,7 @@ contract DebtLockerTest is TestUtils {
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired);
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         loan.setLender(address(debtLocker));
 
