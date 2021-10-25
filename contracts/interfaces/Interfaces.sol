@@ -9,6 +9,11 @@ interface IERC20Like {
 
 }
 
+interface ILiquidatorLike {
+
+    function auctioneer() external view returns (address auctioneer_);
+}
+
 interface IMapleGlobalsLike {
 
    function defaultUniswapPath(address fromAsset_, address toAsset_) external view returns (address intermediateAsset_);
