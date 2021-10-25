@@ -124,7 +124,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function investorFee() external view override returns (uint256 investorFee_) {
-        return IPoolLike(_pool).investorFee();
+        return IMapleGlobalsLike(_getGlobals()).investorFee();
     }
 
     function liquidator() external view override returns (address liquidator_) {
@@ -136,7 +136,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function mapleTreasury() external view override returns (address mapleTreasury_) {
-        return IPoolLike(_pool).mapleTreasury();
+        return IMapleGlobalsLike(_getGlobals()).mapleTreasury();
     }
 
     function minRatio() external view override returns (uint256 minRatio_) {
@@ -160,7 +160,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function treasuryFee() external view override returns (uint256 treasuryFee_) {
-        return IPoolLike(_pool).treasuryFee();
+        return IMapleGlobalsLike(_getGlobals()).treasuryFee();
     }
 
     /**************************/

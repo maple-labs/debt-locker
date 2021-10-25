@@ -3,12 +3,12 @@ pragma solidity ^0.8.7;
 
 import { IERC20 }             from "../../../modules/erc20/src/interfaces/IERC20.sol";
 import { ILiquidatorLike }    from "../../../modules/liquidations/contracts/interfaces/Interfaces.sol";
-import { IMapleProxyFactory } from "../../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
 
 import { ERC20Helper } from "../../../modules/erc20-helper/src/ERC20Helper.sol";
 import { MockERC20 }   from "../../../modules/erc20/src/test/mocks/MockERC20.sol";
 
-import { IDebtLocker } from "../../interfaces/IDebtLocker.sol";
+import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
+import { IDebtLockerFactory } from "../../interfaces/IDebtLockerFactory.sol";
 
 contract MockLoan {
 
@@ -79,8 +79,8 @@ contract MockPool {
         superFactory = msg.sender;
     }
 
-    function createDebtLocker(address dlFactory, bytes calldata arguments_) external returns (address) {
-        return IMapleProxyFactory(dlFactory).createInstance(arguments_);
+    function createDebtLocker(address dlFactory, address loan) external returns (address) {
+        return IDebtLockerFactory(dlFactory).newLocker(loan);
     }
 
     function claim(address debtLocker) external returns (uint256[7] memory) {
