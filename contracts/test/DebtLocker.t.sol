@@ -481,12 +481,11 @@ contract DebtLockerTest is TestUtils {
 
     function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 principalIncrease_) external {
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;
-        principalIncrease_  = constrictToRange(principalIncrease_, 1, 1e12);
+        principalIncrease_  = constrictToRange(principalIncrease_,  1,         1e12);
         
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
-
 
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
@@ -520,13 +519,13 @@ contract DebtLockerTest is TestUtils {
         fundsAsset.mint(address(debtLocker), principalIncrease_);
 
         // should fail due to pending claim
-        try debtLocker.acceptNewTerms(refinancer, data, true) { fail(); } catch { }
+        try debtLocker.acceptNewTerms(refinancer, data, principalIncrease_) { fail(); } catch { }
 
         pool.claim(address(debtLocker));
 
         uint256 principalBefore = loan.principal();
 
-        debtLocker.acceptNewTerms(refinancer, data, true);
+        debtLocker.acceptNewTerms(refinancer, data, principalIncrease_);
 
         uint256 principalAfter = loan.principal();
 
