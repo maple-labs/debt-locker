@@ -66,13 +66,17 @@ contract DebtLockerTest is TestUtils {
         globals.setPrice(address(fundsAsset),      1  * 10 ** 8);  // 1 USD
     }
 
-    function createFundAndDrawdownLoan(uint256 principalRequested_) internal returns (ConstructableMapleLoan loan_, DebtLocker debtLocker_) {
+    function _createLoan(uint256 principalRequested_) internal returns (ConstructableMapleLoan loan_) {
         address[2] memory assets     = [address(collateralAsset), address(fundsAsset)];
         uint256[6] memory parameters = [uint256(10 days), uint256(30 days), 6, 0.10e18, 0, 0];
         uint256[4] memory fees       = [uint256(0), uint256(0), uint256(0), uint256(0)];
         uint256[3] memory requests   = [0, principalRequested_, 0];
 
         loan_ = new ConstructableMapleLoan(address(this), assets, parameters, requests, fees);
+    }
+
+    function _createFundAndDrawdownLoan(uint256 principalRequested_) internal returns (ConstructableMapleLoan loan_, DebtLocker debtLocker_) {
+        loan_ = _createLoan(principalRequested_);
 
         debtLocker_ = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan_)));
 
@@ -91,7 +95,7 @@ contract DebtLockerTest is TestUtils {
 
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
 
-        ( loan, debtLocker ) = createFundAndDrawdownLoan(principalRequested_);
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
         fundsAsset.mint(address(this),    principalRequested_);
         fundsAsset.approve(address(loan), principalRequested_);
@@ -180,7 +184,7 @@ contract DebtLockerTest is TestUtils {
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
         collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 10);    
         
-        ( loan, debtLocker ) = createFundAndDrawdownLoan(principalRequested_);
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired_);
@@ -279,7 +283,7 @@ contract DebtLockerTest is TestUtils {
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
-        ( loan, debtLocker ) = createFundAndDrawdownLoan(principalRequested_);
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired);
@@ -363,7 +367,7 @@ contract DebtLockerTest is TestUtils {
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
-        ( loan, debtLocker ) = createFundAndDrawdownLoan(principalRequested_);
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
         // Mint collateral into loan, representing 10x value since market value is $10
         collateralAsset.mint(address(loan), collateralRequired);
@@ -432,9 +436,9 @@ contract DebtLockerTest is TestUtils {
     }
 
     function test_setAllowedSlippage() external {
-        loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
+        loan = _createLoan(1_000_000);
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+        debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         assertEq(debtLocker.allowedSlippage(), 0);
 
@@ -445,12 +449,12 @@ contract DebtLockerTest is TestUtils {
     }
 
     function test_setAuctioneer() external {
-        loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
-
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
 
         // Mint collateral into loan so that liquidator gets deployed
         collateralAsset.mint(address(loan), 1000);
+
+        hevm.warp(loan.nextPaymentDueDate() + loan.gracePeriod() + 1);
 
         pool.triggerDefault(address(debtLocker));
 
@@ -463,9 +467,9 @@ contract DebtLockerTest is TestUtils {
     }
 
     function test_setMinRatio() external {
-        loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
+        loan = _createLoan(1_000_000);
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+        debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         assertEq(debtLocker.minRatio(), 0);
 
