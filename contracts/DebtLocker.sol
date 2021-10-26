@@ -39,7 +39,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Pool Delegate Functions ***/
     /*******************************/
 
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) override external {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         IMapleLoanLike loan_ = IMapleLoanLike(_loan);

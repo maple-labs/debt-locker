@@ -21,6 +21,10 @@ contract PoolDelegate {
         IDebtLocker(debtLocker_).setMinRatio(minRatio_);
     }
 
+    function debtLocker_acceptNewTerms(address debtLocker_, address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
+        IDebtLocker(debtLocker_).acceptNewTerms(refinancer_, calls_, amount_);
+    }
+
     /*********************/
     /*** Try Functions ***/
     /*********************/

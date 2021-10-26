@@ -33,6 +33,11 @@ interface IDebtLocker is IMapleProxied {
     /*****************/
 
     /**
+     * @dev Accept the new loan terms and trigger a refinance.
+     */
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external;
+
+    /**
      *  @dev    Claims funds to send to Pool. Handles funds from payments and liquidations.
      *  @dev    Only the Pool can call this function.
      *  @return details_

@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 import { TestUtils }              from "../../modules/contract-test-utils/contracts/test.sol";
 import { MockERC20 }              from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 import { ConstructableMapleLoan } from "../../modules/loan/contracts/test/mocks/Mocks.sol";
+import { Refinancer }             from "../../modules/loan/contracts/Refinancer.sol";     
 
 import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
@@ -487,34 +488,38 @@ contract DebtLockerTest is TestUtils {
         /*** Create Loan and DebtLocker ***/
         /**********************************/
 
-        loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+        fundsAsset.mint(address(this),    principalRequested_);
+        fundsAsset.approve(address(loan), principalRequested_);
 
-        loan.setLender(address(debtLocker));
+        loan.fundLoan(address(debtLocker), principalRequested_);
+        loan.drawdownFunds(loan.drawableFunds(), address(1));  // Drawdown to empty funds from loan (account for estab fees)
+
 
         /**********************/
         /*** Make a payment ***/
         /**********************/
 
-        uint256 paymentAmount     = principalRequested_ / 10;
-        uint256 interestAmount    = principalRequested_ / 20;
-        uint256 principalPortion_ = paymentAmount - interestAmount;
+        ( uint256 principal1, uint256 interest1, uint256 fees1 ) = loan.getNextPaymentsBreakDown(1);
 
-        fundsAsset.mint(address(this),    paymentAmount);
-        fundsAsset.approve(address(loan), paymentAmount);
+        uint256 total1 = principal1 + interest1 + fees1;
 
-        loan.makePayment(principalPortion_, interestAmount);
+        // Mock a payment amount with interest and principal
+        fundsAsset.mint(address(this),    total1);
+        fundsAsset.approve(address(loan), total1);  // Mock payment amount
+
+        loan.makePayments(1, total1);
 
         /******************/
         /*** Refinance ***/
         /****************/
 
-        address refinancer  = address(2);
+        address refinancer  = address(new Refinancer());
         bytes[] memory data = new bytes[](1);
         data[0] = abi.encodeWithSignature("increasePrincipal(uint256)", principalIncrease_);
 
-        loan.setProposedNewTermsHash(keccak256(abi.encode(refinancer, data)));
+        loan.proposeNewTerms(refinancer, data);
 
         fundsAsset.mint(address(debtLocker), principalIncrease_);
 
@@ -523,10 +528,13 @@ contract DebtLockerTest is TestUtils {
 
         pool.claim(address(debtLocker));
 
+        // should fail for not pool delegate
+        try notPoolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_) { fail(); } catch { }
+
         // Note: More state changes in real loan that are asserted in integration tests
         uint256 principalBefore = loan.principal();
 
-        debtLocker.acceptNewTerms(refinancer, data, principalIncrease_);
+        poolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_);
 
         uint256 principalAfter = loan.principal();
 
