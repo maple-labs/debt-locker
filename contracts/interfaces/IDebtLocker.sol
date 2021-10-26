@@ -20,7 +20,7 @@ interface IDebtLocker is IMapleProxied {
      * @dev   Emitted when `setAuctioneer` is called.
      * @param newAuctioneer_ New value for `auctioneer` in Liquidator.
      */
-    event AuctioneerSet(uint256 newAuctioneer_);
+    event AuctioneerSet(address newAuctioneer_);
 
     /**
      * @dev   Emitted when `setMinRatio` is called.
