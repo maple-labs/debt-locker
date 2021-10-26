@@ -131,4 +131,16 @@ contract MockGlobals {
         assetPrices[asset_] = price_;
     }
 
+    function investorFee() external pure returns (uint256 investorFee_) {
+        return 50;
+    }
+
+    function treasuryFee() external pure returns (uint256 treasuryFee_) {
+        return 50;
+    }
+
+    function mapleTreasury() external pure returns (address mapleTreasury_) {
+        return address(1);
+    }
+
 }

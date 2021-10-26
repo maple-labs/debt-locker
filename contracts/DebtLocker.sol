@@ -199,8 +199,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds), "DL:C:TRANSFER");
 
         _repossessed = false;
-
-        // TODO: Consider loan principal after liquidation, if this is called again after being set to zero it would overflow.
     }
 
     function _handleClaim() internal returns (uint256[7] memory details_) {
