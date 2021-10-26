@@ -17,20 +17,16 @@ import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFacto
 
 contract DebtLockerTest is TestUtils {
 
-    Governor          internal governor;
-<<<<<<< HEAD
     DebtLockerFactory internal dlFactory;
-=======
-    PoolDelegate      internal notPoolDelegate;
-    PoolDelegate      internal poolDelegate;
-    MapleProxyFactory internal dlFactory;
->>>>>>> f5eb278... feat: add setters for minRatio and allowedSlippage
+    Governor          internal governor;
     MockERC20         internal fundsAsset;
     MockERC20         internal collateralAsset;
     MockGlobals       internal globals;
     MockLoan          internal loan;
     MockPool          internal pool;
     MockPoolFactory   internal poolFactory;
+    PoolDelegate      internal notPoolDelegate;
+    PoolDelegate      internal poolDelegate;
 
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
@@ -41,14 +37,9 @@ contract DebtLockerTest is TestUtils {
 
         globals     = new MockGlobals(address(governor));
         poolFactory = new MockPoolFactory(address(globals));
-<<<<<<< HEAD
         dlFactory   = new DebtLockerFactory(address(globals));
-        pool        = MockPool(poolFactory.createPool(address(this)));
-=======
-        dlFactory   = new MapleProxyFactory(address(globals));
 
         pool = MockPool(poolFactory.createPool(address(poolDelegate)));
->>>>>>> f5eb278... feat: add setters for minRatio and allowedSlippage
 
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
         fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
@@ -428,7 +419,7 @@ contract DebtLockerTest is TestUtils {
     function test_setAllowedSlippage() external {
         loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         assertEq(debtLocker.allowedSlippage(), 0);
 
@@ -441,7 +432,7 @@ contract DebtLockerTest is TestUtils {
     function test_setAuctioneer() external {
         loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         // Mint collateral into loan so that liquidator gets deployed
         collateralAsset.mint(address(loan), 1000);
@@ -459,7 +450,7 @@ contract DebtLockerTest is TestUtils {
     function test_setMinRatio() external {
         loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         assertEq(debtLocker.minRatio(), 0);
 
