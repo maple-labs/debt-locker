@@ -480,8 +480,8 @@ contract DebtLockerTest is TestUtils {
     }
 
     function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 principalIncrease_) external {
-        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT) / 10 * 10;
-        principalIncrease_  = constrictToRange(principalIncrease_,  1,         1e12);
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
+        principalIncrease_  = constrictToRange(principalIncrease_,  1,         MAX_TOKEN_AMOUNT);
         
         /**********************************/
         /*** Create Loan and DebtLocker ***/
@@ -523,6 +523,7 @@ contract DebtLockerTest is TestUtils {
 
         pool.claim(address(debtLocker));
 
+        // Note: More state changes in real loan that are asserted in integration tests
         uint256 principalBefore = loan.principal();
 
         debtLocker.acceptNewTerms(refinancer, data, principalIncrease_);
