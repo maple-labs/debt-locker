@@ -489,7 +489,7 @@ contract DebtLockerTest is TestUtils {
 
         loan = new MockLoan(principalRequested_, address(fundsAsset), address(collateralAsset));
 
-        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address (dlFactory), abi.encode(address(loan), address(pool))));
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
         loan.setLender(address(debtLocker));
 
