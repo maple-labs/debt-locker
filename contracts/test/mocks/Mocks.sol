@@ -36,15 +36,15 @@ contract MockLoan {
         return ERC20Helper.transfer(fundsAsset, destination_, amount_);
     }
 
-    function repossess(address collateralAssetDestination_, address fundsAssetDestination_) external returns (uint256 collateralAssetAmount_, uint256 fundsAssetAmount_) {
+    function repossess(address destination_) external returns (uint256 collateralAssetAmount_, uint256 fundsAssetAmount_) {
         claimableFunds = uint256(0);
         principal      = uint256(0);
 
         collateralAssetAmount_ = IERC20(collateralAsset).balanceOf(address(this));
         fundsAssetAmount_      = IERC20(fundsAsset).balanceOf(address(this));
 
-        require(ERC20Helper.transfer(collateralAsset, collateralAssetDestination_, collateralAssetAmount_), "MOCK_LOAN:R:CA_TRANSFER");
-        require(ERC20Helper.transfer(fundsAsset,      fundsAssetDestination_,      fundsAssetAmount_),      "MOCK_LOAN:R:FA_TRANSFER");
+        require(ERC20Helper.transfer(collateralAsset, destination_, collateralAssetAmount_), "MOCK_LOAN:R:CA_TRANSFER");
+        require(ERC20Helper.transfer(fundsAsset,      destination_, fundsAssetAmount_),      "MOCK_LOAN:R:FA_TRANSFER");
     }
 
     function makePayment(uint256 principal_, uint256 interest_) external {

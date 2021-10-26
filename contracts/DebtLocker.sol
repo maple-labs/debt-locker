@@ -79,7 +79,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         // accounting is updated properly when principal is updated and there are no claimable funds.
 
         // Repossess collateral and funds from Loan.
-        ( uint256 collateralAssetAmount, ) = IMapleLoanLike(_loan).repossess(address(this), address(this));
+        ( uint256 collateralAssetAmount, ) = IMapleLoanLike(_loan).repossess(address(this));
 
         address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
         address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
