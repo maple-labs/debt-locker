@@ -10,51 +10,6 @@ import { MockERC20 }   from "../../../modules/erc20/src/test/mocks/MockERC20.sol
 import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
 import { IDebtLockerFactory } from "../../interfaces/IDebtLockerFactory.sol";
 
-contract MockLoan {
-
-    uint256 public principalRequested;
-    uint256 public claimableFunds;
-    uint256 public principal;
-
-    address public fundsAsset;
-    address public collateralAsset;
-    address public lender;
-
-    constructor(uint256 principalRequested_, address fundsAsset_, address collateralAsset_) {
-        principalRequested = principalRequested_;
-        principal          = principalRequested_;
-        fundsAsset         = fundsAsset_;
-        collateralAsset    = collateralAsset_;
-    }
-
-    function setLender(address lender_) external {
-        lender = lender_;
-    }
-
-    function claimFunds(uint256 amount_, address destination_) public returns (bool success_) {
-        claimableFunds -= amount_;
-        return ERC20Helper.transfer(fundsAsset, destination_, amount_);
-    }
-
-    function repossess(address destination_) external returns (uint256 collateralAssetAmount_, uint256 fundsAssetAmount_) {
-        claimableFunds = uint256(0);
-        principal      = uint256(0);
-
-        collateralAssetAmount_ = IERC20(collateralAsset).balanceOf(address(this));
-        fundsAssetAmount_      = IERC20(fundsAsset).balanceOf(address(this));
-
-        require(ERC20Helper.transfer(collateralAsset, destination_, collateralAssetAmount_), "MOCK_LOAN:R:CA_TRANSFER");
-        require(ERC20Helper.transfer(fundsAsset,      destination_, fundsAssetAmount_),      "MOCK_LOAN:R:FA_TRANSFER");
-    }
-
-    function makePayment(uint256 principal_, uint256 interest_) external {
-        principal      -= principal_;
-        claimableFunds += principal_ + interest_;
-        ERC20Helper.transferFrom(fundsAsset, msg.sender, address(this), principal_ + interest_);
-    }
-
-}
-
 contract MockPoolFactory {
 
     address public globals;

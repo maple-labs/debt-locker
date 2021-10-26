@@ -14,7 +14,7 @@ import { PoolDelegate } from "./accounts/PoolDelegate.sol";
 
 import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
 
-import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
+import { MockGlobals, MockLiquidationStrategy, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
 
 interface Hevm {
 
