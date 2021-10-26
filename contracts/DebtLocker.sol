@@ -45,10 +45,24 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
+    function setAllowedSlippage(uint256 allowedSlippage_) external override {
+        require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
+
+        emit AllowedSlippageSet(_allowedSlippage = allowedSlippage_);
+    }
+
     function setAuctioneer(address auctioneer_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         Liquidator(_liquidator).setAuctioneer(auctioneer_);
+
+        emit AuctioneerSet(auctioneer_);
+    }
+
+    function setMinRatio(uint256 minRatio_) external override {
+        require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
+
+        emit MinRatioSet(_minRatio = minRatio_);
     }
 
     function triggerDefault() external override {

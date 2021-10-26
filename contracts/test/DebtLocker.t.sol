@@ -8,29 +8,38 @@ import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
 import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
 
-import { Governor } from "./accounts/Governor.sol";
+import { Governor }     from "./accounts/Governor.sol";
+import { PoolDelegate } from "./accounts/PoolDelegate.sol";
+
+import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
 
 import { MockGlobals, MockLiquidationStrategy, MockLoan, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
 
 contract DebtLockerTest is TestUtils {
 
-    Governor          internal governor;
     DebtLockerFactory internal dlFactory;
+    Governor          internal governor;
     MockERC20         internal fundsAsset;
     MockERC20         internal collateralAsset;
     MockGlobals       internal globals;
     MockLoan          internal loan;
     MockPool          internal pool;
     MockPoolFactory   internal poolFactory;
+    PoolDelegate      internal notPoolDelegate;
+    PoolDelegate      internal poolDelegate;
 
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
     function setUp() public {
-        governor    = new Governor();
+        governor        = new Governor();
+        notPoolDelegate = new PoolDelegate();
+        poolDelegate    = new PoolDelegate();
+
         globals     = new MockGlobals(address(governor));
         poolFactory = new MockPoolFactory(address(globals));
         dlFactory   = new DebtLockerFactory(address(globals));
-        pool        = MockPool(poolFactory.createPool(address(this)));
+
+        pool = MockPool(poolFactory.createPool(address(poolDelegate)));
 
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
         fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
@@ -405,6 +414,50 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], amountRecovered);                     // Total recovered from liquidation
         assertEq(details[6], 0);                                   // Zero shortfall since principalToCover == amountRecovered
+    }
+
+    function test_setAllowedSlippage() external {
+        loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
+
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        assertEq(debtLocker.allowedSlippage(), 0);
+
+        assertTrue(!notPoolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 100));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 100));  // PD can set
+
+        assertEq(debtLocker.allowedSlippage(), 100);
+    }
+
+    function test_setAuctioneer() external {
+        loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
+
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        // Mint collateral into loan so that liquidator gets deployed
+        collateralAsset.mint(address(loan), 1000);
+
+        pool.triggerDefault(address(debtLocker));
+
+        assertEq(ILiquidatorLike(debtLocker.liquidator()).auctioneer(), address(debtLocker));
+
+        assertTrue(!notPoolDelegate.try_debtLocker_setAuctioneer(address(debtLocker), address(1)));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_setAuctioneer(address(debtLocker), address(1)));  // PD can set
+
+        assertEq(ILiquidatorLike(debtLocker.liquidator()).auctioneer(), address(1));
+    }
+
+    function test_setMinRatio() external {
+        loan = new MockLoan(1_000_000, address(fundsAsset), address(collateralAsset));
+
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        assertEq(debtLocker.minRatio(), 0);
+
+        assertTrue(!notPoolDelegate.try_debtLocker_setMinRatio(address(debtLocker), 100 * 10 ** 6));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_setMinRatio(address(debtLocker), 100 * 10 ** 6));  // PD can set
+
+        assertEq(debtLocker.minRatio(), 100 * 10 ** 6);
     }
 
 }

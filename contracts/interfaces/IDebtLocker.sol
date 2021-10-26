@@ -6,6 +6,28 @@ import { IMapleProxied } from "../../modules/maple-proxy-factory/contracts/inter
 /// @title DebtLocker holds custody of LoanFDT tokens.
 interface IDebtLocker is IMapleProxied {
 
+    /**************/
+    /*** Events ***/
+    /**************/
+
+    /**
+     * @dev   Emitted when `setAllowedSlippage` is called.
+     * @param newSlippage_ New value for `allowedSlippage`.
+     */
+    event AllowedSlippageSet(uint256 newSlippage_);
+
+    /**
+     * @dev   Emitted when `setAuctioneer` is called.
+     * @param newAuctioneer_ New value for `auctioneer` in Liquidator.
+     */
+    event AuctioneerSet(address newAuctioneer_);
+
+    /**
+     * @dev   Emitted when `setMinRatio` is called.
+     * @param newMinRatio_ New value for `minRatio`.
+     */
+    event MinRatioSet(uint256 newMinRatio_);
+
     /*****************/
     /*** Functions ***/
     /*****************/
@@ -50,10 +72,22 @@ interface IDebtLocker is IMapleProxied {
     function triggerDefault() external;
 
     /**
+     * @dev   Sets the allowed slippage for auctioneer (used to determine expected amount to be returned in flash loan).
+     * @param allowedSlippage_ Basis points representation of allowed percent slippage from market price.
+     */
+    function setAllowedSlippage(uint256 allowedSlippage_) external;
+
+    /**
      * @dev   Sets the auctioneer contract for the liquidator.
      * @param auctioneer_ Address of auctioneer contract.
      */
     function setAuctioneer(address auctioneer_) external;
+
+    /**
+     * @dev   Sets the minimum "price" for auctioneer (used to determine expected amount to be returned in flash loan).
+     * @param minRatio_ Price in fundsAsset precision (e.g., 10 * 10 ** 6 for $10 price for USDC).
+     */
+    function setMinRatio(uint256 minRatio_) external;
 
     /**
      * @dev   Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.
