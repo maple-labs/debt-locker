@@ -49,9 +49,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
             "DL:TD:NEED_TO_CLAIM"
         );
 
-        address fundsAsset = loan_.fundsAsset();
-
-        require(amount_ == uint256(0) || ERC20Helper.transfer(fundsAsset, address(_loan), amount_));
+        require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_));
 
         loan_.acceptNewTerms(refinancer_, calls_, uint256(0));
     }
