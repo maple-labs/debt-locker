@@ -79,7 +79,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         // accounting is updated properly when principal is updated and there are no claimable funds.
 
         // Repossess collateral and funds from Loan.
-        ( uint256 collateralAssetAmount, ) = IMapleLoanLike(_loan).repossess(address(this), address(this));
+        ( uint256 collateralAssetAmount, ) = IMapleLoanLike(_loan).repossess(address(this));
 
         address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
         address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
@@ -199,8 +199,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds), "DL:C:TRANSFER");
 
         _repossessed = false;
-
-        // TODO: Consider loan principal after liquidation, if this is called again after being set to zero it would overflow.
     }
 
     function _handleClaim() internal returns (uint256[7] memory details_) {

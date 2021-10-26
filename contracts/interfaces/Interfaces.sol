@@ -44,10 +44,7 @@ interface IMapleLoanLike {
 
     function claimFunds(uint256 amount_, address destination_) external;
 
-    function repossess(address collateralAssetDestination_, address fundsAssetDestination_) external returns (
-        uint256 collateralAssetAmount_,
-        uint256 fundsAssetAmount_
-    );
+    function repossess(address destination_) external returns (uint256 collateralAssetAmount_, uint256 fundsAssetAmount_);
 
 }
 

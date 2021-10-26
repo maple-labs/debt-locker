@@ -16,3 +16,6 @@
 [submodule "modules/maple-proxy-factory"]
 	path = modules/maple-proxy-factory
 	url = git@github.com:maple-labs/maple-proxy-factory.git
+[submodule "modules/loan"]
+	path = modules/loan
+	url = https://github.com/maple-labs/loan
