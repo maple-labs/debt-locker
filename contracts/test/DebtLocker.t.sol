@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 import { TestUtils }              from "../../modules/contract-test-utils/contracts/test.sol";
 import { MockERC20 }              from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 import { ConstructableMapleLoan } from "../../modules/loan/contracts/test/mocks/Mocks.sol";
+import { Refinancer }             from "../../modules/loan/contracts/Refinancer.sol";     
 
 import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
@@ -477,6 +478,67 @@ contract DebtLockerTest is TestUtils {
         assertTrue(    poolDelegate.try_debtLocker_setMinRatio(address(debtLocker), 100 * 10 ** 6));  // PD can set
 
         assertEq(debtLocker.minRatio(), 100 * 10 ** 6);
+    }
+
+    function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 principalIncrease_) external {
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
+        principalIncrease_  = constrictToRange(principalIncrease_,  1,         MAX_TOKEN_AMOUNT);
+        
+        /**********************************/
+        /*** Create Loan and DebtLocker ***/
+        /**********************************/
+
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
+
+        fundsAsset.mint(address(this),    principalRequested_);
+        fundsAsset.approve(address(loan), principalRequested_);
+
+        loan.fundLoan(address(debtLocker), principalRequested_);
+        loan.drawdownFunds(loan.drawableFunds(), address(1));  // Drawdown to empty funds from loan (account for estab fees)
+
+
+        /**********************/
+        /*** Make a payment ***/
+        /**********************/
+
+        ( uint256 principal1, uint256 interest1, uint256 fees1 ) = loan.getNextPaymentsBreakDown(1);
+
+        uint256 total1 = principal1 + interest1 + fees1;
+
+        // Mock a payment amount with interest and principal
+        fundsAsset.mint(address(this),    total1);
+        fundsAsset.approve(address(loan), total1);  // Mock payment amount
+
+        loan.makePayments(1, total1);
+
+        /******************/
+        /*** Refinance ***/
+        /****************/
+
+        address refinancer  = address(new Refinancer());
+        bytes[] memory data = new bytes[](1);
+        data[0] = abi.encodeWithSignature("increasePrincipal(uint256)", principalIncrease_);
+
+        loan.proposeNewTerms(refinancer, data);
+
+        fundsAsset.mint(address(debtLocker), principalIncrease_);
+
+        // should fail due to pending claim
+        try debtLocker.acceptNewTerms(refinancer, data, principalIncrease_) { fail(); } catch { }
+
+        pool.claim(address(debtLocker));
+
+        // should fail for not pool delegate
+        try notPoolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_) { fail(); } catch { }
+
+        // Note: More state changes in real loan that are asserted in integration tests
+        uint256 principalBefore = loan.principal();
+
+        poolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_);
+
+        uint256 principalAfter = loan.principal();
+
+        assertEq(principalBefore + principalIncrease_, principalAfter);
     }
 
 }
