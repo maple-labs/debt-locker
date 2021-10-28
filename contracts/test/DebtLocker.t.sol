@@ -108,25 +108,25 @@ contract DebtLockerTest is TestUtils {
         /*** Make two payments ***/
         /*************************/
 
-        ( uint256 principal1, uint256 interest1, uint256 fees1 ) = loan.getNextPaymentsBreakDown(1);
+        ( uint256 principal1, uint256 interest1 ) = loan.getNextPaymentBreakdown();
 
-        uint256 total1 = principal1 + interest1 + fees1;
+        uint256 total1 = principal1 + interest1;
 
-        // Mock a payment amount with interest and principal
+        // Make a payment amount with interest and principal
         fundsAsset.mint(address(this),    total1);
         fundsAsset.approve(address(loan), total1);  // Mock payment amount
 
-        loan.makePayments(1, total1);
+        loan.makePayment(total1);
 
-        ( uint256 principal2, uint256 interest2, uint256 fees2 ) = loan.getNextPaymentsBreakDown(1);
+        ( uint256 principal2, uint256 interest2 ) = loan.getNextPaymentBreakdown();
 
-        uint256 total2 = principal2 + interest2 + fees2;
+        uint256 total2 = principal2 + interest2;
 
         // Mock a second payment amount with interest and principal
         fundsAsset.mint(address(this),    total2);
         fundsAsset.approve(address(loan), total2);  // Mock payment amount
 
-        loan.makePayments(1, total2);
+        loan.makePayment(total2);
 
         assertEq(fundsAsset.balanceOf(address(loan)), total1 + total2);
         assertEq(fundsAsset.balanceOf(address(pool)), 0);
@@ -152,16 +152,16 @@ contract DebtLockerTest is TestUtils {
         /*** Make last payment ***/
         /*************************/
 
-        ( uint256 principal3, uint256 interest3, uint256 fees3 ) = loan.getNextPaymentsBreakDown(1);
+        ( uint256 principal3, uint256 interest3 ) = loan.getNextPaymentBreakdown();
 
-        uint256 total3 = principal3 + interest3 + fees3;
+        uint256 total3 = principal3 + interest3;
 
-        // Mock a payment amount with interest and principal
+        // Make a payment amount with interest and principal
         fundsAsset.mint(address(this),    total3);
         fundsAsset.approve(address(loan), total3);  // Mock payment amount
 
         // Reduce the principal in loan and set claimableFunds
-        loan.makePayments(1, total3);
+        loan.makePayment(total3);
 
         details = pool.claim(address(debtLocker));
 
@@ -194,15 +194,15 @@ contract DebtLockerTest is TestUtils {
         /*** Make a payment ***/
         /**********************/
 
-        ( uint256 principal, uint256 interest, uint256 fees ) = loan.getNextPaymentsBreakDown(1);
+        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
 
-        uint256 total = principal + interest + fees;
+        uint256 total = principal + interest;
 
-        // Mock a payment amount with interest and principal
+        // Make a payment amount with interest and principal
         fundsAsset.mint(address(this),    total);
         fundsAsset.approve(address(loan), total);  // Mock payment amount
 
-        loan.makePayments(1, total);
+        loan.makePayment(total);
 
         /*************************************/
         /*** Trigger default and liquidate ***/
@@ -501,15 +501,15 @@ contract DebtLockerTest is TestUtils {
         /*** Make a payment ***/
         /**********************/
 
-        ( uint256 principal1, uint256 interest1, uint256 fees1 ) = loan.getNextPaymentsBreakDown(1);
+        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
 
-        uint256 total1 = principal1 + interest1 + fees1;
+        uint256 total = principal + interest;
 
-        // Mock a payment amount with interest and principal
-        fundsAsset.mint(address(this),    total1);
-        fundsAsset.approve(address(loan), total1);  // Mock payment amount
+        // Make a payment amount with interest and principal
+        fundsAsset.mint(address(this),    total);
+        fundsAsset.approve(address(loan), total);  // Mock payment amount
 
-        loan.makePayments(1, total1);
+        loan.makePayment(total);
 
         /******************/
         /*** Refinance ***/
