@@ -207,8 +207,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
         details_[0] = recoveredFunds;
         details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
-        details_[2] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
-        details_[5] = recoveredFunds;
+        details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
         details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
 
         require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds), "DL:C:TRANSFER");

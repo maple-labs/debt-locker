@@ -264,7 +264,7 @@ contract DebtLockerTest is TestUtils {
 
         assertEq(details[0], amountRecovered);                     // Total amount of funds claimed
         assertEq(details[1], 0);                                   // Interest is zero since all funds go towards principal in a shortfall
-        assertEq(details[2], amountRecovered);                     // All funds are registered as principal in a shortfall
+        assertEq(details[2], 0);                                   // Principal is not registered in liquidation, covered by details[5]
         assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
         assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], amountRecovered);                     // Total recovered from liquidation
@@ -347,7 +347,7 @@ contract DebtLockerTest is TestUtils {
 
         assertEq(details[0], amountRecovered);  // Total amount of funds claimed
         assertEq(details[1], 0);                // Interest is zero since all funds go towards principal
-        assertEq(details[2], amountRecovered);  // All funds are registered as principal
+        assertEq(details[2], 0);                // Principal is not registered in liquidation, covered by details[5]
         assertEq(details[3], 0);                // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
         assertEq(details[4], 0);                // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], amountRecovered);  // Total recovered from liquidation
@@ -429,10 +429,10 @@ contract DebtLockerTest is TestUtils {
 
         assertEq(details[0], amountRecovered);                     // Total amount of funds claimed
         assertEq(details[1], amountRecovered - principalToCover);  // Excess funds go towards interest
-        assertEq(details[2], principalToCover);                    // Principal is fully covered
+        assertEq(details[2], 0);                                   // Principal is not registered in liquidation, covered by details[5]
         assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
         assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
-        assertEq(details[5], amountRecovered);                     // Total recovered from liquidation
+        assertEq(details[5], principalToCover);                    // Total recovered from liquidation
         assertEq(details[6], 0);                                   // Zero shortfall since principalToCover == amountRecovered
     }
 
