@@ -10,6 +10,7 @@ contract DebtLockerStorage {
 
     uint256 internal _allowedSlippage;
     uint256 internal _amountRecovered;
+    uint256 internal _fundsToCapture;
     uint256 internal _minRatio;
     uint256 internal _principalRemainingAtLastClaim;
 
