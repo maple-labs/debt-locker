@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import { TestUtils }              from "../../modules/contract-test-utils/contracts/test.sol";
 import { MockERC20 }              from "../../modules/erc20/src/test/mocks/MockERC20.sol";
 import { ConstructableMapleLoan } from "../../modules/loan/contracts/test/mocks/Mocks.sol";
-import { Refinancer }             from "../../modules/loan/contracts/Refinancer.sol";     
+import { Refinancer }             from "../../modules/loan/contracts/Refinancer.sol";
 
 import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
@@ -98,12 +98,6 @@ contract DebtLockerTest is TestUtils {
 
         ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
-        fundsAsset.mint(address(this),    principalRequested_);
-        fundsAsset.approve(address(loan), principalRequested_);
-
-        loan.fundLoan(address(debtLocker), principalRequested_);
-        loan.drawdownFunds(loan.drawableFunds(), address(1));  // Drawdown to empty funds from loan (account for estab fees)
-
         /*************************/
         /*** Make two payments ***/
         /*************************/
@@ -183,8 +177,8 @@ contract DebtLockerTest is TestUtils {
         /**********************************/
 
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
-        collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 10);    
-        
+        collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 10);
+
         ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
         // Mint collateral into loan, representing 10x value since market value is $10
@@ -483,7 +477,7 @@ contract DebtLockerTest is TestUtils {
     function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 principalIncrease_) external {
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
         principalIncrease_  = constrictToRange(principalIncrease_,  1,         MAX_TOKEN_AMOUNT);
-        
+
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
@@ -539,6 +533,61 @@ contract DebtLockerTest is TestUtils {
         uint256 principalAfter = loan.principal();
 
         assertEq(principalBefore + principalIncrease_, principalAfter);
+    }
+
+    function test_fundsToCaptureForNextClaim() public {
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
+
+        // Make a payment amount with interest and principal
+        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
+        fundsAsset.mint(address(loan), principal + interest);
+        loan.makePayment(principal + interest);
+
+        // Prepare additional amount to be captured in next claim
+        fundsAsset.mint(address(debtLocker), 500_000);
+        poolDelegate.debtLocker_setFundsToCapture(address(debtLocker), 500_000);
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),  500_000);
+        assertEq(fundsAsset.balanceOf(address(pool)),        0);
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
+        assertEq(debtLocker.fundsToCapture(),                500_000);
+
+        uint256[7] memory details = pool.claim(address(debtLocker));
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),  0);
+        assertEq(fundsAsset.balanceOf(address(pool)),        principal + interest + 500_000);
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principal());
+        assertEq(debtLocker.fundsToCapture(),                0);
+
+        assertEq(details[0], principal + interest + 500_000);
+        assertEq(details[1], interest);
+        assertEq(details[2], principal + 500_000);
+        assertEq(details[3], 0);
+        assertEq(details[4], 0);
+        assertEq(details[5], 0);
+        assertEq(details[6], 0);
+    }
+
+    function testFail_fundsToCaptureForNextClaim() public {
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
+
+        fundsAsset.mint(address(loan), 1_000_000);
+        loan.fundLoan(address(debtLocker), 1_000_000);
+
+        // Make a payment amount with interest and principal
+        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
+        fundsAsset.mint(address(loan), principal + interest);
+        loan.makePayment(principal + interest);
+
+        // Erroneously prepare additional amount to be captured in next claim
+        poolDelegate.debtLocker_setFundsToCapture(address(debtLocker), 1);
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),  0);
+        assertEq(fundsAsset.balanceOf(address(pool)),        0);
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
+        assertEq(debtLocker.fundsToCapture(),                1);
+
+        pool.claim(address(debtLocker));
     }
 
 }

@@ -43,15 +43,22 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         IMapleLoanLike loan_ = IMapleLoanLike(_loan);
+
         require(
-            loan_.claimableFunds() == 0 &&
-            loan_.principal() == _principalRemainingAtLastClaim,
+            (loan_.claimableFunds() + _fundsToCapture == 0) &&
+            (loan_.principal() == _principalRemainingAtLastClaim),
             "DL:TD:NEED_TO_CLAIM"
         );
 
         require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_));
 
         loan_.acceptNewTerms(refinancer_, calls_, uint256(0));
+    }
+
+    function setFundsToCapture(uint256 amount_) override external {
+        require(msg.sender == _getPoolDelegate(), "DL:CFFNC:NOT_PD");
+
+        emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
 
     function claim() external override returns (uint256[7] memory details_) {
@@ -126,8 +133,12 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _amountRecovered;
     }
 
-    function factory() external view override returns (address) {
+    function factory() external view override returns (address factory_) {
         return _factory();
+    }
+
+    function fundsToCapture() external view override returns (uint256 fundsToCapture_) {
+        return _fundsToCapture;
     }
 
     function getExpectedAmount(uint256 swapAmount_) external view override returns (uint256 returnAmount_) {
@@ -197,7 +208,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /**************************/
 
     function _handleClaimOfRepossessed() internal returns (uint256[7] memory details_) {
-        require(!_isLiquidationActive(), "DL:C:LIQ_NOT_FINISHED");
+        require(!_isLiquidationActive(), "DL:HCOR:LIQ_NOT_FINISHED");
 
         address fundsAsset       = IMapleLoanLike(_loan).fundsAsset();
         uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this));  // Funds recovered from liquidation and any unclaimed previous payment amounts
@@ -210,7 +221,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
         details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
 
-        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds), "DL:C:TRANSFER");
+        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds), "DL:HCOR:TRANSFER");
 
         _repossessed = false;
     }
@@ -219,7 +230,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         // Get loan state variables needed
         uint256 claimableFunds = IMapleLoanLike(_loan).claimableFunds();
 
-        require(claimableFunds > uint256(0), "DL:C:NOTHING_TO_CLAIM");
+        require(claimableFunds > uint256(0), "DL:HC:NOTHING_TO_CLAIM");
 
         // Send funds to pool
         IMapleLoanLike(_loan).claimFunds(claimableFunds, _pool);
@@ -233,11 +244,20 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _principalRemainingAtLastClaim = currentPrincipalRemaining;
 
         // Set return values
-        // Note - All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
+        // Note: All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
         // return the fees distribution to the pool.
         details_[0] = claimableFunds;
         details_[1] = claimableFunds - principalPortion;
         details_[2] = principalPortion;
+
+        if (_fundsToCapture > uint256(0)) {
+            details_[0] += _fundsToCapture;
+            details_[2] += _fundsToCapture;
+
+            require(ERC20Helper.transfer(IMapleLoanLike(_loan).fundsAsset(), _pool, _fundsToCapture), "DL:HC:CAPTURE_FAILED");
+
+            _fundsToCapture = uint256(0);
+        }
     }
 
     /*******************************/

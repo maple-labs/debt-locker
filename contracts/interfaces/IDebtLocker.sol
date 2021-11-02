@@ -28,6 +28,12 @@ interface IDebtLocker is IMapleProxied {
      */
     event MinRatioSet(uint256 newMinRatio_);
 
+    /**
+     * @dev   Emitted when `fundsToCapture` is set.
+     * @param amount_ The amount of funds that will be captured next claim.
+     */
+    event FundsToCaptureSet(uint256 amount_);
+
     /*****************/
     /*** Functions ***/
     /*****************/
@@ -101,6 +107,12 @@ interface IDebtLocker is IMapleProxied {
      */
     function getExpectedAmount(uint256 swapAmount_) external view returns (uint256 returnAmount_);
 
+    /**
+     * @dev   Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.
+     * @param amount_ The amount of funds that should be captured next claim.
+     */
+    function setFundsToCapture(uint256 amount_) external;
+
     /*************/
     /*** State ***/
     /*************/
@@ -144,5 +156,10 @@ interface IDebtLocker is IMapleProxied {
      * @dev Returns if the funds have been repossessed.
      */
     function repossessed() external view returns (bool repossessed_);
+
+    /**
+     * @dev Returns the amount of funds that will be captured next claim.
+     */
+    function fundsToCapture() external view returns (uint256 fundsToCapture_);
 
 }
