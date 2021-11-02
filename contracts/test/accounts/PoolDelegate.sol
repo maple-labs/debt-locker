@@ -35,7 +35,7 @@ contract PoolDelegate is ProxyUser {
     /*** Try Functions ***/
     /*********************/
 
-    function try_ebtLocker_acceptNewTerms(
+    function try_debtLocker_acceptNewTerms(
         address debtLocker_, 
         address refinancer_,
         bytes[] calldata calls_,
