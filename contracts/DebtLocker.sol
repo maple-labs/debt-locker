@@ -30,7 +30,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function upgrade(uint256 toVersion_, bytes calldata arguments_) external override {
-        require(msg.sender == IPoolLike(_pool).poolDelegate(), "DL:U:NOT_POOL_DELEGATE");
+        require(msg.sender == _getPoolDelegate(), "DL:U:NOT_POOL_DELEGATE");
 
         IMapleProxyFactory(_factory()).upgradeInstance(toVersion_, arguments_);
     }
@@ -118,8 +118,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
             "DL:TD:TRANSFER"
        );
     }
-
-    // TODO: Add setters for allowed slippage and minRatio
 
     /**********************/
     /*** View Functions ***/
