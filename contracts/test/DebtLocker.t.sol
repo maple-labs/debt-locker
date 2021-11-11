@@ -607,10 +607,10 @@ contract DebtLockerTest is TestUtils {
 
         pool.triggerDefault(address(debtLocker));
 
-        //After triggering default, set funds to capture
+        // After triggering default, set funds to capture
         poolDelegate.debtLocker_setFundsToCapture(address(debtLocker), 500_000);
 
-        //claim
+        // Claim
         uint256[7] memory details = pool.claim(address(debtLocker));
 
         assertEq(fundsAsset.balanceOf(address(debtLocker)),  0);
