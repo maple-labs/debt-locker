@@ -211,11 +211,11 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(!_isLiquidationActive(), "DL:HCOR:LIQ_NOT_FINISHED");
 
         address fundsAsset       = IMapleLoanLike(_loan).fundsAsset();
-        uint256 principalToCover = _principalRemainingAtLastClaim;     // Principal remaining at time of liquidation
+        uint256 principalToCover = _principalRemainingAtLastClaim;      // Principal remaining at time of liquidation
         uint256 fundsCaptured    = _fundsToCapture;
 
         // Funds recovered from liquidation and any unclaimed previous payment amounts
-        uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;  
+        uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;  
 
         // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
         // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.

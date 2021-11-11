@@ -602,7 +602,7 @@ contract DebtLockerTest is TestUtils {
         assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
         assertEq(debtLocker.fundsToCapture(),                0);
 
-        //trigger default
+        // Trigger default
         hevm.warp(loan.nextPaymentDueDate() + loan.gracePeriod() + 1);
 
         pool.triggerDefault(address(debtLocker));
