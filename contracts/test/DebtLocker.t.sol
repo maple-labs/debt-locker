@@ -532,7 +532,8 @@ contract DebtLockerTest is TestUtils {
 
         uint256 principalAfter = loan.principal();
 
-        assertEq(principalBefore + principalIncrease_, principalAfter);
+        assertEq(principalBefore + principalIncrease_,      principalAfter);
+        assertEq(debtLocker.principalRemainingAtLastClaim(), principalAfter);
     }
 
     function test_fundsToCaptureForNextClaim() public {
@@ -588,6 +589,41 @@ contract DebtLockerTest is TestUtils {
         assertEq(debtLocker.fundsToCapture(),                1);
 
         pool.claim(address(debtLocker));
+    }
+
+    function test_fundsToCaptureWhileInDefault() public {
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
+
+        // Prepare additional amount to be captured
+        fundsAsset.mint(address(debtLocker), 500_000);
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),  500_000);
+        assertEq(fundsAsset.balanceOf(address(pool)),        0);
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
+        assertEq(debtLocker.fundsToCapture(),                0);
+
+        // Trigger default
+        hevm.warp(loan.nextPaymentDueDate() + loan.gracePeriod() + 1);
+
+        pool.triggerDefault(address(debtLocker));
+
+        // After triggering default, set funds to capture
+        poolDelegate.debtLocker_setFundsToCapture(address(debtLocker), 500_000);
+
+        // Claim
+        uint256[7] memory details = pool.claim(address(debtLocker));
+
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),  0);
+        assertEq(fundsAsset.balanceOf(address(pool)),        500_000);
+        assertEq(debtLocker.fundsToCapture(),                0);
+
+        assertEq(details[0], 500_000);
+        assertEq(details[1], 0);
+        assertEq(details[2], 500_000);
+        assertEq(details[3], 0);
+        assertEq(details[4], 0);
+        assertEq(details[5], 0);
+        assertEq(details[6], loan.principalRequested()); // No principal was recovered
     }
 
 }
