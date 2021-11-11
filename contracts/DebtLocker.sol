@@ -53,6 +53,8 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_));
 
         loan_.acceptNewTerms(refinancer_, calls_, uint256(0));
+
+        _principalRemainingAtLastClaim = loan_.principal();
     }
 
     function setFundsToCapture(uint256 amount_) override external {
@@ -209,19 +211,24 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(!_isLiquidationActive(), "DL:HCOR:LIQ_NOT_FINISHED");
 
         address fundsAsset       = IMapleLoanLike(_loan).fundsAsset();
-        uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this));  // Funds recovered from liquidation and any unclaimed previous payment amounts
-        uint256 principalToCover = _principalRemainingAtLastClaim;                   // Principal remaining at time of liquidation
+        uint256 principalToCover = _principalRemainingAtLastClaim;     // Principal remaining at time of liquidation
+        uint256 fundsCaptured    = _fundsToCapture;
+
+        // Funds recovered from liquidation and any unclaimed previous payment amounts
+        uint256 recoveredFunds   = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;  
 
         // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
         // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
-        details_[0] = recoveredFunds;
+        details_[0] = recoveredFunds + fundsCaptured;
         details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
+        details_[2] = fundsCaptured;
         details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
         details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
 
-        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds), "DL:HCOR:TRANSFER");
+        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
 
-        _repossessed = false;
+        _fundsToCapture = uint256(0);
+        _repossessed    = false;
     }
 
     function _handleClaim() internal returns (uint256[7] memory details_) {
