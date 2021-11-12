@@ -68,12 +68,12 @@ contract DebtLockerTest is TestUtils {
     }
 
     function _createLoan(uint256 principalRequested_) internal returns (ConstructableMapleLoan loan_) {
-        address[2] memory assets     = [address(collateralAsset), address(fundsAsset)];
-        uint256[6] memory parameters = [uint256(10 days), uint256(30 days), 6, 0.10e18, 0, 0];
-        uint256[4] memory fees       = [uint256(0), uint256(0), uint256(0), uint256(0)];
-        uint256[3] memory requests   = [0, principalRequested_, 0];
+        address[2] memory assets      = [address(collateralAsset), address(fundsAsset)];
+        uint256[3] memory termDetails = [uint256(10 days), uint256(30 days), 6];
+        uint256[3] memory amounts     = [uint256(0), principalRequested_, 0];
+        uint256[4] memory rates       = [uint256(0.10e18), uint256(0), uint256(0), uint256(0)];
 
-        loan_ = new ConstructableMapleLoan(address(this), assets, parameters, requests, fees);
+        loan_ = new ConstructableMapleLoan(address(this), assets, termDetails, amounts, rates);
     }
 
     function _createFundAndDrawdownLoan(uint256 principalRequested_) internal returns (ConstructableMapleLoan loan_, DebtLocker debtLocker_) {
@@ -542,7 +542,7 @@ contract DebtLockerTest is TestUtils {
         // Make a payment amount with interest and principal
         ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
         fundsAsset.mint(address(loan), principal + interest);
-        loan.makePayment(principal + interest);
+        loan.makePayment(0);
 
         // Prepare additional amount to be captured in next claim
         fundsAsset.mint(address(debtLocker), 500_000);
