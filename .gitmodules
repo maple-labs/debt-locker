@@ -1,6 +1,3 @@
-[submodule "modules/subfactory"]
-	path = modules/subfactory
-	url = https://github.com/maple-labs/subfactory.git
 [submodule "modules/erc20"]
 	path = modules/erc20
 	url = https://github.com/maple-labs/erc20.git
