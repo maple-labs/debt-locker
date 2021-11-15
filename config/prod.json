@@ -4,11 +4,11 @@
     "contracts/DebtLocker.sol": {
       "urls": ["contracts/DebtLocker.sol"]
     },
+    "contracts/DebtLockerFactory.sol": {
+      "urls": ["contracts/DebtLockerFactory.sol"]
+    },
     "contracts/DebtLockerInitializer.sol": {
       "urls": ["contracts/DebtLockerInitializer.sol"]
-    },
-    "contracts/DebtLockerStorage.sol": {
-      "urls": ["contracts/DebtLockerStorage.sol"]
     }
   },
   "settings": {
