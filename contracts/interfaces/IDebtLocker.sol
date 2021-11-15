@@ -101,7 +101,7 @@ interface IDebtLocker is IMapleProxied {
     function setMinRatio(uint256 minRatio_) external;
 
     /**
-     * @dev   Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.
+     * @dev    Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.
      * @param  swapAmount_   Amount of collateralAsset being swapped.
      * @return returnAmount_ Amount of fundsAsset that must be returned in the same transaction.
      */
