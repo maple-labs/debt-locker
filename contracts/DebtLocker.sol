@@ -86,6 +86,12 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
 
+    function setFundsToCapture(uint256 amount_) override external {
+        require(msg.sender == _getPoolDelegate(), "DL:CFFNC:NOT_PD");
+
+        emit FundsToCaptureSet(_fundsToCapture = amount_);
+    }
+
     function setMinRatio(uint256 minRatio_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SMR:NOT_PD");
 
@@ -157,6 +163,9 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function getExpectedAmount(uint256 swapAmount_) external view override returns (uint256 returnAmount_) {
+        // TODO: test casting decimals to uint256, but using uint8 as interface, but having token return 256
+        //       hypothesis: it blind casts 256 to 1, which is worse than handling it as a uint256 in the interface to being with.
+
         address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
         address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
 
