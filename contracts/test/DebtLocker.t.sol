@@ -24,7 +24,7 @@ interface Hevm {
 
 }
 
-contract DebtLockerTest is TestUtils {
+contract DebtLockerTests is TestUtils {
 
     ConstructableMapleLoan internal loan;
     DebtLockerFactory      internal dlFactory;
@@ -536,6 +536,8 @@ contract DebtLockerTest is TestUtils {
         assertEq(debtLocker.principalRemainingAtLastClaim(), principalAfter);
     }
 
+    // TODO: test_refinance_withExcessAmount
+
     function test_fundsToCaptureForNextClaim() public {
         ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
 
@@ -625,5 +627,27 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[5], 0);
         assertEq(details[6], loan.principalRequested()); // No principal was recovered
     }
+
+    // TODO: test that only factory can call migrate
+
+    // TODO: test that only factory can call setImplementation
+
+    // TODO: test that only poolDelegate can call upgrade
+
+    // TODO: test that only poolDelegate can call acceptNewTerms
+
+    // TODO: test that only pool can call claim
+
+    // TODO: test that only poolDelegate can call setFundsToCapture
+
+    // TODO: test that only pool can call triggerDefault
+
+    // TODO: test that triggerDefault can only be called if claim was called
+
+    // TODO: test _getGlobals
+
+    // TODO: test _getPoolDelegate
+
+    // TODO: test _isLiquidationActive
 
 }
