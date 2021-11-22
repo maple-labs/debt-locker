@@ -7,6 +7,11 @@ import { IMapleProxyFactory } from "../../modules/maple-proxy-factory/contracts/
 interface IDebtLockerFactory is IMapleProxyFactory {
 
     /**
+     * @dev The Maple factory type (to be deprecated).
+     */
+    function factoryType() external view returns (uint8 factoryType_);
+
+    /**
      * @dev Deploys a new DebtLocker proxy instance.
      * @param loan_ Loan contract that corresponds to DebtLocker.
      */
