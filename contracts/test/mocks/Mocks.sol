@@ -68,6 +68,14 @@ contract MockLiquidationStrategy {
 
 }
 
+contract MockLoan {
+    
+    function principalRequested() external view returns (uint256 principalRequested_) {
+        return 0;
+    }
+    
+}
+
 contract MockGlobals {
 
     address public governor;
@@ -97,5 +105,11 @@ contract MockGlobals {
     function mapleTreasury() external pure returns (address mapleTreasury_) {
         return address(1);
     }
+
+}
+
+contract MockMigrator {
+
+    fallback() external { }
 
 }

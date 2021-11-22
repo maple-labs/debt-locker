@@ -15,7 +15,15 @@ import { PoolDelegate } from "./accounts/PoolDelegate.sol";
 
 import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
 
-import { MockGlobals, MockLiquidationStrategy, MockPool, MockPoolFactory } from "./mocks/Mocks.sol";
+import { ManipulatableDebtLocker } from "./mocks/ManipulatableDebtLocker.sol";
+import { 
+    MockGlobals, 
+    MockLiquidationStrategy, 
+    MockLoan,
+    MockMigrator, 
+    MockPool, 
+    MockPoolFactory 
+} from "./mocks/Mocks.sol";
 
 interface Hevm {
 
@@ -24,7 +32,7 @@ interface Hevm {
 
 }
 
-contract DebtLockerTests is TestUtils {
+contract DebtLockerIntegrationTests is TestUtils {
 
     ConstructableMapleLoan internal loan;
     DebtLockerFactory      internal dlFactory;
@@ -81,7 +89,7 @@ contract DebtLockerTests is TestUtils {
 
         debtLocker_ = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan_)));
 
-        fundsAsset.mint(address(this),    principalRequested_);
+        fundsAsset.mint(address(this),     principalRequested_);
         fundsAsset.approve(address(loan_), principalRequested_);
 
         loan_.fundLoan(address(debtLocker_), principalRequested_);
@@ -628,26 +636,152 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], loan.principalRequested()); // No principal was recovered
     }
 
-    // TODO: test that only factory can call migrate
+    function test_acl_factory_migrate() external {
+        MockLoan loan = new MockLoan();
 
-    // TODO: test that only factory can call setImplementation
+        ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
 
-    // TODO: test that only poolDelegate can call upgrade
+        address migrator = address(new MockMigrator());
 
-    // TODO: test that only poolDelegate can call acceptNewTerms
+        try debtLocker.migrate(address(migrator), abi.encode(0)) { assertTrue(false, "Non-factory calling migrate"); } catch { }
 
-    // TODO: test that only pool can call claim
+        debtLocker.setFactory(address(this));
 
-    // TODO: test that only poolDelegate can call setFundsToCapture
+        debtLocker.migrate(address(migrator), abi.encode(0));
+    }
 
-    // TODO: test that only pool can call triggerDefault
+    function test_acl_factory_setImplementation() external {
+        MockLoan loan = new MockLoan();
 
-    // TODO: test that triggerDefault can only be called if claim was called
+        ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
 
-    // TODO: test _getGlobals
+        try debtLocker.setImplementation(address(1)) { assertTrue(false, "Non-factory calling setImplementation"); } catch { }
 
-    // TODO: test _getPoolDelegate
+        debtLocker.setFactory(address(this));
 
-    // TODO: test _isLiquidationActive
+        debtLocker.setImplementation(address(1));
+    }
 
 }
+
+// contract DebtLockerACLTests is TestUtils {
+
+//     DebtLockerFactory       internal dlFactory;
+//     Governor                internal governor;
+//     MockGlobals             internal globals;
+//     MockMigrator            internal migrator;
+//     MockPool                internal pool;
+//     PoolDelegate            internal notPoolDelegate;
+//     PoolDelegate            internal poolDelegate;
+
+//     Hevm hevm = Hevm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
+
+//     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
+
+//     function setUp() public {
+//         governor        = new Governor();
+//         notPoolDelegate = new PoolDelegate();
+//         poolDelegate    = new PoolDelegate();
+
+//         globals   = new MockGlobals(address(governor));
+//         dlFactory = new DebtLockerFactory(address(globals));
+
+//         // Deploying and registering DebtLocker implementation and initializer
+//         address implementation = address(new ManipulatableDebtLocker());
+//         address initializer    = address(new DebtLockerInitializer());
+
+//         governor.mapleProxyFactory_registerImplementation(address(dlFactory), 1, implementation, initializer);
+//         governor.mapleProxyFactory_setDefaultVersion(address(dlFactory), 1);
+//     }
+
+//     // TODO: test that only poolDelegate can call upgrade
+
+//     // TODO: test that only poolDelegate can call acceptNewTerms
+
+//     // TODO: test that only pool can call claim
+
+//     // TODO: test that only poolDelegate can call setFundsToCapture
+
+//     // TODO: test that only pool can call triggerDefault
+
+//     // TODO: test that triggerDefault can only be called if claim was called
+
+//     // TODO: test _getGlobals
+
+//     // TODO: test _getPoolDelegate
+
+//     // TODO: test _isLiquidationActive
+
+//     function test_acl_factory_migrate() external {
+//         MockLoan loan = new MockLoan();
+
+//         ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
+
+//         address migrator = address(new MockMigrator());
+
+//         try debtLocker.migrate(address(migrator), abi.encode(0)) { assertTrue(false, "Non-factory calling migrate"); } catch { }
+
+//         debtLocker.setFactory(address(this));
+
+//         debtLocker.migrate(address(migrator), abi.encode(0));
+//     }
+
+//     function test_acl_factory_setImplementation() external {
+//         MockLoan loan = new MockLoan();
+
+//         ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
+
+//         try debtLocker.setImplementation(address(1)) { assertTrue(false, "Non-factory calling setImplementation"); } catch { }
+
+//         debtLocker.setFactory(address(this));
+
+//         debtLocker.setImplementation(address(1));
+//     }
+
+//     function test_acl_pool_claim() external {
+//         /*****************************************************/
+//         /*** Create real Loan, drawdown and make a payment ***/
+//         /*****************************************************/
+
+//         MockERC20 collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
+//         MockERC20 fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
+
+//         address[2] memory assets      = [address(collateralAsset), address(fundsAsset)];
+//         uint256[3] memory termDetails = [uint256(10 days), uint256(30 days), 6];
+//         uint256[3] memory amounts     = [uint256(0), 1_000_000, 0];
+//         uint256[4] memory rates       = [uint256(0.10e18), uint256(0), uint256(0), uint256(0)];
+
+//         ConstructableMapleLoan loan = new ConstructableMapleLoan(address(this), assets, termDetails, amounts, rates);
+
+//         ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
+
+//         fundsAsset.mint(address(this),    1_000_000);
+//         fundsAsset.approve(address(loan), 1_000_000);
+
+//         loan.fundLoan(address(debtLocker), 1_000_000);
+//         loan.drawdownFunds(loan.drawableFunds(), address(1));
+
+//         ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
+
+//         uint256 total = principal + interest;
+
+//         // Make a payment amount with interest and principal
+//         fundsAsset.mint(address(this),    total);
+//         fundsAsset.approve(address(loan), total);  // Mock payment amount
+
+//         loan.makePayment(total);
+
+//         /**************************************/
+//         /*** Set up DebtLocker and do claim ***/
+//         /**************************************/
+
+//         debtLocker.setPool(address(1));
+
+//         try debtLocker.claim() { assertTrue(false, "Non-pool calling claim"); } catch { }
+
+//         debtLocker.setPool(address(this));
+
+//         debtLocker.claim();
+//     }
+
+// }
