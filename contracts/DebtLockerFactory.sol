@@ -25,8 +25,12 @@ contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
         emit InstanceDeployed(defaultVersion, debtLocker_, arguments);
     }
 
-    function createInstance(bytes calldata arguments_, bytes32 salt_) public override(IMapleProxyFactory, MapleProxyFactory) virtual returns (address instance_) {}
+    function createInstance(bytes calldata arguments_, bytes32 salt_)
+        public override(IMapleProxyFactory, MapleProxyFactory) virtual returns (address instance_)
+    {}
 
-    function getDeterministicInstanceAddress(bytes calldata arguments_, bytes32 salt_) public override virtual returns (address instanceAddress_) {}
+    function getInstanceAddress(bytes calldata arguments_, bytes32 salt_)
+        public view override(IMapleProxyFactory, MapleProxyFactory) virtual returns (address instanceAddress_)
+    {}
 
 }
