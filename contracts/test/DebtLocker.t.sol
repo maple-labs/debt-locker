@@ -96,6 +96,10 @@ contract DebtLockerIntegrationTests is TestUtils {
         loan_.drawdownFunds(loan_.drawableFunds(), address(1));  // Drawdown to empty funds from loan (account for estab fees)
     }
 
+    /*******************/
+    /*** Claim Tests ***/
+    /*******************/
+
     function test_claim(uint256 principalRequested_) public {
 
         /**********************************/
@@ -178,7 +182,7 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(details[6], 0);           // Zero shortfall since no liquidation
     }
 
-    function test_liquidation_shortfall(uint256 principalRequested_, uint256 collateralRequired_) public {
+    function test_claim_liquidation_shortfall(uint256 principalRequested_, uint256 collateralRequired_) public {
 
         /**********************************/
         /*** Create Loan and DebtLocker ***/
@@ -273,7 +277,7 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(details[6], principalToCover - amountRecovered);  // Shortfall to be covered by burning BPTs
     }
 
-    function test_liquidation_equalToPrincipal(uint256 principalRequested_) public {
+    function test_claim_liquidation_equalToPrincipal(uint256 principalRequested_) public {
 
         /*************************/
         /*** Set up parameters ***/
@@ -356,7 +360,7 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(details[6], 0);                // Zero shortfall since principalToCover == amountRecovered
     }
 
-    function test_liquidation_greaterThanPrincipal(uint256 principalRequested_, uint256 excessRecovered_) public {
+    function test_claim_liquidation_greaterThanPrincipal(uint256 principalRequested_, uint256 excessRecovered_) public {
 
         /*************************/
         /*** Set up parameters ***/
@@ -438,7 +442,37 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(details[6], 0);                                   // Zero shortfall since principalToCover == amountRecovered
     }
 
-    function test_setAllowedSlippage() external {
+    /****************************/
+    /*** Access Control Tests ***/
+    /****************************/
+
+    function test_acl_factory_migrate() external {
+        MockLoan loan = new MockLoan();
+
+        ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
+
+        address migrator = address(new MockMigrator());
+
+        try debtLocker.migrate(address(migrator), abi.encode(0)) { assertTrue(false, "Non-factory calling migrate"); } catch { }
+
+        debtLocker.setFactory(address(this));
+
+        debtLocker.migrate(address(migrator), abi.encode(0));
+    }
+
+    function test_acl_factory_setImplementation() external {
+        MockLoan loan = new MockLoan();
+
+        ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
+
+        try debtLocker.setImplementation(address(1)) { assertTrue(false, "Non-factory calling setImplementation"); } catch { }
+
+        debtLocker.setFactory(address(this));
+
+        debtLocker.setImplementation(address(1));
+    }
+
+    function test_acl_poolDelegate_setAllowedSlippage() external {
         loan = _createLoan(1_000_000);
 
         debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
@@ -451,7 +485,7 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(debtLocker.allowedSlippage(), 100);
     }
 
-    function test_setAuctioneer() external {
+    function test_acl_poolDelegate_setAuctioneer() external {
         ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
 
         // Mint collateral into loan so that liquidator gets deployed
@@ -469,7 +503,7 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(ILiquidatorLike(debtLocker.liquidator()).auctioneer(), address(1));
     }
 
-    function test_setMinRatio() external {
+    function test_acl_poolDelegate_setMinRatio() external {
         loan = _createLoan(1_000_000);
 
         debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
@@ -481,6 +515,46 @@ contract DebtLockerIntegrationTests is TestUtils {
 
         assertEq(debtLocker.minRatio(), 100 * 10 ** 6);
     }
+
+    function test_acl_poolDelegate_upgrade() external {
+        loan = _createLoan(1_000_000);
+
+        debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        // Deploying and registering DebtLocker implementation and initializer
+        address implementation = address(new DebtLocker());
+        address initializer    = address(new DebtLockerInitializer());
+
+        governor.mapleProxyFactory_registerImplementation(address(dlFactory), 2, implementation, initializer);
+        governor.mapleProxyFactory_enableUpgradePath(address(dlFactory), 1, 2, address(0));
+
+        bytes memory arguments = new bytes(0);
+
+        assertTrue(!notPoolDelegate.try_debtLocker_upgrade(address(debtLocker), 2, arguments));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_upgrade(address(debtLocker), 2, arguments));  // PD can set
+
+        // assertEq(debtLocker.allowedSlippage(), 100);
+    }
+
+    function test_acl_poolDelegate_acceptNewTerms() external {}
+
+    function test_acl_pool_claim() external {}
+
+    function test_acl_pool_setFundsToCapture() external {}
+
+    function test_acl_pool_triggerDefault() external {}
+
+    // TODO: test that triggerDefault can only be called if claim was called
+
+    // TODO: test _getGlobals
+
+    // TODO: test _getPoolDelegate
+
+    // TODO: test _isLiquidationActive
+
+    /***********************/
+    /*** Refinance Tests ***/
+    /***********************/
 
     function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 principalIncrease_) external {
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
@@ -497,7 +571,6 @@ contract DebtLockerIntegrationTests is TestUtils {
 
         loan.fundLoan(address(debtLocker), principalRequested_);
         loan.drawdownFunds(loan.drawableFunds(), address(1));  // Drawdown to empty funds from loan (account for estab fees)
-
 
         /**********************/
         /*** Make a payment ***/
@@ -525,12 +598,12 @@ contract DebtLockerIntegrationTests is TestUtils {
 
         fundsAsset.mint(address(debtLocker), principalIncrease_);
 
-        // should fail due to pending claim
+        // Should fail due to pending claim
         try debtLocker.acceptNewTerms(refinancer, data, principalIncrease_) { fail(); } catch { }
 
         pool.claim(address(debtLocker));
 
-        // should fail for not pool delegate
+        // Should fail for not pool delegate
         try notPoolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_) { fail(); } catch { }
 
         // Note: More state changes in real loan that are asserted in integration tests
@@ -545,6 +618,10 @@ contract DebtLockerIntegrationTests is TestUtils {
     }
 
     // TODO: test_refinance_withExcessAmount
+
+    /***************************/
+    /*** Funds Capture Tests ***/
+    /***************************/
 
     function test_fundsToCaptureForNextClaim() public {
         ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
@@ -577,28 +654,6 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(details[4], 0);
         assertEq(details[5], 0);
         assertEq(details[6], 0);
-    }
-
-    function testFail_fundsToCaptureForNextClaim() public {
-        ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
-
-        fundsAsset.mint(address(loan), 1_000_000);
-        loan.fundLoan(address(debtLocker), 1_000_000);
-
-        // Make a payment amount with interest and principal
-        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
-        fundsAsset.mint(address(loan), principal + interest);
-        loan.makePayment(principal + interest);
-
-        // Erroneously prepare additional amount to be captured in next claim
-        poolDelegate.debtLocker_setFundsToCapture(address(debtLocker), 1);
-
-        assertEq(fundsAsset.balanceOf(address(debtLocker)),  0);
-        assertEq(fundsAsset.balanceOf(address(pool)),        0);
-        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
-        assertEq(debtLocker.fundsToCapture(),                1);
-
-        pool.claim(address(debtLocker));
     }
 
     function test_fundsToCaptureWhileInDefault() public {
@@ -636,152 +691,26 @@ contract DebtLockerIntegrationTests is TestUtils {
         assertEq(details[6], loan.principalRequested()); // No principal was recovered
     }
 
-    function test_acl_factory_migrate() external {
-        MockLoan loan = new MockLoan();
+    function testFail_fundsToCaptureForNextClaim() public {
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(1_000_000);
 
-        ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
+        fundsAsset.mint(address(loan), 1_000_000);
+        loan.fundLoan(address(debtLocker), 1_000_000);
 
-        address migrator = address(new MockMigrator());
+        // Make a payment amount with interest and principal
+        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
+        fundsAsset.mint(address(loan), principal + interest);
+        loan.makePayment(principal + interest);
 
-        try debtLocker.migrate(address(migrator), abi.encode(0)) { assertTrue(false, "Non-factory calling migrate"); } catch { }
+        // Erroneously prepare additional amount to be captured in next claim
+        poolDelegate.debtLocker_setFundsToCapture(address(debtLocker), 1);
 
-        debtLocker.setFactory(address(this));
+        assertEq(fundsAsset.balanceOf(address(debtLocker)),  0);
+        assertEq(fundsAsset.balanceOf(address(pool)),        0);
+        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
+        assertEq(debtLocker.fundsToCapture(),                1);
 
-        debtLocker.migrate(address(migrator), abi.encode(0));
-    }
-
-    function test_acl_factory_setImplementation() external {
-        MockLoan loan = new MockLoan();
-
-        ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
-
-        try debtLocker.setImplementation(address(1)) { assertTrue(false, "Non-factory calling setImplementation"); } catch { }
-
-        debtLocker.setFactory(address(this));
-
-        debtLocker.setImplementation(address(1));
+        pool.claim(address(debtLocker));
     }
 
 }
-
-// contract DebtLockerACLTests is TestUtils {
-
-//     DebtLockerFactory       internal dlFactory;
-//     Governor                internal governor;
-//     MockGlobals             internal globals;
-//     MockMigrator            internal migrator;
-//     MockPool                internal pool;
-//     PoolDelegate            internal notPoolDelegate;
-//     PoolDelegate            internal poolDelegate;
-
-//     Hevm hevm = Hevm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-
-//     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
-
-//     function setUp() public {
-//         governor        = new Governor();
-//         notPoolDelegate = new PoolDelegate();
-//         poolDelegate    = new PoolDelegate();
-
-//         globals   = new MockGlobals(address(governor));
-//         dlFactory = new DebtLockerFactory(address(globals));
-
-//         // Deploying and registering DebtLocker implementation and initializer
-//         address implementation = address(new ManipulatableDebtLocker());
-//         address initializer    = address(new DebtLockerInitializer());
-
-//         governor.mapleProxyFactory_registerImplementation(address(dlFactory), 1, implementation, initializer);
-//         governor.mapleProxyFactory_setDefaultVersion(address(dlFactory), 1);
-//     }
-
-//     // TODO: test that only poolDelegate can call upgrade
-
-//     // TODO: test that only poolDelegate can call acceptNewTerms
-
-//     // TODO: test that only pool can call claim
-
-//     // TODO: test that only poolDelegate can call setFundsToCapture
-
-//     // TODO: test that only pool can call triggerDefault
-
-//     // TODO: test that triggerDefault can only be called if claim was called
-
-//     // TODO: test _getGlobals
-
-//     // TODO: test _getPoolDelegate
-
-//     // TODO: test _isLiquidationActive
-
-//     function test_acl_factory_migrate() external {
-//         MockLoan loan = new MockLoan();
-
-//         ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
-
-//         address migrator = address(new MockMigrator());
-
-//         try debtLocker.migrate(address(migrator), abi.encode(0)) { assertTrue(false, "Non-factory calling migrate"); } catch { }
-
-//         debtLocker.setFactory(address(this));
-
-//         debtLocker.migrate(address(migrator), abi.encode(0));
-//     }
-
-//     function test_acl_factory_setImplementation() external {
-//         MockLoan loan = new MockLoan();
-
-//         ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
-
-//         try debtLocker.setImplementation(address(1)) { assertTrue(false, "Non-factory calling setImplementation"); } catch { }
-
-//         debtLocker.setFactory(address(this));
-
-//         debtLocker.setImplementation(address(1));
-//     }
-
-//     function test_acl_pool_claim() external {
-//         /*****************************************************/
-//         /*** Create real Loan, drawdown and make a payment ***/
-//         /*****************************************************/
-
-//         MockERC20 collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
-//         MockERC20 fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
-
-//         address[2] memory assets      = [address(collateralAsset), address(fundsAsset)];
-//         uint256[3] memory termDetails = [uint256(10 days), uint256(30 days), 6];
-//         uint256[3] memory amounts     = [uint256(0), 1_000_000, 0];
-//         uint256[4] memory rates       = [uint256(0.10e18), uint256(0), uint256(0), uint256(0)];
-
-//         ConstructableMapleLoan loan = new ConstructableMapleLoan(address(this), assets, termDetails, amounts, rates);
-
-//         ManipulatableDebtLocker debtLocker = ManipulatableDebtLocker(dlFactory.newLocker(address(loan)));
-
-//         fundsAsset.mint(address(this),    1_000_000);
-//         fundsAsset.approve(address(loan), 1_000_000);
-
-//         loan.fundLoan(address(debtLocker), 1_000_000);
-//         loan.drawdownFunds(loan.drawableFunds(), address(1));
-
-//         ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
-
-//         uint256 total = principal + interest;
-
-//         // Make a payment amount with interest and principal
-//         fundsAsset.mint(address(this),    total);
-//         fundsAsset.approve(address(loan), total);  // Mock payment amount
-
-//         loan.makePayment(total);
-
-//         /**************************************/
-//         /*** Set up DebtLocker and do claim ***/
-//         /**************************************/
-
-//         debtLocker.setPool(address(1));
-
-//         try debtLocker.claim() { assertTrue(false, "Non-pool calling claim"); } catch { }
-
-//         debtLocker.setPool(address(this));
-
-//         debtLocker.claim();
-//     }
-
-// }
