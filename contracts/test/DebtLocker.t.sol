@@ -382,6 +382,7 @@ contract DebtLockerTests is TestUtils {
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
+        
         ( ConstructableMapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired);
 
         /*************************************/
