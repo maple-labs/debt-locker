@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 import { User as ProxyUser } from "../../../modules/maple-proxy-factory/contracts/test/accounts/User.sol";
 
-import { IDebtLocker } from "../../interfaces/IDebtLocker.sol";
+import { IDebtLocker, IMapleProxied } from "../../interfaces/IDebtLocker.sol";
 
 contract PoolDelegate is ProxyUser {
 
@@ -33,6 +33,10 @@ contract PoolDelegate is ProxyUser {
 
     function debtLocker_stopLiquidation(address debtLocker_) external {
         IDebtLocker(debtLocker_).stopLiquidation();
+    }
+    
+    function debtLocker_upgrade(address debtLocker_, uint256 toVersion_, bytes memory arguments_) external {
+        IDebtLocker(debtLocker_).upgrade(toVersion_, arguments_);
     }
 
     /*********************/
@@ -66,6 +70,10 @@ contract PoolDelegate is ProxyUser {
 
     function try_debtLocker_stopLiquidation(address debtLocker_) external returns (bool ok_) {
         ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.stopLiquidation.selector));
+    }
+    
+    function try_debtLocker_upgrade(address debtLocker_, uint256 toVersion_, bytes memory arguments_) external returns (bool ok_) {
+        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IMapleProxied.upgrade.selector, toVersion_, arguments_));
     }
 
 }

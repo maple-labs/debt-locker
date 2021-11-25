@@ -12,7 +12,7 @@ import { IERC20Like, IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IPoolFactoryL
 
 import { DebtLockerStorage } from "./DebtLockerStorage.sol";
 
-/// @title DebtLocker holds custody of LoanFDT tokens.
+/// @title DebtLocker interacts with Loans on behalf of PoolV1
 contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
     /********************************/
