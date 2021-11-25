@@ -15,21 +15,30 @@ import { DebtLockerStorage } from "./DebtLockerStorage.sol";
 /// @title DebtLocker interacts with Loans on behalf of PoolV1
 contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
+    /*****************/
+    /*** Modifiers ***/
+    /*****************/
+
+    modifier live() {
+        require(!IMapleProxyFactory(_factory()).isProtocolPaused(), "DL:PROTOCOL_PAUSED");
+        _;
+    }
+
     /********************************/
     /*** Administrative Functions ***/
     /********************************/
 
-    function migrate(address migrator_, bytes calldata arguments_) external override {
+    function migrate(address migrator_, bytes calldata arguments_) external override live {
         require(msg.sender == _factory(),        "DL:M:NOT_FACTORY");
         require(_migrate(migrator_, arguments_), "DL:M:FAILED");
     }
 
-    function setImplementation(address newImplementation_) external override {
+    function setImplementation(address newImplementation_) external override live {
         require(msg.sender == _factory(),               "DL:SI:NOT_FACTORY");
         require(_setImplementation(newImplementation_), "DL:SI:FAILED");
     }
 
-    function upgrade(uint256 toVersion_, bytes calldata arguments_) external override {
+    function upgrade(uint256 toVersion_, bytes calldata arguments_) external override live {
         require(msg.sender == _getPoolDelegate(), "DL:U:NOT_POOL_DELEGATE");
 
         emit Upgraded(toVersion_, arguments_);
@@ -41,7 +50,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Pool Delegate Functions ***/
     /*******************************/
 
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) override external {
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) override external live {
         require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
 
         IMapleLoanLike loan_ = IMapleLoanLike(_loan);
@@ -66,13 +75,13 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
-    function setAllowedSlippage(uint256 allowedSlippage_) external override {
+    function setAllowedSlippage(uint256 allowedSlippage_) external override live {
         require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
 
         emit AllowedSlippageSet(_allowedSlippage = allowedSlippage_);
     }
 
-    function setAuctioneer(address auctioneer_) external override {
+    function setAuctioneer(address auctioneer_) external override live {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         emit AuctioneerSet(auctioneer_);
@@ -80,13 +89,13 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         Liquidator(_liquidator).setAuctioneer(auctioneer_);
     }
 
-    function setFundsToCapture(uint256 amount_) override external {
+    function setFundsToCapture(uint256 amount_) override external live {
         require(msg.sender == _getPoolDelegate(), "DL:SFTC:NOT_PD");
 
         emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
 
-    function setMinRatio(uint256 minRatio_) external override {
+    function setMinRatio(uint256 minRatio_) external override live {
         require(msg.sender == _getPoolDelegate(), "DL:SMR:NOT_PD");
 
         emit MinRatioSet(_minRatio = minRatio_);
@@ -103,7 +112,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
     // TODO: Consider adding pullFunds function, calling liquidator.pullFunds()
 
-    function triggerDefault() external override {
+    function triggerDefault() external override live {
         require(msg.sender == _pool, "DL:TD:NOT_POOL");
 
         require(
@@ -134,6 +143,70 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
             ),
             "DL:TD:TRANSFER"
        );
+    }
+
+    /**************************/
+    /*** Internal Functions ***/
+    /**************************/
+
+    function _handleClaim() internal returns (uint256[7] memory details_) {
+        // Get loan state variables needed
+        uint256 claimableFunds = IMapleLoanLike(_loan).claimableFunds();
+
+        require(claimableFunds > uint256(0), "DL:HC:NOTHING_TO_CLAIM");
+
+        // Send funds to pool
+        IMapleLoanLike(_loan).claimFunds(claimableFunds, _pool);
+
+        uint256 currentPrincipalRemaining = IMapleLoanLike(_loan).principal();
+
+        // Determine how much of `claimableFunds` is principal
+        uint256 principalPortion = _principalRemainingAtLastClaim - currentPrincipalRemaining;
+
+        // Update state variables
+        _principalRemainingAtLastClaim = currentPrincipalRemaining;
+
+        // Set return values
+        // Note: All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
+        // return the fees distribution to the pool.
+        details_[0] = claimableFunds;
+        details_[1] = claimableFunds - principalPortion;
+        details_[2] = principalPortion;
+
+        uint256 amountOfFundsToCapture = _fundsToCapture;
+
+        if (amountOfFundsToCapture > uint256(0)) {
+            details_[0] += amountOfFundsToCapture;
+            details_[2] += amountOfFundsToCapture;
+
+            _fundsToCapture = uint256(0);
+
+            require(ERC20Helper.transfer(IMapleLoanLike(_loan).fundsAsset(), _pool, amountOfFundsToCapture), "DL:HC:CAPTURE_FAILED");
+        }
+    }
+
+    function _handleClaimOfRepossessed() internal returns (uint256[7] memory details_) {
+        require(!_isLiquidationActive(), "DL:HCOR:LIQ_NOT_FINISHED");
+
+        address fundsAsset       = IMapleLoanLike(_loan).fundsAsset();
+        uint256 principalToCover = _principalRemainingAtLastClaim;      // Principal remaining at time of liquidation
+        uint256 fundsCaptured    = _fundsToCapture;
+
+        // Funds recovered from liquidation and any unclaimed previous payment amounts
+        uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;
+
+        // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
+        // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
+        details_[0] = recoveredFunds + fundsCaptured;
+        details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
+        details_[2] = fundsCaptured;
+        details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
+        details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
+
+        _fundsToCapture = uint256(0);
+        _repossessed    = false;
+
+        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
     }
 
     /**********************/
@@ -216,70 +289,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
     function treasuryFee() external view override returns (uint256 treasuryFee_) {
         return IMapleGlobalsLike(_getGlobals()).treasuryFee();
-    }
-
-    /**************************/
-    /*** Internal Functions ***/
-    /**************************/
-
-    function _handleClaim() internal returns (uint256[7] memory details_) {
-        // Get loan state variables needed
-        uint256 claimableFunds = IMapleLoanLike(_loan).claimableFunds();
-
-        require(claimableFunds > uint256(0), "DL:HC:NOTHING_TO_CLAIM");
-
-        // Send funds to pool
-        IMapleLoanLike(_loan).claimFunds(claimableFunds, _pool);
-
-        uint256 currentPrincipalRemaining = IMapleLoanLike(_loan).principal();
-
-        // Determine how much of `claimableFunds` is principal
-        uint256 principalPortion = _principalRemainingAtLastClaim - currentPrincipalRemaining;
-
-        // Update state variables
-        _principalRemainingAtLastClaim = currentPrincipalRemaining;
-
-        // Set return values
-        // Note: All fees get deducted and transferred during `loan.fundLoan()` that omits the need to
-        // return the fees distribution to the pool.
-        details_[0] = claimableFunds;
-        details_[1] = claimableFunds - principalPortion;
-        details_[2] = principalPortion;
-
-        uint256 amountOfFundsToCapture = _fundsToCapture;
-
-        if (amountOfFundsToCapture > uint256(0)) {
-            details_[0] += amountOfFundsToCapture;
-            details_[2] += amountOfFundsToCapture;
-
-            _fundsToCapture = uint256(0);
-
-            require(ERC20Helper.transfer(IMapleLoanLike(_loan).fundsAsset(), _pool, amountOfFundsToCapture), "DL:HC:CAPTURE_FAILED");
-        }
-    }
-
-    function _handleClaimOfRepossessed() internal returns (uint256[7] memory details_) {
-        require(!_isLiquidationActive(), "DL:HCOR:LIQ_NOT_FINISHED");
-
-        address fundsAsset       = IMapleLoanLike(_loan).fundsAsset();
-        uint256 principalToCover = _principalRemainingAtLastClaim;      // Principal remaining at time of liquidation
-        uint256 fundsCaptured    = _fundsToCapture;
-
-        // Funds recovered from liquidation and any unclaimed previous payment amounts
-        uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;
-
-        // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
-        // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
-        details_[0] = recoveredFunds + fundsCaptured;
-        details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
-        details_[2] = fundsCaptured;
-        details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
-        details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
-
-        _fundsToCapture = uint256(0);
-        _repossessed    = false;
-
-        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
     }
 
     /*******************************/
