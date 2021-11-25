@@ -23,16 +23,21 @@ interface IDebtLocker is IMapleProxied {
     event AuctioneerSet(address newAuctioneer_);
 
     /**
-     * @dev   Emitted when `setMinRatio` is called.
-     * @param newMinRatio_ New value for `minRatio`.
-     */
-    event MinRatioSet(uint256 newMinRatio_);
-
-    /**
      * @dev   Emitted when `fundsToCapture` is set.
      * @param amount_ The amount of funds that will be captured next claim.
      */
     event FundsToCaptureSet(uint256 amount_);
+
+    /**
+     * @dev   Emitted when `stopLiquidation` is called.
+     */
+    event LiquidationStopped();
+
+    /**
+     * @dev   Emitted when `setMinRatio` is called.
+     * @param newMinRatio_ New value for `minRatio`.
+     */
+    event MinRatioSet(uint256 newMinRatio_);
 
     /*****************/
     /*** Functions ***/
@@ -101,7 +106,7 @@ interface IDebtLocker is IMapleProxied {
     function setMinRatio(uint256 minRatio_) external;
 
     /**
-     * @dev   Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.
+     * @dev    Returns the expected amount to be returned to the liquidator during a flash borrower liquidation.
      * @param  swapAmount_   Amount of collateralAsset being swapped.
      * @return returnAmount_ Amount of fundsAsset that must be returned in the same transaction.
      */
@@ -112,6 +117,12 @@ interface IDebtLocker is IMapleProxied {
      * @param amount_ The amount of funds that should be captured next claim.
      */
     function setFundsToCapture(uint256 amount_) external;
+
+    /**
+     * @dev Called by the PoolDelegate in case of a DoS, where a user transfers small amounts of collateralAsset into the Liquidator
+     * @dev to make `_isLiquidationActive` remain true.
+     */
+    function stopLiquidation() external;
 
     /*************/
     /*** State ***/
