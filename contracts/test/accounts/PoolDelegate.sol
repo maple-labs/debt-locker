@@ -31,6 +31,10 @@ contract PoolDelegate is ProxyUser {
         IDebtLocker(debtLocker_).setMinRatio(minRatio_);
     }
 
+    function debtLocker_stopLiquidation(address debtLocker_) external {
+        IDebtLocker(debtLocker_).stopLiquidation();
+    }
+
     /*********************/
     /*** Try Functions ***/
     /*********************/
@@ -58,6 +62,10 @@ contract PoolDelegate is ProxyUser {
 
     function try_debtLocker_setMinRatio(address debtLocker_, uint256 minRatio_) external returns (bool ok_) {
         ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.setMinRatio.selector, minRatio_));
+    }
+
+    function try_debtLocker_stopLiquidation(address debtLocker_) external returns (bool ok_) {
+        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.stopLiquidation.selector));
     }
 
 }

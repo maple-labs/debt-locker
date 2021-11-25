@@ -430,6 +430,57 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[6], 0);                                   // Zero shortfall since principalToCover == amountRecovered
     }
 
+    function test_liquidation_dos_prevention(uint256 principalRequested_, uint256 collateralRequired_) public {
+
+        /**********************************/
+        /*** Create Loan and DebtLocker ***/
+        /**********************************/
+
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
+        collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 10);
+
+        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
+
+        // Mint collateral into loan, representing 10x value since market value is $10
+        // TODO: Change this when DL unit testing PR gets merged
+        collateralAsset.mint(address(loan), collateralRequired_);
+
+        /*************************************/
+        /*** Trigger default and liquidate ***/
+        /*************************************/
+
+        hevm.warp(loan.nextPaymentDueDate() + loan.gracePeriod() + 1);
+
+        pool.triggerDefault(address(debtLocker));
+
+        address liquidator = debtLocker.liquidator();
+
+        if (collateralRequired_ > 0) {
+            MockLiquidationStrategy mockLiquidationStrategy = new MockLiquidationStrategy();
+
+            mockLiquidationStrategy.flashBorrowLiquidation(liquidator, collateralRequired_, address(collateralAsset), address(fundsAsset));
+        }
+
+        assertTrue(collateralAsset.balanceOf(liquidator) == 0);  // _isLiquidationActive == false
+
+        // Mint 1 wei of collateralAsset into liquidator, simulating DoS attack
+        // Attacker could frontrun PD claim and continue to transfer small amounts into the liquidator
+        collateralAsset.mint(liquidator, 1);  
+
+        assertTrue(collateralAsset.balanceOf(liquidator) > 0);  // _isLiquidationActive == true
+
+        try pool.claim(address(debtLocker)) { assertTrue(false, "Able to claim while _isLiquidationActive == true"); } catch { }
+
+        assertTrue(debtLocker.liquidator() != address(0));  // _isLiquidationActive == true
+
+        assertTrue(!notPoolDelegate.try_debtLocker_stopLiquidation(address(debtLocker)));  // Non-PD can't call
+        assertTrue(    poolDelegate.try_debtLocker_stopLiquidation(address(debtLocker)));  // PD can call
+
+        assertTrue(debtLocker.liquidator() == address(0));  // _isLiquidationActive == false
+
+        pool.claim(address(debtLocker));  // Can successfully claim
+    }
+
     function test_setAllowedSlippage() external {
         loan = _createLoan(1_000_000);
 
