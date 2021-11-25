@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.7;
 
-import { IMapleProxyFactory, MapleProxyFactory } from "../modules/maple-proxy-factory/contracts/MapleProxyFactory.sol";
+import { MapleProxyFactory } from "../modules/maple-proxy-factory/contracts/MapleProxyFactory.sol";
 
 import { IDebtLockerFactory } from "./interfaces/IDebtLockerFactory.sol";
 
@@ -12,10 +12,9 @@ contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
 
     constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {}
 
-    function newLocker(address loan_) external override returns (address debtLocker_) {
-        // TODO: consider making ProxyFactory.createInstance take in a memory arguments so we can do:
-        //       `debtLocker_ = super.createInstance(abi.encode(loan_, msg.sender));`
+    uint8 public constant factoryType = uint8(1);
 
+    function newLocker(address loan_) external override returns (address debtLocker_) {
         bytes memory arguments = abi.encode(loan_, msg.sender);
 
         bool success_;
@@ -27,6 +26,5 @@ contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
 
     function createInstance(bytes calldata arguments_, bytes32 salt_) public override(IMapleProxyFactory, MapleProxyFactory) virtual returns (address instance_) {}
 
-    function getDeterministicInstanceAddress(bytes calldata arguments_, bytes32 salt_) public override virtual returns (address instanceAddress_) {}
 
 }

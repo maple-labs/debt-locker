@@ -73,6 +73,10 @@ contract MockLoan {
     function principalRequested() external view returns (uint256 principalRequested_) {
         return 0;
     }
+
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
+        // Empty, just testing ACL
+    }
     
 }
 
