@@ -28,6 +28,8 @@ interface IMapleGlobalsLike {
 
    function mapleTreasury() external view returns (address mapleTreasury_);
 
+   function protocolPaused() external view returns (bool protocolPaused_);
+
    function treasuryFee() external view returns (uint256 treasuryFee_);
 
 }

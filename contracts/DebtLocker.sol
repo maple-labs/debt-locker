@@ -19,8 +19,8 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Modifiers ***/
     /*****************/
 
-    modifier live() {
-        require(!IMapleProxyFactory(_factory()).isProtocolPaused(), "DL:PROTOCOL_PAUSED");
+    modifier whenProtocolNotPaused() {
+        require(!IMapleGlobalsLike(_getGlobals()).protocolPaused(), "DL:PROTOCOL_PAUSED");
         _;
     }
 
@@ -28,17 +28,17 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Administrative Functions ***/
     /********************************/
 
-    function migrate(address migrator_, bytes calldata arguments_) external override live {
+    function migrate(address migrator_, bytes calldata arguments_) external override {
         require(msg.sender == _factory(),        "DL:M:NOT_FACTORY");
         require(_migrate(migrator_, arguments_), "DL:M:FAILED");
     }
 
-    function setImplementation(address newImplementation_) external override live {
+    function setImplementation(address newImplementation_) external override {
         require(msg.sender == _factory(),               "DL:SI:NOT_FACTORY");
         require(_setImplementation(newImplementation_), "DL:SI:FAILED");
     }
 
-    function upgrade(uint256 toVersion_, bytes calldata arguments_) external override live {
+    function upgrade(uint256 toVersion_, bytes calldata arguments_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:U:NOT_POOL_DELEGATE");
 
         emit Upgraded(toVersion_, arguments_);
@@ -50,7 +50,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Pool Delegate Functions ***/
     /*******************************/
 
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) override external live {
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
 
         IMapleLoanLike loan_ = IMapleLoanLike(_loan);
@@ -69,19 +69,19 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _principalRemainingAtLastClaim = loan_.principal();
     }
 
-    function claim() external override returns (uint256[7] memory details_) {
+    function claim() external override whenProtocolNotPaused returns (uint256[7] memory details_) {
         require(msg.sender == _pool, "DL:C:NOT_POOL");
 
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
-    function setAllowedSlippage(uint256 allowedSlippage_) external override live {
+    function setAllowedSlippage(uint256 allowedSlippage_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
 
         emit AllowedSlippageSet(_allowedSlippage = allowedSlippage_);
     }
 
-    function setAuctioneer(address auctioneer_) external override live {
+    function setAuctioneer(address auctioneer_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         emit AuctioneerSet(auctioneer_);
@@ -112,7 +112,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
     // TODO: Consider adding pullFunds function, calling liquidator.pullFunds()
 
-    function triggerDefault() external override live {
+    function triggerDefault() external override whenProtocolNotPaused {
         require(msg.sender == _pool, "DL:TD:NOT_POOL");
 
         require(
