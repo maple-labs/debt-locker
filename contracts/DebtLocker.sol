@@ -75,7 +75,8 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
-    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override whenProtocolNotPaused {
+    // TODO: Discuss pros/cons of pause on this function
+    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
         
         Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
@@ -115,8 +116,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
         emit LiquidationStopped();
     }
-
-    // TODO: Consider adding pullFunds function, calling liquidator.pullFunds()
 
     function triggerDefault() external override whenProtocolNotPaused {
         require(msg.sender == _pool, "DL:TD:NOT_POOL");

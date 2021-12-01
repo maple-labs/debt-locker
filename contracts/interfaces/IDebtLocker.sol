@@ -75,7 +75,7 @@ interface IDebtLocker is IMapleProxied {
     /**
      * @dev   Allows the poolDelegate to pull some funds from liquidator contract
      * @param token_       The token address of the funds.
-     * @param destination_ The destination address of captured funds
+     * @param destination_ The destination address of captured funds.
      * @param amount_      The amount to pull.
      */
     function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external;
