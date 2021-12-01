@@ -8,7 +8,9 @@ import { IDebtLockerFactory } from "./interfaces/IDebtLockerFactory.sol";
 /// @title Deploys DebtLocker proxy instances.
 contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
 
-    constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {}
+    constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {
+        require(mapleGlobals_ != address(0));
+    }
 
     uint8 public constant factoryType = uint8(1);
 

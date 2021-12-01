@@ -56,6 +56,9 @@ contract DebtLockerTest is TestUtils {
         collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
         fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
 
+        globals.setValidCollateralAsset(address(collateralAsset), true);
+        globals.setValidLiquidityAsset(address(fundsAsset), true);
+
         // Deploying and registering DebtLocker implementation and initializer
         address implementation = address(new DebtLocker());
         address initializer    = address(new DebtLockerInitializer());
@@ -168,6 +171,38 @@ contract DebtLockerTest is TestUtils {
         assertEq(details[4], 0);           // `excessReturned` is always zero since new loans cannot be over-funded
         assertEq(details[5], 0);           // Total recovered from liquidation is zero
         assertEq(details[6], 0);           // Zero shortfall since no liquidation
+    }
+
+    function test_initialize_invalidCollateralAsset() public {
+        loan = _createLoan(1_000_000);
+
+        assertTrue(globals.isValidCollateralAsset(loan.collateralAsset()));
+
+        globals.setValidCollateralAsset(loan.collateralAsset(), false);
+
+        assertTrue(!globals.isValidCollateralAsset(loan.collateralAsset()));
+
+        try pool.createDebtLocker(address(dlFactory), address(loan)) { assertTrue(false, "Able to create DL with invalid collateralAsset"); } catch { }
+
+        globals.setValidCollateralAsset(loan.collateralAsset(), true);
+
+        assertTrue(pool.createDebtLocker(address(dlFactory), address(loan)) != address(0));
+    }
+
+    function test_initialize_invalidLiquidityAsset() public {
+        loan = _createLoan(1_000_000);
+
+        assertTrue(globals.isValidLiquidityAsset(loan.fundsAsset()));
+
+        globals.setValidLiquidityAsset(loan.fundsAsset(), false);
+
+        assertTrue(!globals.isValidLiquidityAsset(loan.fundsAsset()));
+
+        try pool.createDebtLocker(address(dlFactory), address(loan)) { assertTrue(false, "Able to create DL with invalid fundsAsset"); } catch { }
+
+        globals.setValidLiquidityAsset(loan.fundsAsset(), true);
+
+        assertTrue(pool.createDebtLocker(address(dlFactory), address(loan)) != address(0));
     }
 
     function test_liquidation_shortfall(uint256 principalRequested_, uint256 collateralRequired_) public {

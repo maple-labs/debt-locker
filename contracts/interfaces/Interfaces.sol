@@ -18,13 +18,17 @@ interface IMapleGlobalsLike {
 
    function defaultUniswapPath(address fromAsset_, address toAsset_) external view returns (address intermediateAsset_);
 
+   function getLatestPrice(address asset_) external view returns (uint256 price_);
+
    function investorFee() external view returns (uint256 investorFee_);
+
+   function isValidCollateralAsset(address asset_) external view returns (bool isValid_);
+
+   function isValidLiquidityAsset(address asset_) external view returns (bool isValid_);
 
    function mapleTreasury() external view returns (address mapleTreasury_);
 
    function treasuryFee() external view returns (uint256 treasuryFee_);
-
-   function getLatestPrice(address asset_) external view returns (uint256 price_);
 
 }
 
