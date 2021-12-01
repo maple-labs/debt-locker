@@ -1,37 +1,38 @@
 {
-  "language": "Solidity",
-  "sources": {
-    "contracts/DebtLocker.sol": {
-      "urls": ["contracts/DebtLocker.sol"]
+    "language": "Solidity",
+    "sources": {
+        "contracts/DebtLocker.sol": {
+            "urls": ["contracts/DebtLocker.sol"]
+        },
+        "contracts/DebtLockerFactory.sol": {
+            "urls": ["contracts/DebtLockerFactory.sol"]
+        },
+        "contracts/DebtLockerInitializer.sol": {
+            "urls": ["contracts/DebtLockerInitializer.sol"]
+        },
+        "contracts/test/DebtLocker.t.sol": {
+            "urls": ["contracts/test/DebtLocker.t.sol"]
+        }
     },
-    "contracts/test/DebtLocker.t.sol": {
-      "urls": ["contracts/test/DebtLocker.t.sol"]
-    },
-    "contracts/DebtLockerInitializer.sol": {
-      "urls": ["contracts/DebtLockerInitializer.sol"]
-    },
-    "contracts/DebtLockerStorage.sol": {
-      "urls": ["contracts/DebtLockerStorage.sol"]
+    "settings": {
+        "optimizer": {
+            "enabled": true,
+            "runs": 200
+        },
+        "outputSelection": {
+            "*": {
+                "*": [
+                    "abi",
+                    "metadata",
+                    "evm.bytecode",
+                    "evm.deployedBytecode",
+                    "evm.gasEstimates"
+                ],
+                "": ["ast"]
+            }
+        },
+        "metadata": {
+            "bytecodeHash": "none"
+        }
     }
-  },
-  "settings": {
-    "optimizer": {
-      "enabled": false
-    },
-    "outputSelection": {
-      "*": {
-        "*": [
-          "abi",
-          "metadata",
-          "evm.bytecode",
-          "evm.deployedBytecode",
-          "evm.gasEstimates"
-        ],
-        "": ["ast"]
-      }
-    },
-    "metadata": {
-      "bytecodeHash": "none"
-    }
-  }
 }
