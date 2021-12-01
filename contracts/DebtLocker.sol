@@ -15,6 +15,15 @@ import { DebtLockerStorage } from "./DebtLockerStorage.sol";
 /// @title DebtLocker interacts with Loans on behalf of PoolV1
 contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
+    /*****************/
+    /*** Modifiers ***/
+    /*****************/
+
+    modifier whenProtocolNotPaused() {
+        require(!IMapleGlobalsLike(_getGlobals()).protocolPaused(), "DL:PROTOCOL_PAUSED");
+        _;
+    }
+
     /********************************/
     /*** Administrative Functions ***/
     /********************************/
@@ -41,7 +50,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Pool Delegate Functions ***/
     /*******************************/
 
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) override external {
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
 
         IMapleLoanLike loan_ = IMapleLoanLike(_loan);
@@ -60,19 +69,26 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _principalRemainingAtLastClaim = loan_.principal();
     }
 
-    function claim() external override returns (uint256[7] memory details_) {
+    function claim() external override whenProtocolNotPaused returns (uint256[7] memory details_) {
         require(msg.sender == _pool, "DL:C:NOT_POOL");
 
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
-    function setAllowedSlippage(uint256 allowedSlippage_) external override {
+    // TODO: Discuss pros/cons of pause on this function
+    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override {
+        require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
+        
+        Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
+    }
+
+    function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
 
         emit AllowedSlippageSet(_allowedSlippage = allowedSlippage_);
     }
 
-    function setAuctioneer(address auctioneer_) external override {
+    function setAuctioneer(address auctioneer_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         emit AuctioneerSet(auctioneer_);
@@ -80,13 +96,13 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         Liquidator(_liquidator).setAuctioneer(auctioneer_);
     }
 
-    function setFundsToCapture(uint256 amount_) override external {
+    function setFundsToCapture(uint256 amount_) override external whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SFTC:NOT_PD");
 
         emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
 
-    function setMinRatio(uint256 minRatio_) external override {
+    function setMinRatio(uint256 minRatio_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SMR:NOT_PD");
 
         emit MinRatioSet(_minRatio = minRatio_);
@@ -101,9 +117,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         emit LiquidationStopped();
     }
 
-    // TODO: Consider adding pullFunds function, calling liquidator.pullFunds()
-
-    function triggerDefault() external override {
+    function triggerDefault() external override whenProtocolNotPaused {
         require(msg.sender == _pool, "DL:TD:NOT_POOL");
 
         require(
@@ -134,88 +148,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
             ),
             "DL:TD:TRANSFER"
        );
-    }
-
-    /**********************/
-    /*** View Functions ***/
-    /**********************/
-
-    function allowedSlippage() external view override returns (uint256 allowedSlippage_) {
-        return _allowedSlippage;
-    }
-
-    function amountRecovered() external view override returns (uint256 amountRecovered_) {
-        return _amountRecovered;
-    }
-
-    function factory() external view override returns (address factory_) {
-        return _factory();
-    }
-
-    function fundsToCapture() external view override returns (uint256 fundsToCapture_) {
-        return _fundsToCapture;
-    }
-
-    function getExpectedAmount(uint256 swapAmount_) external view override returns (uint256 returnAmount_) {
-        address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
-        address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
-
-        uint256 oracleAmount =
-            swapAmount_
-                * IMapleGlobalsLike(_getGlobals()).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
-                * 10 ** IERC20Like(fundsAsset).decimals()                           // Convert to `toAsset` decimal precision.
-                * (10_000 - _allowedSlippage)                                       // Multiply by allowed slippage basis points
-                / IMapleGlobalsLike(_getGlobals()).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
-                / 10 ** IERC20Like(collateralAsset).decimals()                      // Convert from `fromAsset` decimal precision.
-                / 10_000;                                                           // Divide basis points for slippage
-
-        uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** IERC20Like(collateralAsset).decimals();
-
-        return oracleAmount > minRatioAmount ? oracleAmount : minRatioAmount;
-    }
-
-    function implementation() external view override returns (address) {
-        return _implementation();
-    }
-
-    function investorFee() external view override returns (uint256 investorFee_) {
-        return IMapleGlobalsLike(_getGlobals()).investorFee();
-    }
-
-    function liquidator() external view override returns (address liquidator_) {
-        return _liquidator;
-    }
-
-    function loan() external view override returns (address loan_) {
-        return _loan;
-    }
-
-    function mapleTreasury() external view override returns (address mapleTreasury_) {
-        return IMapleGlobalsLike(_getGlobals()).mapleTreasury();
-    }
-
-    function minRatio() external view override returns (uint256 minRatio_) {
-        return _minRatio;
-    }
-
-    function pool() external view override returns (address pool_) {
-        return _pool;
-    }
-
-    function poolDelegate() external override view returns(address) {
-        return _getPoolDelegate();
-    }
-
-    function principalRemainingAtLastClaim() external view override returns (uint256 principalRemainingAtLastClaim_) {
-        return _principalRemainingAtLastClaim;
-    }
-
-    function repossessed() external view override returns (bool repossessed_) {
-        return _repossessed;
-    }
-
-    function treasuryFee() external view override returns (uint256 treasuryFee_) {
-        return IMapleGlobalsLike(_getGlobals()).treasuryFee();
     }
 
     /**************************/
@@ -280,6 +212,88 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _repossessed    = false;
 
         require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
+    }
+
+    /**********************/
+    /*** View Functions ***/
+    /**********************/
+
+    function allowedSlippage() external view override returns (uint256 allowedSlippage_) {
+        return _allowedSlippage;
+    }
+
+    function amountRecovered() external view override returns (uint256 amountRecovered_) {
+        return _amountRecovered;
+    }
+
+    function factory() external view override returns (address factory_) {
+        return _factory();
+    }
+
+    function fundsToCapture() external view override returns (uint256 fundsToCapture_) {
+        return _fundsToCapture;
+    }
+
+    function getExpectedAmount(uint256 swapAmount_) external view override whenProtocolNotPaused returns (uint256 returnAmount_) {
+        address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
+        address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
+
+        uint256 oracleAmount =
+            swapAmount_
+                * IMapleGlobalsLike(_getGlobals()).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
+                * 10 ** IERC20Like(fundsAsset).decimals()                           // Convert to `toAsset` decimal precision.
+                * (10_000 - _allowedSlippage)                                       // Multiply by allowed slippage basis points
+                / IMapleGlobalsLike(_getGlobals()).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
+                / 10 ** IERC20Like(collateralAsset).decimals()                      // Convert from `fromAsset` decimal precision.
+                / 10_000;                                                           // Divide basis points for slippage
+
+        uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** IERC20Like(collateralAsset).decimals();
+
+        return oracleAmount > minRatioAmount ? oracleAmount : minRatioAmount;
+    }
+
+    function implementation() external view override returns (address) {
+        return _implementation();
+    }
+
+    function investorFee() external view override returns (uint256 investorFee_) {
+        return IMapleGlobalsLike(_getGlobals()).investorFee();
+    }
+
+    function liquidator() external view override returns (address liquidator_) {
+        return _liquidator;
+    }
+
+    function loan() external view override returns (address loan_) {
+        return _loan;
+    }
+
+    function mapleTreasury() external view override returns (address mapleTreasury_) {
+        return IMapleGlobalsLike(_getGlobals()).mapleTreasury();
+    }
+
+    function minRatio() external view override returns (uint256 minRatio_) {
+        return _minRatio;
+    }
+
+    function pool() external view override returns (address pool_) {
+        return _pool;
+    }
+
+    function poolDelegate() external override view returns(address) {
+        return _getPoolDelegate();
+    }
+
+    function principalRemainingAtLastClaim() external view override returns (uint256 principalRemainingAtLastClaim_) {
+        return _principalRemainingAtLastClaim;
+    }
+
+    function repossessed() external view override returns (bool repossessed_) {
+        return _repossessed;
+    }
+
+    function treasuryFee() external view override returns (uint256 treasuryFee_) {
+        return IMapleGlobalsLike(_getGlobals()).treasuryFee();
     }
 
     /*******************************/

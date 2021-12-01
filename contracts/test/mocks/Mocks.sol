@@ -57,6 +57,7 @@ contract MockLiquidationStrategy {
 
         ILiquidatorLike(lender_).liquidatePortion(
             swapAmount_,
+            type(uint256).max,
             abi.encodeWithSelector(this.swap.selector, collateralAsset_, fundsAsset_, swapAmount_, repaymentAmount)
         );
     }
@@ -86,6 +87,8 @@ contract MockGlobals {
 
     mapping(address => bool) public isValidCollateralAsset;
     mapping(address => bool) public isValidLiquidityAsset;
+    
+    bool public protocolPaused;
 
     mapping(address => uint256) assetPrices;
 
@@ -99,6 +102,10 @@ contract MockGlobals {
 
     function setPrice(address asset_, uint256 price_) external {
         assetPrices[asset_] = price_;
+    }
+
+    function setProtocolPause(bool paused_) external {
+        protocolPaused = paused_;
     }
 
     function investorFee() external pure returns (uint256 investorFee_) {
