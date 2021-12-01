@@ -17,13 +17,13 @@ import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
 
 import { DebtLockerHarness }       from "./mocks/DebtLockerHarness.sol";
 import { ManipulatableDebtLocker } from "./mocks/ManipulatableDebtLocker.sol";
-import { 
-    MockGlobals, 
-    MockLiquidationStrategy, 
+import {
+    MockGlobals,
+    MockLiquidationStrategy,
     MockLoan,
-    MockMigrator, 
-    MockPool, 
-    MockPoolFactory 
+    MockMigrator,
+    MockPool,
+    MockPoolFactory
 } from "./mocks/Mocks.sol";
 
 interface Hevm {
@@ -108,7 +108,7 @@ contract DebtLockerTests is TestUtils {
 
         debtLocker_ = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan_)));
 
-        _fundAndDrawdownLoan(address(loan_), address(debtLocker_));        
+        _fundAndDrawdownLoan(address(loan_), address(debtLocker_));
     }
 
     /*******************/
@@ -417,7 +417,7 @@ contract DebtLockerTests is TestUtils {
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
-        
+
         ( ConstructableMapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired);
 
         /*************************************/
@@ -528,7 +528,7 @@ contract DebtLockerTests is TestUtils {
 
         pool.claim(address(debtLocker));  // Can successfully claim
     }
-    
+
     /****************************/
     /*** Access Control Tests ***/
     /****************************/
@@ -872,7 +872,7 @@ contract DebtLockerTests is TestUtils {
     /*** Internal View Function Tests ***/
     /************************************/
 
-    function _registerDebtLockerHarnesss() internal {
+    function _registerDebtLockerHarness() internal {
         // Deploying and registering DebtLocker implementation and initializer
         address implementation = address(new DebtLockerHarness());
         address initializer    = address(new DebtLockerInitializer());
@@ -882,7 +882,7 @@ contract DebtLockerTests is TestUtils {
     }
 
     function test_getGlobals() public {
-        _registerDebtLockerHarnesss();
+        _registerDebtLockerHarness();
 
         ConstructableMapleLoan loan = _createLoan(1_000_000, 30_000);
 
@@ -892,7 +892,7 @@ contract DebtLockerTests is TestUtils {
     }
 
     function test_getPoolDelegate() public {
-        _registerDebtLockerHarnesss();
+        _registerDebtLockerHarness();
 
         ConstructableMapleLoan loan = _createLoan(1_000_000, 30_000);
 
@@ -902,7 +902,7 @@ contract DebtLockerTests is TestUtils {
     }
 
     function test_isLiquidationActive() public {
-        _registerDebtLockerHarnesss();
+        _registerDebtLockerHarness();
 
         ConstructableMapleLoan loan = _createLoan(1_000_000, 30_000);
 

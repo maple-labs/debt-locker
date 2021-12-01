@@ -69,7 +69,7 @@ contract MockLiquidationStrategy {
 }
 
 contract MockLoan {
-    
+
     function principalRequested() external view returns (uint256 principalRequested_) {
         return 0;
     }
@@ -77,12 +77,14 @@ contract MockLoan {
     function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
         // Empty, just testing ACL
     }
-    
+
 }
 
 contract MockGlobals {
 
     address public governor;
+
+    bool public protocolPaused;
 
     mapping(address => bool) public isValidCollateralAsset;
     mapping(address => bool) public isValidLiquidityAsset;
@@ -99,6 +101,10 @@ contract MockGlobals {
 
     function setPrice(address asset_, uint256 price_) external {
         assetPrices[asset_] = price_;
+    }
+
+    function setProtocolPause(bool paused_) external {
+        protocolPaused = paused_;
     }
 
     function investorFee() external pure returns (uint256 investorFee_) {
