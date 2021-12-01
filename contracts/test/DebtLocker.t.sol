@@ -494,10 +494,6 @@ contract DebtLockerTests is TestUtils {
 
         ( ConstructableMapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired_);
 
-        // Mint collateral into loan, representing 10x value since market value is $10
-        // TODO: Change this when DL unit testing PR gets merged
-        collateralAsset.mint(address(loan), collateralRequired_);
-
         /*************************************/
         /*** Trigger default and liquidate ***/
         /*************************************/
@@ -510,7 +506,6 @@ contract DebtLockerTests is TestUtils {
 
         if (collateralRequired_ > 0) {
             MockLiquidationStrategy mockLiquidationStrategy = new MockLiquidationStrategy();
-
             mockLiquidationStrategy.flashBorrowLiquidation(liquidator, collateralRequired_, address(collateralAsset), address(fundsAsset));
         }
 
