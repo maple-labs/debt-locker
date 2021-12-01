@@ -177,7 +177,7 @@ contract DebtLockerTest is TestUtils {
         /**********************************/
 
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
-        collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 10);
+        collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 12);
 
         ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
 
