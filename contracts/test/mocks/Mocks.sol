@@ -72,6 +72,9 @@ contract MockGlobals {
 
     address public governor;
 
+    mapping(address => bool) public isValidCollateralAsset;
+    mapping(address => bool) public isValidLiquidityAsset;
+
     mapping(address => uint256) assetPrices;
 
     constructor (address governor_) {
@@ -96,6 +99,14 @@ contract MockGlobals {
 
     function mapleTreasury() external pure returns (address mapleTreasury_) {
         return address(1);
+    }
+
+    function setValidCollateralAsset(address asset_, bool valid_) external {
+        isValidCollateralAsset[asset_] = valid_;
+    }
+
+    function setValidLiquidityAsset(address asset_, bool valid_) external {
+        isValidLiquidityAsset[asset_] = valid_;
     }
 
 }
