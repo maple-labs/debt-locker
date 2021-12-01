@@ -15,9 +15,6 @@ contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
     }
 
     function newLocker(address loan_) external override returns (address debtLocker_) {
-        // TODO: consider making ProxyFactory.createInstance take in a memory arguments so we can do:
-        //       `debtLocker_ = super.createInstance(abi.encode(loan_, msg.sender));`
-
         bytes memory arguments = abi.encode(loan_, msg.sender);
 
         bool success_;

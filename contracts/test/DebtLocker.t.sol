@@ -199,7 +199,7 @@ contract DebtLockerTests is TestUtils {
     }
 
     function test_initialize_invalidCollateralAsset() public {
-        loan = _createLoan(1_000_000);
+        ConstructableMapleLoan loan = _createLoan(1_000_000, 300_000);
 
         assertTrue(globals.isValidCollateralAsset(loan.collateralAsset()));
 
@@ -215,7 +215,7 @@ contract DebtLockerTests is TestUtils {
     }
 
     function test_initialize_invalidLiquidityAsset() public {
-        loan = _createLoan(1_000_000);
+        ConstructableMapleLoan loan = _createLoan(1_000_000, 300_000);
 
         assertTrue(globals.isValidLiquidityAsset(loan.fundsAsset()));
 
@@ -492,7 +492,7 @@ contract DebtLockerTests is TestUtils {
         principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
         collateralRequired_ = constrictToRange(collateralRequired_, 1,         principalRequested_ / 10);  // Need collateral for liquidator deployment
 
-        ( loan, debtLocker ) = _createFundAndDrawdownLoan(principalRequested_);
+        ( ConstructableMapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired_);
 
         // Mint collateral into loan, representing 10x value since market value is $10
         // TODO: Change this when DL unit testing PR gets merged
