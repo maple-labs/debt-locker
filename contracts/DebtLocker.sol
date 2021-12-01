@@ -75,6 +75,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
+    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override whenProtocolNotPaused {
+        Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
+    }
+
     function setAllowedSlippage(uint256 allowedSlippage_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
 
@@ -229,7 +233,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _fundsToCapture;
     }
 
-    function getExpectedAmount(uint256 swapAmount_) external view override returns (uint256 returnAmount_) {
+    function getExpectedAmount(uint256 swapAmount_) external view override whenProtocolNotPaused returns (uint256 returnAmount_) {
         address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
         address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
 

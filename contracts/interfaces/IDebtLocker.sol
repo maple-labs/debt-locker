@@ -73,6 +73,14 @@ interface IDebtLocker is IMapleProxied {
     function mapleTreasury() external view returns (address mapleTreasury_);
 
     /**
+     * @dev   Allows the poolDelegate to pull some funds from liquidator contract
+     * @param token_       The token address of the funds.
+     * @param destination_ The destination address of captured funds
+     * @param amount_      The amount to pull.
+     */
+    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external;
+
+    /**
      * @dev Returns the annualized establishment fee that will go to the Maple Treasury.
      */
     function treasuryFee() external view returns (uint256 treasuryFee_);
