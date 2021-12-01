@@ -57,6 +57,7 @@ contract MockLiquidationStrategy {
 
         ILiquidatorLike(lender_).liquidatePortion(
             swapAmount_,
+            type(uint256).max,
             abi.encodeWithSelector(this.swap.selector, collateralAsset_, fundsAsset_, swapAmount_, repaymentAmount)
         );
     }

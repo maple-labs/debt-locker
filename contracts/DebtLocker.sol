@@ -81,13 +81,13 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
     }
 
-    function setAllowedSlippage(uint256 allowedSlippage_) external override {
+    function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
 
         emit AllowedSlippageSet(_allowedSlippage = allowedSlippage_);
     }
 
-    function setAuctioneer(address auctioneer_) external override {
+    function setAuctioneer(address auctioneer_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         emit AuctioneerSet(auctioneer_);
@@ -95,13 +95,13 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         Liquidator(_liquidator).setAuctioneer(auctioneer_);
     }
 
-    function setFundsToCapture(uint256 amount_) override external live {
+    function setFundsToCapture(uint256 amount_) override external whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SFTC:NOT_PD");
 
         emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
 
-    function setMinRatio(uint256 minRatio_) external override live {
+    function setMinRatio(uint256 minRatio_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SMR:NOT_PD");
 
         emit MinRatioSet(_minRatio = minRatio_);
