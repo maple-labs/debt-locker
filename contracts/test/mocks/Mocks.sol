@@ -68,6 +68,18 @@ contract MockLiquidationStrategy {
 
 }
 
+contract MockLoan {
+    
+    function principalRequested() external view returns (uint256 principalRequested_) {
+        return 0;
+    }
+
+    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
+        // Empty, just testing ACL
+    }
+    
+}
+
 contract MockGlobals {
 
     address public governor;
@@ -108,5 +120,11 @@ contract MockGlobals {
     function setValidLiquidityAsset(address asset_, bool valid_) external {
         isValidLiquidityAsset[asset_] = valid_;
     }
+
+}
+
+contract MockMigrator {
+
+    fallback() external { }
 
 }
