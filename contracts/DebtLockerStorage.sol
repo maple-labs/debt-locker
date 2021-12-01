@@ -15,4 +15,5 @@ contract DebtLockerStorage {
     uint256 internal _principalRemainingAtLastClaim;
 
     bool internal _repossessed;
+
 }

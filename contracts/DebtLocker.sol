@@ -32,6 +32,8 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     function upgrade(uint256 toVersion_, bytes calldata arguments_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:U:NOT_POOL_DELEGATE");
 
+        emit Upgraded(toVersion_, arguments_);
+
         IMapleProxyFactory(_factory()).upgradeInstance(toVersion_, arguments_);
     }
 
@@ -40,25 +42,26 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*******************************/
 
     function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) override external {
-        require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
+        require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
 
         IMapleLoanLike loan_ = IMapleLoanLike(_loan);
 
         require(
             (loan_.claimableFunds() + _fundsToCapture == 0) &&
             (loan_.principal() == _principalRemainingAtLastClaim),
-            "DL:TD:NEED_TO_CLAIM"
+            "DL:ANT:NEED_TO_CLAIM"
         );
 
-        require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_));
+        require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_), "DL:ANT:TRANSFER_FAILED");
 
         loan_.acceptNewTerms(refinancer_, calls_, uint256(0));
 
+        // NOTE: This must be set after accepting the new terms, which affects the loan principal.
         _principalRemainingAtLastClaim = loan_.principal();
     }
 
     function setFundsToCapture(uint256 amount_) override external {
-        require(msg.sender == _getPoolDelegate(), "DL:CFFNC:NOT_PD");
+        require(msg.sender == _getPoolDelegate(), "DL:SFTC:NOT_PD");
 
         emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
@@ -78,18 +81,18 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     function setAuctioneer(address auctioneer_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
-        Liquidator(_liquidator).setAuctioneer(auctioneer_);
-
         emit AuctioneerSet(auctioneer_);
+
+        Liquidator(_liquidator).setAuctioneer(auctioneer_);
     }
 
     function setMinRatio(uint256 minRatio_) external override {
-        require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
+        require(msg.sender == _getPoolDelegate(), "DL:SMR:NOT_PD");
 
         emit MinRatioSet(_minRatio = minRatio_);
     }
 
-    // Pool delegate can prematurely stop liquidation when there's still significant amount to be liquidated. 
+    // Pool delegate can prematurely stop liquidation when there's still significant amount to be liquidated.
     function stopLiquidation() external override {
         require(msg.sender == _getPoolDelegate(), "DL:SL:NOT_PD");
 
@@ -102,9 +105,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
     function triggerDefault() external override {
         require(msg.sender == _pool, "DL:TD:NOT_POOL");
+
         require(
-            IMapleLoanLike(_loan).claimableFunds() == 0 &&
-            IMapleLoanLike(_loan).principal() == _principalRemainingAtLastClaim,
+            (IMapleLoanLike(_loan).claimableFunds() == 0) &&
+            (IMapleLoanLike(_loan).principal() == _principalRemainingAtLastClaim),
             "DL:TD:NEED_TO_CLAIM"
         );
 
@@ -226,7 +230,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         uint256 fundsCaptured    = _fundsToCapture;
 
         // Funds recovered from liquidation and any unclaimed previous payment amounts
-        uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;  
+        uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;
 
         // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
         // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
@@ -236,10 +240,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
         details_[6] = principalToCover > recoveredFunds ? principalToCover - recoveredFunds : 0;
 
-        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
-
         _fundsToCapture = uint256(0);
         _repossessed    = false;
+
+        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
     }
 
     function _handleClaim() internal returns (uint256[7] memory details_) {
@@ -266,13 +270,15 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         details_[1] = claimableFunds - principalPortion;
         details_[2] = principalPortion;
 
-        if (_fundsToCapture > uint256(0)) {
-            details_[0] += _fundsToCapture;
-            details_[2] += _fundsToCapture;
+        uint256 amountOfFundsToCapture = _fundsToCapture;
 
-            require(ERC20Helper.transfer(IMapleLoanLike(_loan).fundsAsset(), _pool, _fundsToCapture), "DL:HC:CAPTURE_FAILED");
+        if (amountOfFundsToCapture > uint256(0)) {
+            details_[0] += amountOfFundsToCapture;
+            details_[2] += amountOfFundsToCapture;
 
             _fundsToCapture = uint256(0);
+
+            require(ERC20Helper.transfer(IMapleLoanLike(_loan).fundsAsset(), _pool, amountOfFundsToCapture), "DL:HC:CAPTURE_FAILED");
         }
     }
 
@@ -289,7 +295,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function _isLiquidationActive() internal view returns (bool) {
-        return _liquidator != address(0) && IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) > 0;
+        return (_liquidator != address(0)) && (IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) > 0);
     }
 
 }
