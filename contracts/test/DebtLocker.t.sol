@@ -500,7 +500,7 @@ contract DebtLockerTest is TestUtils {
 
         // Mint 1 wei of collateralAsset into liquidator, simulating DoS attack
         // Attacker could frontrun PD claim and continue to transfer small amounts into the liquidator
-        collateralAsset.mint(liquidator, 1);  
+        collateralAsset.mint(liquidator, 1);
 
         assertTrue(collateralAsset.balanceOf(liquidator) > 0);  // _isLiquidationActive == true
 
@@ -576,7 +576,6 @@ contract DebtLockerTest is TestUtils {
         loan.fundLoan(address(debtLocker), principalRequested_);
         loan.drawdownFunds(loan.drawableFunds(), address(1));  // Drawdown to empty funds from loan (account for estab fees)
 
-
         /**********************/
         /*** Make a payment ***/
         /**********************/
@@ -618,7 +617,7 @@ contract DebtLockerTest is TestUtils {
 
         uint256 principalAfter = loan.principal();
 
-        assertEq(principalBefore + principalIncrease_,      principalAfter);
+        assertEq(principalBefore + principalIncrease_,       principalAfter);
         assertEq(debtLocker.principalRemainingAtLastClaim(), principalAfter);
     }
 

@@ -54,9 +54,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
         require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_), "DL:ANT:TRANSFER_FAILED");
 
-        _principalRemainingAtLastClaim = loan_.principal();
-
         loan_.acceptNewTerms(refinancer_, calls_, uint256(0));
+
+        // NOTE: This must be set after accepting the new terms, which affects the loan principal.
+        _principalRemainingAtLastClaim = loan_.principal();
     }
 
     function setFundsToCapture(uint256 amount_) override external {
@@ -91,7 +92,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         emit MinRatioSet(_minRatio = minRatio_);
     }
 
-    // Pool delegate can prematurely stop liquidation when there's still significant amount to be liquidated. 
+    // Pool delegate can prematurely stop liquidation when there's still significant amount to be liquidated.
     function stopLiquidation() external override {
         require(msg.sender == _getPoolDelegate(), "DL:SL:NOT_PD");
 
