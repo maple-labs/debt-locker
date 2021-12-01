@@ -89,6 +89,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         emit MinRatioSet(_minRatio = minRatio_);
     }
 
+    // Pool delegate can prematurely stop liquidation when there's still significant amount to be liquidated. 
     function stopLiquidation() external override {
         require(msg.sender == _getPoolDelegate(), "DL:SL:NOT_PD");
 
