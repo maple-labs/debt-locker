@@ -76,6 +76,8 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override whenProtocolNotPaused {
+        require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
+        
         Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
     }
 
