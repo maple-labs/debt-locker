@@ -73,7 +73,7 @@ interface IDebtLocker is IMapleProxied {
     function mapleTreasury() external view returns (address mapleTreasury_);
 
     /**
-     * @dev   Allows the poolDelegate to pull some funds from liquidator contract
+     * @dev   Allows the poolDelegate to pull some funds from liquidator contract.
      * @param token_       The token address of the funds.
      * @param destination_ The destination address of captured funds
      * @param amount_      The amount to pull.
@@ -127,8 +127,8 @@ interface IDebtLocker is IMapleProxied {
     function setFundsToCapture(uint256 amount_) external;
 
     /**
-     * @dev Called by the PoolDelegate in case of a DoS, where a user transfers small amounts of collateralAsset into the Liquidator
-     * @dev to make `_isLiquidationActive` remain true.
+     * @dev Called by the PoolDelegate in case of a DoS, where a user transfers small amounts of collateralAsset into
+     *      the Liquidator to make `_isLiquidationActive` remain true.
      */
     function stopLiquidation() external;
 

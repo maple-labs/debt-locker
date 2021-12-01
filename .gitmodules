@@ -4,9 +4,6 @@
 [submodule "modules/erc20-helper"]
 	path = modules/erc20-helper
 	url = https://github.com/maple-labs/erc20-helper.git
-[submodule "modules/contract-test-utils"]
-	path = modules/contract-test-utils
-	url = https://github.com/maple-labs/contract-test-utils.git
 [submodule "modules/liquidations"]
 	path = modules/liquidations
 	url = https://github.com/maple-labs/liquidations
@@ -16,3 +13,6 @@
 [submodule "modules/loan"]
 	path = modules/loan
 	url = https://github.com/maple-labs/loan
+[submodule "modules/contract-test-utils"]
+	path = modules/contract-test-utils
+	url = https://github.com/maple-labs/contract-test-utils.git

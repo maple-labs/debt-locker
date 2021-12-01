@@ -69,21 +69,15 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _principalRemainingAtLastClaim = loan_.principal();
     }
 
-    function setFundsToCapture(uint256 amount_) external override {
-        require(msg.sender == _getPoolDelegate(), "DL:SFTC:NOT_PD");
-
-        emit FundsToCaptureSet(_fundsToCapture = amount_);
-    }
-
     function claim() external override whenProtocolNotPaused returns (uint256[7] memory details_) {
         require(msg.sender == _pool, "DL:C:NOT_POOL");
 
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
-    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override whenProtocolNotPaused {
+    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
-        
+
         Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
     }
 
