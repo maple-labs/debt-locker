@@ -143,7 +143,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(
             ERC20Helper.transfer(
                 collateralAsset,
-                _liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this), address(this))),
+                _liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this), address(this),_getGlobals())),
                 collateralAssetAmount
             ),
             "DL:TD:TRANSFER"
