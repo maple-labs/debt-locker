@@ -143,7 +143,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(
             ERC20Helper.transfer(
                 collateralAsset,
-                _liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this), address(this))),
+                _liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this), address(this),_getGlobals())),
                 collateralAssetAmount
             ),
             "DL:TD:TRANSFER"
@@ -241,10 +241,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         uint256 oracleAmount =
             swapAmount_
                 * IMapleGlobalsLike(_getGlobals()).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
-                * 10 ** IERC20Like(fundsAsset).decimals()                           // Convert to `toAsset` decimal precision.
+                * 10 ** uint256(IERC20Like(fundsAsset).decimals())                           // Convert to `toAsset` decimal precision.
                 * (10_000 - _allowedSlippage)                                       // Multiply by allowed slippage basis points
                 / IMapleGlobalsLike(_getGlobals()).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
-                / 10 ** IERC20Like(collateralAsset).decimals()                      // Convert from `fromAsset` decimal precision.
+                / 10 ** uint256(IERC20Like(collateralAsset).decimals())                      // Convert from `fromAsset` decimal precision.
                 / 10_000;                                                           // Divide basis points for slippage
 
         uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** IERC20Like(collateralAsset).decimals();
