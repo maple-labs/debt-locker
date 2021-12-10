@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import { IMapleProxyFactory } from "../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
 
@@ -53,33 +53,32 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
 
-        IMapleLoanLike loan_ = IMapleLoanLike(_loan);
+        address loanAddress = _loan;
 
         require(
-            (loan_.claimableFunds() + _fundsToCapture == 0) &&
-            (loan_.principal() == _principalRemainingAtLastClaim),
+            (IMapleLoanLike(loanAddress).claimableFunds() + _fundsToCapture == 0) &&
+            (IMapleLoanLike(loanAddress).principal() == _principalRemainingAtLastClaim),
             "DL:ANT:NEED_TO_CLAIM"
         );
 
-        require(amount_ == uint256(0) || ERC20Helper.transfer(loan_.fundsAsset(), address(_loan), amount_), "DL:ANT:TRANSFER_FAILED");
+        require(amount_ == uint256(0) || ERC20Helper.transfer(IMapleLoanLike(loanAddress).fundsAsset(), loanAddress, amount_), "DL:ANT:TRANSFER_FAILED");
 
-        loan_.acceptNewTerms(refinancer_, calls_, uint256(0));
+        IMapleLoanLike(loanAddress).acceptNewTerms(refinancer_, calls_, uint256(0));
 
         // NOTE: This must be set after accepting the new terms, which affects the loan principal.
-        _principalRemainingAtLastClaim = loan_.principal();
+        _principalRemainingAtLastClaim = IMapleLoanLike(loanAddress).principal();
     }
 
     function claim() external override whenProtocolNotPaused returns (uint256[7] memory details_) {
         require(msg.sender == _pool, "DL:C:NOT_POOL");
 
-        return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
+        return _repossessed ? _handleClaimOfRepossessed(msg.sender, _loan) : _handleClaim(msg.sender, _loan);
     }
 
-    // TODO: Discuss pros/cons of pause on this function
     function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
-        
-        Liquidator(_liquidator).pullFunds( token_,  destination_,  amount_);
+
+        Liquidator(_liquidator).pullFunds(token_,  destination_,  amount_);
     }
 
     function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {
@@ -120,9 +119,11 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     function triggerDefault() external override whenProtocolNotPaused {
         require(msg.sender == _pool, "DL:TD:NOT_POOL");
 
+        address loanAddress = _loan;
+
         require(
-            (IMapleLoanLike(_loan).claimableFunds() == 0) &&
-            (IMapleLoanLike(_loan).principal() == _principalRemainingAtLastClaim),
+            (IMapleLoanLike(loanAddress).claimableFunds() == 0) &&
+            (IMapleLoanLike(loanAddress).principal() == _principalRemainingAtLastClaim),
             "DL:TD:NEED_TO_CLAIM"
         );
 
@@ -132,10 +133,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         // accounting is updated properly when principal is updated and there are no claimable funds.
 
         // Repossess collateral and funds from Loan.
-        ( uint256 collateralAssetAmount, ) = IMapleLoanLike(_loan).repossess(address(this));
+        ( uint256 collateralAssetAmount, ) = IMapleLoanLike(loanAddress).repossess(address(this));
 
-        address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
-        address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
+        address collateralAsset = IMapleLoanLike(loanAddress).collateralAsset();
+        address fundsAsset      = IMapleLoanLike(loanAddress).fundsAsset();
 
         if (collateralAsset == fundsAsset || collateralAssetAmount == 0) return;
 
@@ -143,7 +144,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         require(
             ERC20Helper.transfer(
                 collateralAsset,
-                _liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this), address(this),_getGlobals())),
+                _liquidator = address(new Liquidator(address(this), collateralAsset, fundsAsset, address(this), address(this), _getGlobals())),
                 collateralAssetAmount
             ),
             "DL:TD:TRANSFER"
@@ -154,16 +155,16 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Internal Functions ***/
     /**************************/
 
-    function _handleClaim() internal returns (uint256[7] memory details_) {
+    function _handleClaim(address pool_, address loan_) internal returns (uint256[7] memory details_) {
         // Get loan state variables needed
-        uint256 claimableFunds = IMapleLoanLike(_loan).claimableFunds();
+        uint256 claimableFunds = IMapleLoanLike(loan_).claimableFunds();
 
         require(claimableFunds > uint256(0), "DL:HC:NOTHING_TO_CLAIM");
 
         // Send funds to pool
-        IMapleLoanLike(_loan).claimFunds(claimableFunds, _pool);
+        IMapleLoanLike(loan_).claimFunds(claimableFunds, pool_);
 
-        uint256 currentPrincipalRemaining = IMapleLoanLike(_loan).principal();
+        uint256 currentPrincipalRemaining = IMapleLoanLike(loan_).principal();
 
         // Determine how much of `claimableFunds` is principal
         uint256 principalPortion = _principalRemainingAtLastClaim - currentPrincipalRemaining;
@@ -186,23 +187,25 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
 
             _fundsToCapture = uint256(0);
 
-            require(ERC20Helper.transfer(IMapleLoanLike(_loan).fundsAsset(), _pool, amountOfFundsToCapture), "DL:HC:CAPTURE_FAILED");
+            require(ERC20Helper.transfer(IMapleLoanLike(loan_).fundsAsset(), pool_, amountOfFundsToCapture), "DL:HC:CAPTURE_FAILED");
         }
     }
 
-    function _handleClaimOfRepossessed() internal returns (uint256[7] memory details_) {
+    function _handleClaimOfRepossessed(address pool_, address loan_) internal returns (uint256[7] memory details_) {
         require(!_isLiquidationActive(), "DL:HCOR:LIQ_NOT_FINISHED");
 
-        address fundsAsset       = IMapleLoanLike(_loan).fundsAsset();
+        address fundsAsset       = IMapleLoanLike(loan_).fundsAsset();
         uint256 principalToCover = _principalRemainingAtLastClaim;      // Principal remaining at time of liquidation
         uint256 fundsCaptured    = _fundsToCapture;
 
         // Funds recovered from liquidation and any unclaimed previous payment amounts
         uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;
 
+        uint256 totalClaimed = recoveredFunds + fundsCaptured;
+
         // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
         // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
-        details_[0] = recoveredFunds + fundsCaptured;
+        details_[0] = totalClaimed;
         details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
         details_[2] = fundsCaptured;
         details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
@@ -211,7 +214,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _fundsToCapture = uint256(0);
         _repossessed    = false;
 
-        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
+        require(ERC20Helper.transfer(fundsAsset, pool_, totalClaimed), "DL:HCOR:TRANSFER");
     }
 
     /**********************/
@@ -235,24 +238,29 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function getExpectedAmount(uint256 swapAmount_) external view override whenProtocolNotPaused returns (uint256 returnAmount_) {
-        address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
-        address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
+        address loanAddress     = _loan;
+        address collateralAsset = IMapleLoanLike(loanAddress).collateralAsset();
+        address fundsAsset      = IMapleLoanLike(loanAddress).fundsAsset();
+
+        address globals = _getGlobals();
+
+        uint8 collateralAssetDecimals = IERC20Like(collateralAsset).decimals();
 
         uint256 oracleAmount =
             swapAmount_
-                * IMapleGlobalsLike(_getGlobals()).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
-                * 10 ** uint256(IERC20Like(fundsAsset).decimals())                           // Convert to `toAsset` decimal precision.
-                * (10_000 - _allowedSlippage)                                       // Multiply by allowed slippage basis points
-                / IMapleGlobalsLike(_getGlobals()).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
-                / 10 ** uint256(IERC20Like(collateralAsset).decimals())                      // Convert from `fromAsset` decimal precision.
-                / 10_000;                                                           // Divide basis points for slippage
+                * IMapleGlobalsLike(globals).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
+                * uint256(10) ** uint256(IERC20Like(fundsAsset).decimals())   // Convert to `toAsset` decimal precision.
+                * (uint256(10_000) - _allowedSlippage)                        // Multiply by allowed slippage basis points
+                / IMapleGlobalsLike(globals).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
+                / uint256(10) ** uint256(collateralAssetDecimals)             // Convert from `fromAsset` decimal precision.
+                / uint256(10_000);                                            // Divide basis points for slippage.
 
-        uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** IERC20Like(collateralAsset).decimals();
+        uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** collateralAssetDecimals;
 
         return oracleAmount > minRatioAmount ? oracleAmount : minRatioAmount;
     }
 
-    function implementation() external view override returns (address) {
+    function implementation() external view override returns (address implementation_) {
         return _implementation();
     }
 
@@ -280,7 +288,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _pool;
     }
 
-    function poolDelegate() external override view returns(address) {
+    function poolDelegate() external override view returns (address poolDelegate_) {
         return _getPoolDelegate();
     }
 
@@ -300,16 +308,16 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Internal View Functions ***/
     /*******************************/
 
-    function _getGlobals() internal view returns (address) {
+    function _getGlobals() internal view returns (address globals_) {
         return IPoolFactoryLike(IPoolLike(_pool).superFactory()).globals();
     }
 
-    function _getPoolDelegate() internal view returns(address) {
+    function _getPoolDelegate() internal view returns(address poolDelegate_) {
         return IPoolLike(_pool).poolDelegate();
     }
 
-    function _isLiquidationActive() internal view returns (bool) {
-        return (_liquidator != address(0)) && (IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) > 0);
+    function _isLiquidationActive() internal view returns (bool isActive_) {
+        return (_liquidator != address(0)) && (IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) != uint256(0));
     }
 
 }

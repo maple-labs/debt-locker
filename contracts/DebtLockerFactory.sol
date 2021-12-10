@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import { IMapleProxyFactory, MapleProxyFactory } from "../modules/maple-proxy-factory/contracts/MapleProxyFactory.sol";
 
@@ -10,9 +10,7 @@ contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
 
     uint8 public constant override factoryType = uint8(1);
 
-    constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {
-        require(mapleGlobals_ != address(0));
-    }
+    constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {}
 
     function newLocker(address loan_) external override returns (address debtLocker_) {
         bytes memory arguments = abi.encode(loan_, msg.sender);
