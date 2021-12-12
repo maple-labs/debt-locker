@@ -199,9 +199,11 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         // Funds recovered from liquidation and any unclaimed previous payment amounts
         uint256 recoveredFunds = IERC20Like(fundsAsset).balanceOf(address(this)) - fundsCaptured;
 
+        uint256 totalClaimed = recoveredFunds + fundsCaptured;
+
         // If `recoveredFunds` is greater than `principalToCover`, the remaining amount is treated as interest in the context of the pool.
         // If `recoveredFunds` is less than `principalToCover`, the difference is registered as a shortfall.
-        details_[0] = recoveredFunds + fundsCaptured;
+        details_[0] = totalClaimed;
         details_[1] = recoveredFunds > principalToCover ? recoveredFunds - principalToCover : 0;
         details_[2] = fundsCaptured;
         details_[5] = recoveredFunds > principalToCover ? principalToCover : recoveredFunds;
@@ -210,7 +212,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         _fundsToCapture = uint256(0);
         _repossessed    = false;
 
-        require(ERC20Helper.transfer(fundsAsset, _pool, recoveredFunds + fundsCaptured), "DL:HCOR:TRANSFER");
+        require(ERC20Helper.transfer(fundsAsset, _pool, totalClaimed), "DL:HCOR:TRANSFER");
     }
 
     /**********************/
