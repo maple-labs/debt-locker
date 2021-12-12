@@ -315,7 +315,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function _isLiquidationActive() internal view returns (bool isActive_) {
-        return (_liquidator != address(0)) && (IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) > 0);
+        return (_liquidator != address(0)) && (IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) != uint256(0));
     }
 
 }
