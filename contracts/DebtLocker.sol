@@ -82,7 +82,8 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {
-        require(msg.sender == _getPoolDelegate(), "DL:SAS:NOT_PD");
+        require(msg.sender == _getPoolDelegate(),    "DL:SAS:NOT_PD");
+        require(allowedSlippage_ <= uint256(10_000), "DL:SAS:INVALID_SLIPPAGE");
 
         emit AllowedSlippageSet(_allowedSlippage = allowedSlippage_);
     }
