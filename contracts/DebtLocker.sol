@@ -236,9 +236,9 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function getExpectedAmount(uint256 swapAmount_) external view override whenProtocolNotPaused returns (uint256 returnAmount_) {
-        address loanAddress     = _loan;
-        address collateralAsset = IMapleLoanLike(loanAddress).collateralAsset();
-        address fundsAsset      = IMapleLoanLike(loanAddress).fundsAsset();
+        address loan            = _loan;
+        address collateralAsset = IMapleLoanLike(loan).collateralAsset();
+        address fundsAsset      = IMapleLoanLike(loan).fundsAsset();
 
         address globals = _getGlobals();
 
