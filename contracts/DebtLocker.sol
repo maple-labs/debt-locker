@@ -236,19 +236,24 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     }
 
     function getExpectedAmount(uint256 swapAmount_) external view override whenProtocolNotPaused returns (uint256 returnAmount_) {
-        address collateralAsset = IMapleLoanLike(_loan).collateralAsset();
-        address fundsAsset      = IMapleLoanLike(_loan).fundsAsset();
+        address loan            = _loan;
+        address collateralAsset = IMapleLoanLike(loan).collateralAsset();
+        address fundsAsset      = IMapleLoanLike(loan).fundsAsset();
+
+        address globals = _getGlobals();
+
+        uint8 collateralAssetDecimals = IERC20Like(collateralAsset).decimals();
 
         uint256 oracleAmount =
             swapAmount_
-                * IMapleGlobalsLike(_getGlobals()).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
-                * 10 ** uint256(IERC20Like(fundsAsset).decimals())                           // Convert to `toAsset` decimal precision.
-                * (10_000 - _allowedSlippage)                                       // Multiply by allowed slippage basis points
-                / IMapleGlobalsLike(_getGlobals()).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
-                / 10 ** uint256(IERC20Like(collateralAsset).decimals())                      // Convert from `fromAsset` decimal precision.
-                / 10_000;                                                           // Divide basis points for slippage
+                * IMapleGlobalsLike(globals).getLatestPrice(collateralAsset)  // Convert from `fromAsset` value.
+                * uint256(10) ** uint256(IERC20Like(fundsAsset).decimals())   // Convert to `toAsset` decimal precision.
+                * (uint256(10_000) - _allowedSlippage)                        // Multiply by allowed slippage basis points
+                / IMapleGlobalsLike(globals).getLatestPrice(fundsAsset)       // Convert to `toAsset` value.
+                / uint256(10) ** uint256(collateralAssetDecimals)             // Convert from `fromAsset` decimal precision.
+                / uint256(10_000);                                            // Divide basis points for slippage.
 
-        uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** IERC20Like(collateralAsset).decimals();
+        uint256 minRatioAmount = swapAmount_ * _minRatio / 10 ** collateralAssetDecimals;
 
         return oracleAmount > minRatioAmount ? oracleAmount : minRatioAmount;
     }
