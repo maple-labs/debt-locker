@@ -251,7 +251,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return oracleAmount > minRatioAmount ? oracleAmount : minRatioAmount;
     }
 
-    function implementation() external view override returns (address) {
+    function implementation() external view override returns (address implementation_) {
         return _implementation();
     }
 
@@ -279,7 +279,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _pool;
     }
 
-    function poolDelegate() external override view returns(address) {
+    function poolDelegate() external override view returns (address poolDelegate_) {
         return _getPoolDelegate();
     }
 
@@ -299,15 +299,15 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     /*** Internal View Functions ***/
     /*******************************/
 
-    function _getGlobals() internal view returns (address) {
+    function _getGlobals() internal view returns (address globals_) {
         return IPoolFactoryLike(IPoolLike(_pool).superFactory()).globals();
     }
 
-    function _getPoolDelegate() internal view returns(address) {
+    function _getPoolDelegate() internal view returns(address poolDelegate_) {
         return IPoolLike(_pool).poolDelegate();
     }
 
-    function _isLiquidationActive() internal view returns (bool) {
+    function _isLiquidationActive() internal view returns (bool isActive_) {
         return (_liquidator != address(0)) && (IERC20Like(IMapleLoanLike(_loan).collateralAsset()).balanceOf(_liquidator) > 0);
     }
 
