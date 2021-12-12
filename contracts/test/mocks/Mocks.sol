@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import { IERC20 }             from "../../../modules/erc20/src/interfaces/IERC20.sol";
 import { ILiquidatorLike }    from "../../../modules/liquidations/contracts/interfaces/Interfaces.sol";
