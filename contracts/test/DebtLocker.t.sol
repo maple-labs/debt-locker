@@ -726,6 +726,19 @@ contract DebtLockerTests is TestUtils {
         pool.triggerDefault(address(debtLocker));
     }
 
+    /******************************/
+    /*** Input Validation Tests ***/
+    /******************************/
+
+    function test_setAllowedSlippage_invalidSlippage() external {
+        MapleLoan loan = _createLoan(1_000_000, 30_000);
+
+        DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
+
+        assertTrue(!poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 10001));
+        assertTrue( poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 10000));
+    }
+
     /***********************/
     /*** Refinance Tests ***/
     /***********************/
