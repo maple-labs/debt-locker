@@ -75,7 +75,6 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _repossessed ? _handleClaimOfRepossessed() : _handleClaim();
     }
 
-    // TODO: Discuss pros/cons of pause on this function
     function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
         
