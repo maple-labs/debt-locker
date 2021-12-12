@@ -8,6 +8,8 @@ import { MapleLoanFactory }     from "../../modules/loan/contracts/MapleLoanFact
 import { MapleLoanInitializer } from "../../modules/loan/contracts/MapleLoanInitializer.sol";
 import { Refinancer }           from "../../modules/loan/contracts/Refinancer.sol";
 
+import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
+
 import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
 import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
@@ -15,45 +17,43 @@ import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
 import { Governor }     from "./accounts/Governor.sol";
 import { PoolDelegate } from "./accounts/PoolDelegate.sol";
 
-import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
-
 import { DebtLockerHarness }       from "./mocks/DebtLockerHarness.sol";
 import { ManipulatableDebtLocker } from "./mocks/ManipulatableDebtLocker.sol";
-import { 
-    MockGlobals, 
-    MockLiquidationStrategy, 
+import {
+    MockGlobals,
+    MockLiquidationStrategy,
     MockLoan,
-    MockMigrator, 
-    MockPool, 
-    MockPoolFactory 
+    MockMigrator,
+    MockPool,
+    MockPoolFactory
 } from "./mocks/Mocks.sol";
 
 interface Hevm {
 
-    // Sets block timestamp to `x`
+    // Sets block timestamp to `x`.
     function warp(uint256 x) external view;
 
 }
 
 contract DebtLockerTests is TestUtils {
 
-    DebtLockerFactory      internal dlFactory;
-    Governor               internal governor;
-    MapleLoanFactory       internal loanFactory;
-    MapleLoanInitializer   internal loanInitializer;
-    MockERC20              internal collateralAsset;
-    MockERC20              internal fundsAsset;
-    MockGlobals            internal globals;
-    MockPool               internal pool;
-    MockPoolFactory        internal poolFactory;
-    PoolDelegate           internal notPoolDelegate;
-    PoolDelegate           internal poolDelegate;
+    DebtLockerFactory    internal dlFactory;
+    Governor             internal governor;
+    MapleLoanFactory     internal loanFactory;
+    MapleLoanInitializer internal loanInitializer;
+    MockERC20            internal collateralAsset;
+    MockERC20            internal fundsAsset;
+    MockGlobals          internal globals;
+    MockPool             internal pool;
+    MockPoolFactory      internal poolFactory;
+    PoolDelegate         internal notPoolDelegate;
+    PoolDelegate         internal poolDelegate;
 
-    Hevm hevm = Hevm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
+    Hevm internal hevm = Hevm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
 
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
-    function setUp() public {
+    function setUp() external {
         governor        = new Governor();
         notPoolDelegate = new PoolDelegate();
         poolDelegate    = new PoolDelegate();
@@ -124,14 +124,14 @@ contract DebtLockerTests is TestUtils {
 
         debtLocker_ = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan_)));
 
-        _fundAndDrawdownLoan(address(loan_), address(debtLocker_));        
+        _fundAndDrawdownLoan(address(loan_), address(debtLocker_));
     }
 
     /*******************/
     /*** Claim Tests ***/
     /*******************/
 
-    function test_claim(uint256 principalRequested_, uint256 collateralRequired_) public {
+    function test_claim(uint256 principalRequested_, uint256 collateralRequired_) external {
 
         /**********************************/
         /*** Create Loan and DebtLocker ***/
@@ -214,7 +214,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], 0);           // Zero shortfall since no liquidation
     }
 
-    function test_initialize_invalidCollateralAsset() public {
+    function test_initialize_invalidCollateralAsset() external {
         MapleLoan loan = _createLoan(1_000_000, 300_000);
 
         assertTrue(globals.isValidCollateralAsset(loan.collateralAsset()));
@@ -230,7 +230,7 @@ contract DebtLockerTests is TestUtils {
         assertTrue(pool.createDebtLocker(address(dlFactory), address(loan)) != address(0));
     }
 
-    function test_initialize_invalidLiquidityAsset() public {
+    function test_initialize_invalidLiquidityAsset() external {
         MapleLoan loan = _createLoan(1_000_000, 300_000);
 
         assertTrue(globals.isValidLiquidityAsset(loan.fundsAsset()));
@@ -246,7 +246,7 @@ contract DebtLockerTests is TestUtils {
         assertTrue(pool.createDebtLocker(address(dlFactory), address(loan)) != address(0));
     }
 
-    function test_claim_liquidation_shortfall(uint256 principalRequested_, uint256 collateralRequired_) public {
+    function test_claim_liquidation_shortfall(uint256 principalRequested_, uint256 collateralRequired_) external {
 
         /**********************************/
         /*** Create Loan and DebtLocker ***/
@@ -338,7 +338,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], principalToCover - amountRecovered);  // Shortfall to be covered by burning BPTs
     }
 
-    function test_claim_liquidation_equalToPrincipal(uint256 principalRequested_) public {
+    function test_claim_liquidation_equalToPrincipal(uint256 principalRequested_) external {
 
         /*************************/
         /*** Set up parameters ***/
@@ -419,7 +419,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], 0);                // Zero shortfall since principalToCover == amountRecovered
     }
 
-    function test_claim_liquidation_greaterThanPrincipal(uint256 principalRequested_, uint256 excessRecovered_) public {
+    function test_claim_liquidation_greaterThanPrincipal(uint256 principalRequested_, uint256 excessRecovered_) external {
 
         /*************************/
         /*** Set up parameters ***/
@@ -433,7 +433,7 @@ contract DebtLockerTests is TestUtils {
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
-        
+
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired);
 
         /*************************************/
@@ -499,7 +499,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], 0);                                   // Zero shortfall since principalToCover == amountRecovered
     }
 
-    function test_liquidation_dos_prevention(uint256 principalRequested_, uint256 collateralRequired_) public {
+    function test_liquidation_dos_prevention(uint256 principalRequested_, uint256 collateralRequired_) external {
 
         /**********************************/
         /*** Create Loan and DebtLocker ***/
@@ -544,7 +544,7 @@ contract DebtLockerTests is TestUtils {
 
         pool.claim(address(debtLocker));  // Can successfully claim
     }
-    
+
     /****************************/
     /*** Access Control Tests ***/
     /****************************/
@@ -805,7 +805,7 @@ contract DebtLockerTests is TestUtils {
     /*** Funds Capture Tests ***/
     /***************************/
 
-    function test_fundsToCaptureForNextClaim() public {
+    function test_fundsToCaptureForNextClaim() external {
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
         // Make a payment amount with interest and principal
@@ -838,7 +838,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], 0);
     }
 
-    function test_fundsToCaptureWhileInDefault() public {
+    function test_fundsToCaptureWhileInDefault() external {
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
         // Prepare additional amount to be captured
@@ -879,7 +879,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(details[6], 700_000);  // 300k recovered on a 1m loan
     }
 
-    function testFail_fundsToCaptureForNextClaim() public {
+    function testFail_fundsToCaptureForNextClaim() external {
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
         fundsAsset.mint(address(loan), 1_000_000);
@@ -905,7 +905,7 @@ contract DebtLockerTests is TestUtils {
     /*** Internal View Function Tests ***/
     /************************************/
 
-    function _registerDebtLockerHarnesss() internal {
+    function _registerDebtLockerHarness() internal {
         // Deploying and registering DebtLocker implementation and initializer
         address implementation = address(new DebtLockerHarness());
         address initializer    = address(new DebtLockerInitializer());
@@ -914,8 +914,8 @@ contract DebtLockerTests is TestUtils {
         governor.mapleProxyFactory_setDefaultVersion(address(dlFactory), 2);
     }
 
-    function test_getGlobals() public {
-        _registerDebtLockerHarnesss();
+    function test_getGlobals() external {
+        _registerDebtLockerHarness();
 
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 
@@ -924,8 +924,8 @@ contract DebtLockerTests is TestUtils {
         assertEq(debtLocker.getGlobals(), address(globals));
     }
 
-    function test_getPoolDelegate() public {
-        _registerDebtLockerHarnesss();
+    function test_getPoolDelegate() external {
+        _registerDebtLockerHarness();
 
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 
@@ -934,8 +934,8 @@ contract DebtLockerTests is TestUtils {
         assertEq(debtLocker.poolDelegate(), address(poolDelegate));
     }
 
-    function test_isLiquidationActive() public {
-        _registerDebtLockerHarnesss();
+    function test_isLiquidationActive() external {
+        _registerDebtLockerHarness();
 
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 

@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 import { IMapleProxied } from "../../modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol";
 
-/// @title DebtLocker holds custody of LoanFDT tokens.
+/// @title DebtLocker interacts with Loans on behalf of PoolV1.
 interface IDebtLocker is IMapleProxied {
 
     /**************/
