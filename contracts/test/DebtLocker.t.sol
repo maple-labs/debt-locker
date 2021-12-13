@@ -735,8 +735,8 @@ contract DebtLockerTests is TestUtils {
 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
 
-        assertTrue(!poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 10001));
-        assertTrue( poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 10000));
+        assertTrue(!poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 10_001));
+        assertTrue( poolDelegate.try_debtLocker_setAllowedSlippage(address(debtLocker), 10_000));
     }
 
     /***********************/
