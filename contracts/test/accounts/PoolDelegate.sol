@@ -34,7 +34,7 @@ contract PoolDelegate is ProxyUser {
     function debtLocker_stopLiquidation(address debtLocker_) external {
         IDebtLocker(debtLocker_).stopLiquidation();
     }
-    
+
     function debtLocker_upgrade(address debtLocker_, uint256 toVersion_, bytes memory arguments_) external {
         IDebtLocker(debtLocker_).upgrade(toVersion_, arguments_);
     }
@@ -44,7 +44,7 @@ contract PoolDelegate is ProxyUser {
     /*********************/
 
     function try_debtLocker_acceptNewTerms(
-        address debtLocker_, 
+        address debtLocker_,
         address refinancer_,
         bytes[] calldata calls_,
         uint256 amount_
@@ -71,7 +71,7 @@ contract PoolDelegate is ProxyUser {
     function try_debtLocker_stopLiquidation(address debtLocker_) external returns (bool ok_) {
         ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.stopLiquidation.selector));
     }
-    
+
     function try_debtLocker_upgrade(address debtLocker_, uint256 toVersion_, bytes memory arguments_) external returns (bool ok_) {
         ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IMapleProxied.upgrade.selector, toVersion_, arguments_));
     }

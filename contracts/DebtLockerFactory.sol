@@ -10,16 +10,14 @@ contract DebtLockerFactory is IDebtLockerFactory, MapleProxyFactory {
 
     uint8 public constant override factoryType = uint8(1);
 
-    constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {
-        require(mapleGlobals_ != address(0));
-    }
+    constructor(address mapleGlobals_) MapleProxyFactory(mapleGlobals_) {}
 
     function newLocker(address loan_) external override returns (address debtLocker_) {
         bytes memory arguments = abi.encode(loan_, msg.sender);
 
-        bool success_;
-        ( success_, debtLocker_ ) = _newInstance(defaultVersion, arguments);
-        require(success_, "DLF:NL:FAILED");
+        bool success;
+        ( success, debtLocker_ ) = _newInstance(defaultVersion, arguments);
+        require(success, "DLF:NL:FAILED");
 
         emit InstanceDeployed(defaultVersion, debtLocker_, arguments);
     }

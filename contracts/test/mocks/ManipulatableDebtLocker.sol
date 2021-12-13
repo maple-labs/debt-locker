@@ -9,7 +9,7 @@ contract ManipulatableDebtLocker is DebtLocker {
 
     bytes32 constant FACTORY_SLOT = bytes32(0x7a45a402e4cb6e08ebc196f20f66d5d30e67285a2a8aa80503fa409e727a4af1);
 
-    constructor(address loan_, address pool_, address factory_) public {
+    constructor(address loan_, address pool_, address factory_) {
         _loan = loan_;
         _pool = pool_;
 
