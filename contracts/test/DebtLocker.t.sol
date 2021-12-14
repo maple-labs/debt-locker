@@ -545,6 +545,37 @@ contract DebtLockerTests is TestUtils {
         pool.claim(address(debtLocker));  // Can successfully claim
     }
 
+    function test_liquidation_pullFunds(uint256 principalRequested_, uint256 collateralRequired_) external {
+        
+        /**********************************/
+        /*** Create Loan and DebtLocker ***/
+        /**********************************/
+
+        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
+        collateralRequired_ = constrictToRange(collateralRequired_, 1,         principalRequested_ / 10);  // Need collateral for liquidator deployment
+
+        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired_);
+
+        /*************************************/
+        /*** Trigger default and liquidate ***/
+        /*************************************/
+
+        hevm.warp(loan.nextPaymentDueDate() + loan.gracePeriod() + 1);
+
+        pool.triggerDefault(address(debtLocker));
+
+        address liquidator = debtLocker.liquidator();
+
+        assertEq(collateralAsset.balanceOf(address(this)),       0);
+        assertEq(collateralAsset.balanceOf(address(liquidator)), collateralRequired_);
+
+        assertTrue(!notPoolDelegate.try_debtLocker_pullFunds(address(debtLocker), address(liquidator), address(collateralAsset), address(this), collateralRequired_));
+        assertTrue(    poolDelegate.try_debtLocker_pullFunds(address(debtLocker), address(liquidator), address(collateralAsset), address(this), collateralRequired_));
+
+        assertEq(collateralAsset.balanceOf(address(this)),       collateralRequired_);
+        assertEq(collateralAsset.balanceOf(address(liquidator)), 0);
+    }
+
     /****************************/
     /*** Access Control Tests ***/
     /****************************/

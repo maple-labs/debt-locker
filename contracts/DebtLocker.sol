@@ -78,10 +78,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
         return _repossessed ? _handleClaimOfRepossessed(msg.sender, _loan) : _handleClaim(msg.sender, _loan);
     }
 
-    function pullFundsFromLiquidator(address token_, address destination_, uint256 amount_) external override {
+    function pullFundsFromLiquidator(address liquidator_, address token_, address destination_, uint256 amount_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
-        Liquidator(_liquidator).pullFunds(token_,  destination_,  amount_);
+        Liquidator(liquidator_).pullFunds(token_,  destination_,  amount_);
     }
 
     function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {
