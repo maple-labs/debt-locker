@@ -572,8 +572,8 @@ contract DebtLockerTests is TestUtils {
         assertTrue(!notPoolDelegate.try_debtLocker_pullFunds(address(debtLocker), address(liquidator), address(collateralAsset), address(this), collateralRequired_));
         assertTrue(    poolDelegate.try_debtLocker_pullFunds(address(debtLocker), address(liquidator), address(collateralAsset), address(this), collateralRequired_));
 
-        assertEq(collateralAsset.balanceOf(address(liquidator)),       0);
-        assertEq(collateralAsset.balanceOf(address(this)), collateralRequired_);
+        assertEq(collateralAsset.balanceOf(address(this)),       collateralRequired_);
+        assertEq(collateralAsset.balanceOf(address(liquidator)), 0);
     }
 
     /****************************/
