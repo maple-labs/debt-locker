@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.8.7;
 
+import { ERC20Helper }        from "../modules/erc20-helper/src/ERC20Helper.sol";
+import { Liquidator }         from "../modules/liquidations/contracts/Liquidator.sol";
 import { IMapleProxyFactory } from "../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
-
-import { ERC20Helper }  from "../modules/erc20-helper/src/ERC20Helper.sol";
-import { Liquidator }   from "../modules/liquidations/contracts/Liquidator.sol";
-import { MapleProxied } from "../modules/maple-proxy-factory/contracts/MapleProxied.sol";
+import { MapleProxied }       from "../modules/maple-proxy-factory/contracts/MapleProxied.sol";
 
 import { IDebtLocker }                                                                from "./interfaces/IDebtLocker.sol";
 import { IERC20Like, IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IPoolFactoryLike } from "./interfaces/Interfaces.sol";
@@ -81,7 +80,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
     function pullFundsFromLiquidator(address liquidator_, address token_, address destination_, uint256 amount_) external override {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
-        Liquidator(liquidator_).pullFunds(token_,  destination_,  amount_);
+        Liquidator(liquidator_).pullFunds(token_, destination_, amount_);
     }
 
     function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {
