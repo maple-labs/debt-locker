@@ -29,7 +29,7 @@ interface IDebtLocker is IMapleProxied {
     event FundsToCaptureSet(uint256 amount_);
 
     /**
-     * @dev   Emitted when `stopLiquidation` is called.
+     * @dev Emitted when `stopLiquidation` is called.
      */
     event LiquidationStopped();
 
@@ -44,7 +44,10 @@ interface IDebtLocker is IMapleProxied {
     /*****************/
 
     /**
-     * @dev Accept the new loan terms and trigger a refinance.
+     * @dev   Accept the new loan terms and trigger a refinance.
+     * @param refinancer_ The address of the refinancer contract.
+     * @param calls_      The array of encoded data that are to be executed as delegatecalls by the refinancer.
+     * @param amount_     The amount of `fundsAsset` that is to be sent to the Loan as part of the transaction.
      */
     function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external;
 
