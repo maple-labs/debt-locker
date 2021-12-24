@@ -546,7 +546,7 @@ contract DebtLockerTests is TestUtils {
     }
 
     function test_liquidation_pullFunds(uint256 principalRequested_, uint256 collateralRequired_) external {
-        
+
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/

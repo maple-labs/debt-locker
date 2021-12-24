@@ -12,8 +12,9 @@ interface IDebtLockerFactory is IMapleProxyFactory {
     function factoryType() external view returns (uint8 factoryType_);
 
     /**
-     * @dev   Deploys a new DebtLocker proxy instance.
-     * @param loan_ Loan contract that corresponds to DebtLocker.
+     * @dev    Deploys a new DebtLocker proxy instance.
+     * @param  loan_       Loan contract that corresponds to DebtLocker.
+     * @return debtLocker_ The address of the deployed DebtLocker proxy.
      */
     function newLocker(address loan_) external returns (address debtLocker_);
 

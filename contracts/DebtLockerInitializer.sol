@@ -3,16 +3,18 @@ pragma solidity 0.8.7;
 
 import { IMapleGlobalsLike, IMapleLoanLike, IPoolFactoryLike, IPoolLike }  from "./interfaces/Interfaces.sol";
 
+import { IDebtLockerInitializer } from "./interfaces/IDebtLockerInitializer.sol";
+
 import { DebtLockerStorage } from "./DebtLockerStorage.sol";
 
 /// @title DebtLockerInitializer is intended to initialize the storage of a DebtLocker proxy.
-contract DebtLockerInitializer is DebtLockerStorage {
+contract DebtLockerInitializer is IDebtLockerInitializer, DebtLockerStorage {
 
-    function encodeArguments(address loan_, address pool_) external pure returns (bytes memory encodedArguments_) {
+    function encodeArguments(address loan_, address pool_) external pure override returns (bytes memory encodedArguments_) {
         return abi.encode(loan_, pool_);
     }
 
-    function decodeArguments(bytes calldata encodedArguments_) public pure returns (address loan_, address pool_) {
+    function decodeArguments(bytes calldata encodedArguments_) public pure override returns (address loan_, address pool_) {
         ( loan_, pool_ ) = abi.decode(encodedArguments_, (address, address));
     }
 
