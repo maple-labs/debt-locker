@@ -57,7 +57,7 @@ contract PoolDelegate is ProxyUser {
     }
 
     function try_debtLocker_pullFunds(address debtLocker_, address liquidator_, address token_, address destination_, uint256 amount_) external returns (bool ok_) {
-        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.pullFundsFromLiquidator.selector, liquidator_, token_, destination_, amount_)); 
+        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.pullFundsFromLiquidator.selector, liquidator_, token_, destination_, amount_));
 }
 
     function try_debtLocker_setAllowedSlippage(address debtLocker_, uint256 allowedSlippage_) external returns (bool ok_) {

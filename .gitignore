@@ -2,3 +2,6 @@
 hevm*
 .vscode/*
 /package
+artifacts/*
+docs/*
+metadata.json

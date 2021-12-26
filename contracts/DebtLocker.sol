@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.8.7;
 
-import { ERC20Helper }        from "../modules/erc20-helper/src/ERC20Helper.sol";
-import { Liquidator }         from "../modules/liquidations/contracts/Liquidator.sol";
-import { IMapleProxyFactory } from "../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
-import { MapleProxied }       from "../modules/maple-proxy-factory/contracts/MapleProxied.sol";
+import { ERC20Helper }           from "../modules/erc20-helper/src/ERC20Helper.sol";
+import { Liquidator }            from "../modules/liquidations/contracts/Liquidator.sol";
+import { IMapleProxyFactory }    from "../modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol";
+import { MapleProxiedInternals } from "../modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol";
 
 import { IDebtLocker }                                                                from "./interfaces/IDebtLocker.sol";
 import { IERC20Like, IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IPoolFactoryLike } from "./interfaces/Interfaces.sol";
@@ -12,7 +12,7 @@ import { IERC20Like, IMapleGlobalsLike, IMapleLoanLike, IPoolLike, IPoolFactoryL
 import { DebtLockerStorage } from "./DebtLockerStorage.sol";
 
 /// @title DebtLocker interacts with Loans on behalf of PoolV1.
-contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxied {
+contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
 
     /*****************/
     /*** Modifiers ***/

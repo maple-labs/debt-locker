@@ -53,7 +53,7 @@ interface IDebtLocker is IMapleProxied {
 
     /**
      *  @dev    Claims funds to send to Pool. Handles funds from payments and liquidations.
-     *  @dev    Only the Pool can call this function.
+     *          Only the Pool can call this function.
      *  @return details_
      *              [0] => Total Claimed.
      *              [1] => Interest Claimed.
@@ -66,7 +66,7 @@ interface IDebtLocker is IMapleProxied {
     function claim() external returns (uint256[7] memory details_);
 
     /**
-     * @dev   Allows the poolDelegate to pull some funds from liquidator contract
+     * @dev   Allows the poolDelegate to pull some funds from liquidator contract.
      * @param liquidator_  The liquidator to which pull funds from.
      * @param token_       The token address of the funds.
      * @param destination_ The destination address of captured funds.
@@ -117,7 +117,8 @@ interface IDebtLocker is IMapleProxied {
 
     /**
      * @dev Called by the PoolDelegate in case of a DoS, where a user transfers small amounts of collateralAsset into the Liquidator
-     * @dev to make `_isLiquidationActive` remain true.
+     *      to make `_isLiquidationActive` remain true.
+     *      CALLING THIS MAY RESULT IN RECOGNIZED LOSSES IN POOL ACCOUNTING. CONSULT MAPLE TEAM FOR GUIDANCE.
      */
     function stopLiquidation() external;
 
