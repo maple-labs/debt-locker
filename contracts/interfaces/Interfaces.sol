@@ -40,6 +40,8 @@ interface IMapleLoanLike {
 
     function claimableFunds() external view returns (uint256 claimableFunds_);
 
+    function claimFunds(uint256 amount_, address destination_) external;
+
     function collateralAsset() external view returns (address collateralAsset_);
 
     function fundsAsset() external view returns (address fundsAsset_);
@@ -50,9 +52,9 @@ interface IMapleLoanLike {
 
     function principalRequested() external view returns (uint256 principalRequested_);
 
-    function claimFunds(uint256 amount_, address destination_) external;
-
     function repossess(address destination_) external returns (uint256 collateralAssetAmount_, uint256 fundsAssetAmount_);
+
+    function refinanceCommitment() external view returns (bytes32 refinanceCommitment_);
 
     function rejectNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_) external;
 

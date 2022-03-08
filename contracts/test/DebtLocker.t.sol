@@ -726,6 +726,25 @@ contract DebtLockerTests is TestUtils {
         assertEq(loan.earlyFeeRate(), 100);
     }
 
+    function test_acl_poolDelegate_rejectNewTerms() external {
+        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
+
+        address refinancer = address(new Refinancer());
+        bytes[] memory data = new bytes[](1);
+        data[0] = abi.encodeWithSignature("setEarlyFeeRate(uint256)", 100);
+
+        uint256 deadline = block.timestamp + 1;
+
+        loan.proposeNewTerms(refinancer, deadline, data);  // address(this) is borrower
+
+        assertTrue(loan.refinanceCommitment() != bytes32(0));
+
+        assertTrue(!notPoolDelegate.try_debtLocker_rejectNewTerms(address(debtLocker), refinancer, deadline, data));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_rejectNewTerms(address(debtLocker), refinancer, deadline, data));  // PD can set
+
+        assertTrue(loan.refinanceCommitment() == bytes32(0));
+    }
+
     function test_acl_pool_claim() external {
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 
@@ -787,7 +806,7 @@ contract DebtLockerTests is TestUtils {
     /*** Refinance Tests ***/
     /***********************/
 
-    function test_refinance_withAmountIncrease(uint256 principalIncrease_) external {
+    function test_acceptNewTerms_withAmountIncrease(uint256 principalIncrease_) external {
         principalIncrease_  = constrictToRange(principalIncrease_, 1, 1_000_000);
 
         /**********************************/
