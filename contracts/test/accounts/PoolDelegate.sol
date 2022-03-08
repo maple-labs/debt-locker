@@ -11,12 +11,16 @@ contract PoolDelegate is ProxyUser {
     /*** Direct Functions ***/
     /************************/
 
-    function debtLocker_acceptNewTerms(address debtLocker_, address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
-        IDebtLocker(debtLocker_).acceptNewTerms(refinancer_, calls_, amount_);
+    function debtLocker_acceptNewTerms(address debtLocker_, address refinancer_, uint256 deadline_, bytes[] calldata calls_, uint256 amount_) external {
+        IDebtLocker(debtLocker_).acceptNewTerms(refinancer_, deadline_, calls_, amount_);
     }
 
     function debtLocker_pullFunds(address debtLocker_, address liquidator_, address token_, address destination_, uint256 amount_) external {
         IDebtLocker(debtLocker_).pullFundsFromLiquidator(liquidator_, token_, destination_, amount_);
+    }
+
+    function debtLocker_rejectNewTerms(address debtLocker_, address refinancer_, uint256 deadline_, bytes[] calldata calls_) external {
+        IDebtLocker(debtLocker_).rejectNewTerms(refinancer_, deadline_, calls_);
     }
 
     function debtLocker_setAllowedSlippage(address debtLocker_, uint256 allowedSlippage_) external {
@@ -50,15 +54,25 @@ contract PoolDelegate is ProxyUser {
     function try_debtLocker_acceptNewTerms(
         address debtLocker_,
         address refinancer_,
+        uint256 deadline_,
         bytes[] calldata calls_,
         uint256 amount_
     ) external returns (bool ok_) {
-        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.acceptNewTerms.selector, refinancer_, calls_, amount_));
+        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.acceptNewTerms.selector, refinancer_, deadline_, calls_, amount_));
     }
 
     function try_debtLocker_pullFunds(address debtLocker_, address liquidator_, address token_, address destination_, uint256 amount_) external returns (bool ok_) {
         ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.pullFundsFromLiquidator.selector, liquidator_, token_, destination_, amount_));
-}
+    }
+
+    function try_debtLocker_rejectNewTerms(
+        address debtLocker_,
+        address refinancer_,
+        uint256 deadline_,
+        bytes[] calldata calls_
+    ) external returns (bool ok_) {
+        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.rejectNewTerms.selector, refinancer_, deadline_, calls_));
+    }
 
     function try_debtLocker_setAllowedSlippage(address debtLocker_, uint256 allowedSlippage_) external returns (bool ok_) {
         ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.setAllowedSlippage.selector, allowedSlippage_));

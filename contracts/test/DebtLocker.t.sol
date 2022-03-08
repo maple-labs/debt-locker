@@ -2,7 +2,7 @@
 pragma solidity 0.8.7;
 
 import { TestUtils }            from "../../modules/contract-test-utils/contracts/test.sol";
-import { MockERC20 }            from "../../modules/erc20/src/test/mocks/MockERC20.sol";
+import { MockERC20 }            from "../../modules/erc20/contracts/test/mocks/MockERC20.sol";
 import { MapleLoan }            from "../../modules/loan/contracts/MapleLoan.sol";
 import { MapleLoanFactory }     from "../../modules/loan/contracts/MapleLoanFactory.sol";
 import { MapleLoanInitializer } from "../../modules/loan/contracts/MapleLoanInitializer.sol";
@@ -145,73 +145,83 @@ contract DebtLockerTests is TestUtils {
         /*************************/
         /*** Make two payments ***/
         /*************************/
+        {
+            ( uint256 principal1, uint256 interest1, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        ( uint256 principal1, uint256 interest1 ) = loan.getNextPaymentBreakdown();
+            uint256 total1 = principal1 + interest1 + delegateFee + treasuryFee;
 
-        uint256 total1 = principal1 + interest1;
+            // Make a payment amount with interest and principal
+            fundsAsset.mint(address(this),    total1);
+            fundsAsset.approve(address(loan), total1);  // Mock payment amount
 
-        // Make a payment amount with interest and principal
-        fundsAsset.mint(address(this),    total1);
-        fundsAsset.approve(address(loan), total1);  // Mock payment amount
+            loan.makePayment(total1);
 
-        loan.makePayment(total1);
+            uint256 principal2;
+            uint256 interest2;
 
-        ( uint256 principal2, uint256 interest2 ) = loan.getNextPaymentBreakdown();
+            ( principal2, interest2, delegateFee, treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total2 = principal2 + interest2;
+            uint256 total2 = principal2 + interest2 + delegateFee + treasuryFee;
 
-        // Mock a second payment amount with interest and principal
-        fundsAsset.mint(address(this),    total2);
-        fundsAsset.approve(address(loan), total2);  // Mock payment amount
+            // Mock a second payment amount with interest and principal
+            fundsAsset.mint(address(this),    total2);
+            fundsAsset.approve(address(loan), total2);  // Mock payment amount
 
-        loan.makePayment(total2);
+            loan.makePayment(total2);
 
-        assertEq(fundsAsset.balanceOf(address(loan)), total1 + total2);
-        assertEq(fundsAsset.balanceOf(address(pool)), 0);
+            uint256 totalPayments = (total1 + total2) - (delegateFee + treasuryFee) * 2;
 
-        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
+            assertEq(fundsAsset.balanceOf(address(loan)), totalPayments);
+            assertEq(fundsAsset.balanceOf(address(pool)), 0);
 
-        uint256[7] memory details = pool.claim(address(debtLocker));
+            assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
 
-        assertEq(fundsAsset.balanceOf(address(loan)), 0);
-        assertEq(fundsAsset.balanceOf(address(pool)), total1 + total2);
+            uint256[7] memory details = pool.claim(address(debtLocker));
 
-        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principal());
+            assertEq(fundsAsset.balanceOf(address(loan)), 0);
+            assertEq(fundsAsset.balanceOf(address(pool)), totalPayments);
 
-        assertEq(details[0], total1 + total2);          // Total amount of funds claimed
-        assertEq(details[1], interest1 + interest2);    // Excess funds go towards interest
-        assertEq(details[2], principal1 + principal2);  // Principal amount
-        assertEq(details[3], 0);                        // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                        // `excessReturned` is always zero since new loans cannot be over-funded
-        assertEq(details[5], 0);                        // Total recovered from liquidation is zero
-        assertEq(details[6], 0);                        // Zero shortfall since no liquidation
+            assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principal());
+
+            assertEq(details[0], totalPayments);  // Total amount of funds claimed
+            assertEq(details[1], interest1 + interest2);   // Excess funds go towards interest
+            assertEq(details[2], principal1 + principal2);  // Principal amount
+            assertEq(details[3], 0);              // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+            assertEq(details[4], 0);              // `excessReturned` is always zero since new loans cannot be over-funded
+            assertEq(details[5], 0);              // Total recovered from liquidation is zero
+            assertEq(details[6], 0);              // Zero shortfall since no liquidation
+        }
 
         /*************************/
         /*** Make last payment ***/
         /*************************/
 
-        ( uint256 principal3, uint256 interest3 ) = loan.getNextPaymentBreakdown();
+        {
+            ( uint256 principal3, uint256 interest3, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total3 = principal3 + interest3;
+            uint256 total3 = principal3 + interest3 + delegateFee + treasuryFee;
 
-        // Make a payment amount with interest and principal
-        fundsAsset.mint(address(this),    total3);
-        fundsAsset.approve(address(loan), total3);  // Mock payment amount
+            // Make a payment amount with interest and principal
+            fundsAsset.mint(address(this),    total3);
+            fundsAsset.approve(address(loan), total3);  // Mock payment amount
 
-        // Reduce the principal in loan and set claimableFunds
-        loan.makePayment(total3);
+            // Reduce the principal in loan and set claimableFunds
+            loan.makePayment(total3);
 
-        details = pool.claim(address(debtLocker));
+            uint256 poolBal = fundsAsset.balanceOf(address(pool));
 
-        assertEq(fundsAsset.balanceOf(address(pool)), total1 + total2 + total3);
+            uint256[7] memory details = pool.claim(address(debtLocker));
 
-        assertEq(details[0], total3);      // Total amount of funds claimed
-        assertEq(details[1], interest3);   // Excess funds go towards interest
-        assertEq(details[2], principal3);  // Principal amount
-        assertEq(details[3], 0);           // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
-        assertEq(details[4], 0);           // `excessReturned` is always zero since new loans cannot be over-funded
-        assertEq(details[5], 0);           // Total recovered from liquidation is zero
-        assertEq(details[6], 0);           // Zero shortfall since no liquidation
+            assertEq(fundsAsset.balanceOf(address(pool)), poolBal + interest3 + principal3);
+
+            assertEq(details[0], total3 - delegateFee - treasuryFee);  // Total amount of funds claimed
+            assertEq(details[1], interest3);                           // Excess funds go towards interest
+            assertEq(details[2], principal3);                          // Principal amount
+            assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+            assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
+            assertEq(details[5], 0);                                   // Total recovered from liquidation is zero
+            assertEq(details[6], 0);                                   // Zero shortfall since no liquidation
+        }
     }
 
     function test_initialize_invalidCollateralAsset() external {
@@ -261,9 +271,10 @@ contract DebtLockerTests is TestUtils {
         /*** Make a payment ***/
         /**********************/
 
-        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
+        ( uint256 principal, uint256 interest, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total = principal + interest;
+        uint256 total        = principal + interest + delegateFee + treasuryFee;
+        uint256 totalPayment = principal + interest;
 
         // Make a payment amount with interest and principal
         fundsAsset.mint(address(this),    total);
@@ -277,7 +288,7 @@ contract DebtLockerTests is TestUtils {
 
         assertEq(collateralAsset.balanceOf(address(loan)),       collateralRequired_);
         assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
-        assertEq(fundsAsset.balanceOf(address(loan)),            total);
+        assertEq(fundsAsset.balanceOf(address(loan)),            totalPayment);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
         assertEq(fundsAsset.balanceOf(address(pool)),            0);
         assertTrue(!debtLocker.repossessed());
@@ -300,7 +311,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
-        assertEq(fundsAsset.balanceOf(address(pool)),            total);
+        assertEq(fundsAsset.balanceOf(address(pool)),            totalPayment);
         assertTrue(debtLocker.repossessed());
 
         if (collateralRequired_ > 0) {
@@ -321,12 +332,12 @@ contract DebtLockerTests is TestUtils {
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      amountRecovered);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
-        assertEq(fundsAsset.balanceOf(address(pool)),            total);
+        assertEq(fundsAsset.balanceOf(address(pool)),            totalPayment);
 
         uint256[7] memory details = pool.claim(address(debtLocker));
 
         assertEq(fundsAsset.balanceOf(address(debtLocker)), 0);
-        assertEq(fundsAsset.balanceOf(address(pool)),       total + amountRecovered);
+        assertEq(fundsAsset.balanceOf(address(pool)),       totalPayment + amountRecovered);
         assertTrue(!debtLocker.repossessed());
 
         assertEq(details[0], amountRecovered);                     // Total amount of funds claimed
@@ -703,14 +714,35 @@ contract DebtLockerTests is TestUtils {
         bytes[] memory data = new bytes[](1);
         data[0] = abi.encodeWithSignature("setEarlyFeeRate(uint256)", 100);
 
-        loan.proposeNewTerms(refinancer, data);  // address(this) is borrower
+        uint256 deadline = block.timestamp + 1;
+
+        loan.proposeNewTerms(refinancer, deadline, data);  // address(this) is borrower
 
         assertEq(loan.earlyFeeRate(), 0);
 
-        assertTrue(!notPoolDelegate.try_debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, 0));  // Non-PD can't set
-        assertTrue(    poolDelegate.try_debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, 0));  // PD can set
+        assertTrue(!notPoolDelegate.try_debtLocker_acceptNewTerms(address(debtLocker), refinancer, deadline, data, 0));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_acceptNewTerms(address(debtLocker), refinancer, deadline, data, 0));  // PD can set
 
         assertEq(loan.earlyFeeRate(), 100);
+    }
+
+    function test_acl_poolDelegate_rejectNewTerms() external {
+        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
+
+        address refinancer = address(new Refinancer());
+        bytes[] memory data = new bytes[](1);
+        data[0] = abi.encodeWithSignature("setEarlyFeeRate(uint256)", 100);
+
+        uint256 deadline = block.timestamp + 1;
+
+        loan.proposeNewTerms(refinancer, deadline, data);  // address(this) is borrower
+
+        assertTrue(loan.refinanceCommitment() != bytes32(0));
+
+        assertTrue(!notPoolDelegate.try_debtLocker_rejectNewTerms(address(debtLocker), refinancer, deadline, data));  // Non-PD can't set
+        assertTrue(    poolDelegate.try_debtLocker_rejectNewTerms(address(debtLocker), refinancer, deadline, data));  // PD can set
+
+        assertTrue(loan.refinanceCommitment() == bytes32(0));
     }
 
     function test_acl_pool_claim() external {
@@ -720,9 +752,9 @@ contract DebtLockerTests is TestUtils {
 
         _fundAndDrawdownLoan(address(loan), address(debtLocker));
 
-        ( uint256 principal1, uint256 interest1 ) = loan.getNextPaymentBreakdown();
+        ( uint256 principal1, uint256 interest1, uint256 delegateFee1, uint256 treasuryFee1 ) = loan.getNextPaymentBreakdown();
 
-        uint256 total1 = principal1 + interest1;
+        uint256 total1 = principal1 + interest1 + delegateFee1 + treasuryFee1;
 
         // Make a payment amount with interest and principal
         fundsAsset.mint(address(this),    total1);
@@ -774,55 +806,55 @@ contract DebtLockerTests is TestUtils {
     /*** Refinance Tests ***/
     /***********************/
 
-    function test_refinance_withAmountIncrease(uint256 principalRequested_, uint256 collateralRequired_, uint256 principalIncrease_) external {
-        principalRequested_ = constrictToRange(principalRequested_, 1_000_000, MAX_TOKEN_AMOUNT);
-        collateralRequired_ = constrictToRange(collateralRequired_, 0,         principalRequested_ / 10);
-        principalIncrease_  = constrictToRange(principalIncrease_,  1,         MAX_TOKEN_AMOUNT);
+    function test_acceptNewTerms_withAmountIncrease(uint256 principalIncrease_) external {
+        principalIncrease_  = constrictToRange(principalIncrease_, 1, 1_000_000);
 
         /**********************************/
         /*** Create Loan and DebtLocker ***/
         /**********************************/
 
-        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(principalRequested_, collateralRequired_);
+        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 100_000);
 
         /**********************/
         /*** Make a payment ***/
         /**********************/
 
-        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
+        ( uint256 principal, uint256 interest, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total = principal + interest;
+        {
+            uint256 total = principal + interest + delegateFee + treasuryFee;
 
-        // Make a payment amount with interest and principal
-        fundsAsset.mint(address(this),    total);
-        fundsAsset.approve(address(loan), total);  // Mock payment amount
+            // Make a payment amount with interest and principal
+            fundsAsset.mint(address(this),    total);
+            fundsAsset.approve(address(loan), total);  // Mock payment amount
 
-        loan.makePayment(total);
+            loan.makePayment(total);
+        }
 
-        /******************/
+        /*****************/
         /*** Refinance ***/
-        /****************/
+        /*****************/
 
         address refinancer  = address(new Refinancer());
         bytes[] memory data = new bytes[](1);
         data[0] = abi.encodeWithSignature("increasePrincipal(uint256)", principalIncrease_);
 
-        loan.proposeNewTerms(refinancer, data);
+        loan.proposeNewTerms(refinancer, block.timestamp, data);
 
         fundsAsset.mint(address(debtLocker), principalIncrease_);
 
         // Should fail due to pending claim
-        try debtLocker.acceptNewTerms(refinancer, data, principalIncrease_) { fail(); } catch { }
+        try debtLocker.acceptNewTerms(refinancer, block.timestamp, data, principalIncrease_) { fail(); } catch { }
 
         pool.claim(address(debtLocker));
 
         // Should fail for not pool delegate
-        try notPoolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_) { fail(); } catch { }
+        try notPoolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, block.timestamp, data, principalIncrease_) { fail(); } catch { }
 
         // Note: More state changes in real loan that are asserted in integration tests
         uint256 principalBefore = loan.principal();
 
-        poolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, data, principalIncrease_);
+        poolDelegate.debtLocker_acceptNewTerms(address(debtLocker), refinancer, block.timestamp, data, principalIncrease_);
 
         uint256 principalAfter = loan.principal();
 
@@ -840,8 +872,9 @@ contract DebtLockerTests is TestUtils {
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
         // Make a payment amount with interest and principal
-        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
-        fundsAsset.mint(address(loan), principal + interest);
+        ( uint256 principal, uint256 interest, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
+
+        fundsAsset.mint(address(loan), principal + interest + delegateFee + treasuryFee);
         loan.makePayment(0);
 
         // Prepare additional amount to be captured in next claim
@@ -917,8 +950,9 @@ contract DebtLockerTests is TestUtils {
         loan.fundLoan(address(debtLocker), 1_000_000);
 
         // Make a payment amount with interest and principal
-        ( uint256 principal, uint256 interest ) = loan.getNextPaymentBreakdown();
-        fundsAsset.mint(address(loan), principal + interest);
+        ( uint256 principal, uint256 interest, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
+
+        fundsAsset.mint(address(loan), principal + interest + delegateFee + treasuryFee);
         loan.makePayment(principal + interest);
 
         // Erroneously prepare additional amount to be captured in next claim

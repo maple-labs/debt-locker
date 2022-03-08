@@ -49,7 +49,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
     /*** Pool Delegate Functions ***/
     /*******************************/
 
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external override whenProtocolNotPaused {
+    function acceptNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_, uint256 amount_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
 
         address loanAddress = _loan;
@@ -65,7 +65,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
             "DL:ANT:TRANSFER_FAILED"
         );
 
-        IMapleLoanLike(loanAddress).acceptNewTerms(refinancer_, calls_, uint256(0));
+        IMapleLoanLike(loanAddress).acceptNewTerms(refinancer_, deadline_, calls_, uint256(0));
 
         // NOTE: This must be set after accepting the new terms, which affects the loan principal.
         _principalRemainingAtLastClaim = IMapleLoanLike(loanAddress).principal();
@@ -81,6 +81,12 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
         require(msg.sender == _getPoolDelegate(), "DL:SA:NOT_PD");
 
         Liquidator(liquidator_).pullFunds(token_, destination_, amount_);
+    }
+
+    function rejectNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_) external override {
+        require(msg.sender == _getPoolDelegate(), "DL:ANT:NOT_PD");
+
+        IMapleLoanLike(_loan).rejectNewTerms(refinancer_, deadline_, calls_);
     }
 
     function setAllowedSlippage(uint256 allowedSlippage_) external override whenProtocolNotPaused {

@@ -4,7 +4,7 @@ pragma solidity 0.8.7;
 import { ILiquidatorLike } from "../../../modules/liquidations/contracts/interfaces/Interfaces.sol";
 
 import { ERC20Helper } from "../../../modules/erc20-helper/src/ERC20Helper.sol";
-import { MockERC20 }   from "../../../modules/erc20/src/test/mocks/MockERC20.sol";
+import { MockERC20 }   from "../../../modules/erc20/contracts/test/mocks/MockERC20.sol";
 
 import { IDebtLocker }        from "../../interfaces/IDebtLocker.sol";
 import { IDebtLockerFactory } from "../../interfaces/IDebtLockerFactory.sol";

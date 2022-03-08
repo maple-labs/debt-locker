@@ -46,10 +46,11 @@ interface IDebtLocker is IMapleProxied {
     /**
      * @dev   Accept the new loan terms and trigger a refinance.
      * @param refinancer_ The address of the refinancer contract.
+     * @param deadline_   The deadline of the new terms proposal.
      * @param calls_      The array of encoded data that are to be executed as delegatecalls by the refinancer.
      * @param amount_     The amount of `fundsAsset` that is to be sent to the Loan as part of the transaction.
      */
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external;
+    function acceptNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_, uint256 amount_) external;
 
     /**
      *  @dev    Claims funds to send to Pool. Handles funds from payments and liquidations.
@@ -83,6 +84,14 @@ interface IDebtLocker is IMapleProxied {
      * @dev Repossesses funds and collateral from a loan and transfers them to the Liquidator.
      */
     function triggerDefault() external;
+
+    /**
+     * @dev   Reject the new loan terms.
+     * @param refinancer_ The address of the refinancer contract.
+     * @param deadline_   The deadline of the new terms proposal.
+     * @param calls_      The array of encoded data that are to be executed as delegatecalls by the refinancer.
+     */
+    function rejectNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_) external;
 
     /**
      * @dev   Sets the allowed slippage for auctioneer (used to determine expected amount to be returned in flash loan).
