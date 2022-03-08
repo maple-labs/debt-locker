@@ -36,7 +36,7 @@ interface IMapleGlobalsLike {
 
 interface IMapleLoanLike {
 
-    function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external;
+    function acceptNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_, uint256 amount_) external;
 
     function claimableFunds() external view returns (uint256 claimableFunds_);
 
@@ -53,6 +53,8 @@ interface IMapleLoanLike {
     function claimFunds(uint256 amount_, address destination_) external;
 
     function repossess(address destination_) external returns (uint256 collateralAssetAmount_, uint256 fundsAssetAmount_);
+
+    function rejectNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_) external;
 
 }
 
