@@ -145,73 +145,83 @@ contract DebtLockerTests is TestUtils {
         /*************************/
         /*** Make two payments ***/
         /*************************/
+        {
+            ( uint256 principal1, uint256 interest1, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        ( uint256 principal1, uint256 interest1, , ) = loan.getNextPaymentBreakdown();
+            uint256 total1 = principal1 + interest1 + delegateFee + treasuryFee;
 
-        uint256 total1 = principal1 + interest1;
+            // Make a payment amount with interest and principal
+            fundsAsset.mint(address(this),    total1);
+            fundsAsset.approve(address(loan), total1);  // Mock payment amount
 
-        // Make a payment amount with interest and principal
-        fundsAsset.mint(address(this),    total1);
-        fundsAsset.approve(address(loan), total1);  // Mock payment amount
+            loan.makePayment(total1);
 
-        loan.makePayment(total1);
+            uint256 principal2;
+            uint256 interest2;
 
-        ( uint256 principal2, uint256 interest2, , ) = loan.getNextPaymentBreakdown();
+            ( principal2, interest2, delegateFee, treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total2 = principal2 + interest2;
+            uint256 total2 = principal2 + interest2 + delegateFee + treasuryFee;
 
-        // Mock a second payment amount with interest and principal
-        fundsAsset.mint(address(this),    total2);
-        fundsAsset.approve(address(loan), total2);  // Mock payment amount
+            // Mock a second payment amount with interest and principal
+            fundsAsset.mint(address(this),    total2);
+            fundsAsset.approve(address(loan), total2);  // Mock payment amount
 
-        loan.makePayment(total2);
+            loan.makePayment(total2);
 
-        assertEq(fundsAsset.balanceOf(address(loan)), total1 + total2);
-        assertEq(fundsAsset.balanceOf(address(pool)), 0);
+            uint256 totalPayments = (total1 + total2) - (delegateFee + treasuryFee) * 2;
 
-        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
+            assertEq(fundsAsset.balanceOf(address(loan)), totalPayments);
+            assertEq(fundsAsset.balanceOf(address(pool)), 0);
 
-        uint256[7] memory details = pool.claim(address(debtLocker));
+            assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principalRequested());
 
-        assertEq(fundsAsset.balanceOf(address(loan)), 0);
-        assertEq(fundsAsset.balanceOf(address(pool)), total1 + total2);
+            uint256[7] memory details = pool.claim(address(debtLocker));
 
-        assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principal());
+            assertEq(fundsAsset.balanceOf(address(loan)), 0);
+            assertEq(fundsAsset.balanceOf(address(pool)), totalPayments);
 
-        assertEq(details[0], total1 + total2);          // Total amount of funds claimed
-        assertEq(details[1], interest1 + interest2);    // Excess funds go towards interest
-        assertEq(details[2], principal1 + principal2);  // Principal amount
-        assertEq(details[3], 0);                        // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
-        assertEq(details[4], 0);                        // `excessReturned` is always zero since new loans cannot be over-funded
-        assertEq(details[5], 0);                        // Total recovered from liquidation is zero
-        assertEq(details[6], 0);                        // Zero shortfall since no liquidation
+            assertEq(debtLocker.principalRemainingAtLastClaim(), loan.principal());
+
+            assertEq(details[0], totalPayments);  // Total amount of funds claimed
+            assertEq(details[1], interest1 + interest2);   // Excess funds go towards interest
+            assertEq(details[2], principal1 + principal2);  // Principal amount
+            assertEq(details[3], 0);              // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+            assertEq(details[4], 0);              // `excessReturned` is always zero since new loans cannot be over-funded
+            assertEq(details[5], 0);              // Total recovered from liquidation is zero
+            assertEq(details[6], 0);              // Zero shortfall since no liquidation
+        }
 
         /*************************/
         /*** Make last payment ***/
         /*************************/
 
-        ( uint256 principal3, uint256 interest3, , ) = loan.getNextPaymentBreakdown();
+        {
+            ( uint256 principal3, uint256 interest3, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total3 = principal3 + interest3;
+            uint256 total3 = principal3 + interest3 + delegateFee + treasuryFee;
 
-        // Make a payment amount with interest and principal
-        fundsAsset.mint(address(this),    total3);
-        fundsAsset.approve(address(loan), total3);  // Mock payment amount
+            // Make a payment amount with interest and principal
+            fundsAsset.mint(address(this),    total3);
+            fundsAsset.approve(address(loan), total3);  // Mock payment amount
 
-        // Reduce the principal in loan and set claimableFunds
-        loan.makePayment(total3);
+            // Reduce the principal in loan and set claimableFunds
+            loan.makePayment(total3);
 
-        details = pool.claim(address(debtLocker));
+            uint256 poolBal = fundsAsset.balanceOf(address(pool));
 
-        assertEq(fundsAsset.balanceOf(address(pool)), total1 + total2 + total3);
+            uint256[7] memory details = pool.claim(address(debtLocker));
 
-        assertEq(details[0], total3);      // Total amount of funds claimed
-        assertEq(details[1], interest3);   // Excess funds go towards interest
-        assertEq(details[2], principal3);  // Principal amount
-        assertEq(details[3], 0);           // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
-        assertEq(details[4], 0);           // `excessReturned` is always zero since new loans cannot be over-funded
-        assertEq(details[5], 0);           // Total recovered from liquidation is zero
-        assertEq(details[6], 0);           // Zero shortfall since no liquidation
+            assertEq(fundsAsset.balanceOf(address(pool)), poolBal + interest3 + principal3);
+
+            assertEq(details[0], total3 - delegateFee - treasuryFee);  // Total amount of funds claimed
+            assertEq(details[1], interest3);                           // Excess funds go towards interest
+            assertEq(details[2], principal3);                          // Principal amount
+            assertEq(details[3], 0);                                   // `feePaid` is always zero since PD establishment fees are paid in `fundLoan` now
+            assertEq(details[4], 0);                                   // `excessReturned` is always zero since new loans cannot be over-funded
+            assertEq(details[5], 0);                                   // Total recovered from liquidation is zero
+            assertEq(details[6], 0);                                   // Zero shortfall since no liquidation
+        }
     }
 
     function test_initialize_invalidCollateralAsset() external {
@@ -263,7 +273,8 @@ contract DebtLockerTests is TestUtils {
 
         ( uint256 principal, uint256 interest, uint256 delegateFee, uint256 treasuryFee ) = loan.getNextPaymentBreakdown();
 
-        uint256 total = principal + interest + delegateFee + treasuryFee;
+        uint256 total        = principal + interest + delegateFee + treasuryFee;
+        uint256 totalPayment = principal + interest;
 
         // Make a payment amount with interest and principal
         fundsAsset.mint(address(this),    total);
@@ -277,7 +288,7 @@ contract DebtLockerTests is TestUtils {
 
         assertEq(collateralAsset.balanceOf(address(loan)),       collateralRequired_);
         assertEq(collateralAsset.balanceOf(address(debtLocker)), 0);
-        assertEq(fundsAsset.balanceOf(address(loan)),            total);
+        assertEq(fundsAsset.balanceOf(address(loan)),            totalPayment);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
         assertEq(fundsAsset.balanceOf(address(pool)),            0);
         assertTrue(!debtLocker.repossessed());
@@ -300,7 +311,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      0);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
-        assertEq(fundsAsset.balanceOf(address(pool)),            total);
+        assertEq(fundsAsset.balanceOf(address(pool)),            totalPayment);
         assertTrue(debtLocker.repossessed());
 
         if (collateralRequired_ > 0) {
@@ -321,12 +332,12 @@ contract DebtLockerTests is TestUtils {
         assertEq(fundsAsset.balanceOf(address(loan)),            0);
         assertEq(fundsAsset.balanceOf(address(debtLocker)),      amountRecovered);
         assertEq(fundsAsset.balanceOf(liquidator),               0);
-        assertEq(fundsAsset.balanceOf(address(pool)),            total);
+        assertEq(fundsAsset.balanceOf(address(pool)),            totalPayment);
 
         uint256[7] memory details = pool.claim(address(debtLocker));
 
         assertEq(fundsAsset.balanceOf(address(debtLocker)), 0);
-        assertEq(fundsAsset.balanceOf(address(pool)),       total + amountRecovered);
+        assertEq(fundsAsset.balanceOf(address(pool)),       totalPayment + amountRecovered);
         assertTrue(!debtLocker.repossessed());
 
         assertEq(details[0], amountRecovered);                     // Total amount of funds claimed
