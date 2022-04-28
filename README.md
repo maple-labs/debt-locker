@@ -2,8 +2,6 @@
 
 [![CircleCI](https://circleci.com/gh/maple-labs/debt-locker/tree/main.svg?style=svg)](https://circleci.com/gh/maple-labs/debt-locker/tree/main) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-**DISCLAIMER: This code has NOT been externally audited and is actively being developed. Please do not use in production without taking the appropriate steps to ensure maximum security.**
-
 DebtLocker is a smart contract that allows Pools to interact with different versions of Loans. 
 
 This contract has the following capabilities:
@@ -45,8 +43,10 @@ This project was built using [dapptools](https://github.com/dapphub/dapptools).
 ## Audit Reports
 | Auditor | Report link |
 |---|---|
-| Trail of Bits                            | [ToB - Dec 28, 2021](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-core/files/7847684/Maple.Finance.-.Final.Report_v3.pdf) |
-| Code 4rena                             | [C4 - Jan 5, 2022](https://code4rena.com/reports/2021-12-maple/) |
+| Trail of Bits - DebtLockerV2 | [ToB Report - Dec 28, 2021](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-core/files/7847684/Maple.Finance.-.Final.Report_v3.pdf) |
+| Code 4rena - DebtLockerV2 | [C4 Report - Jan 5, 2022](https://code4rena.com/reports/2021-12-maple/) |
+| Trail of Bits - DebtLockerV3 | [ToB Report - April 12, 2022](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-core/files/8507237/Maple.Finance.-.Final.Report.-.Fixes.pdf) |
+| Code 4rena - DebtLockerV3 | [C4 Report - April 20, 2022](https://code4rena.com/reports/2022-03-maple/) |
 
 ## Bug Bounty
 
