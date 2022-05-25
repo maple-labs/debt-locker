@@ -670,7 +670,6 @@ contract DebtLockerTests is TestUtils {
         assertEq(debtLocker.fundsToCapture(), 100 * 10 ** 6);
     }
 
-
     function test_acl_poolDelegate_setMinRatio() external {
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 
