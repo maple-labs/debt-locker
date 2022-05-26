@@ -16,4 +16,5 @@ contract DebtLockerStorage {
     uint256 internal _minRatio;
     uint256 internal _principalRemainingAtLastClaim;
 
+    address internal _migrator;
 }

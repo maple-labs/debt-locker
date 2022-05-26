@@ -111,7 +111,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
     }
 
     function setPendingLender(address newLender_) override external whenProtocolNotPaused {
-        require(msg.sender == _getPoolDelegate(), "DL:SL:NOT_PD");
+        require(msg.sender == _migrator, "DL:SPL:NOT_MIGRATOR");
 
         IMapleLoanLike(_loan).setPendingLender(newLender_);
     }
