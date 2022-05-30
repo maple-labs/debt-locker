@@ -1084,12 +1084,11 @@ contract DebtLockerV4Migration is TestUtils {
         address debtLockerInitializer     = address(new DebtLockerInitializer());
         address debtLockerV4Migrator      = address(new DebtLockerV4Migrator());
 
-
         governor.mapleProxyFactory_registerImplementation(address(dlFactory), 1, debtLockerImplementation, debtLockerInitializer);
         governor.mapleProxyFactory_setDefaultVersion(address(dlFactory), 1);
 
         governor.mapleProxyFactory_registerImplementation(address(dlFactory), 2, debtLockerImplementation2, debtLockerInitializer);
-        governor.mapleProxyFactory_enableUpgradePath(address(dlFactory), 1,2, debtLockerV4Migrator);
+        governor.mapleProxyFactory_enableUpgradePath(address(dlFactory), 1, 2, debtLockerV4Migrator);
 
         // Deploying and registering DebtLocker implementation and initializer
         address loanImplementation = address(new MapleLoan());
@@ -1121,16 +1120,15 @@ contract DebtLockerV4Migration is TestUtils {
 
         LoanMigrator loanMigrator    = new LoanMigrator();
         LoanMigrator notLoanMigrator = new LoanMigrator();
-        address newLender       = address(3);
+        
+        address newLender = address(3);
 
-        poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(loanMigrator));
+        poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
 
         assertEq(loan.pendingLender(), address(0));
-
         
         assertTrue(!notLoanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
         assertTrue(    loanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
-
 
         assertEq(loan.pendingLender(), newLender);
     }
