@@ -39,7 +39,6 @@ contract PoolDelegate is ProxyUser {
         IDebtLocker(debtLocker_).setMinRatio(minRatio_);
     }
 
-
     function debtLocker_stopLiquidation(address debtLocker_) external {
         IDebtLocker(debtLocker_).stopLiquidation();
     }
