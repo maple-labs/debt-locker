@@ -125,7 +125,7 @@ interface IDebtLocker is IMapleProxied {
     function setFundsToCapture(uint256 amount_) external;
 
     /**
-     * @dev   Sets the pending lender on a maple loan
+     * @dev   Sets the pending lender on a Maple Loan.
      * @param newLender_ The address of the new lender.
      */
     function setPendingLender(address newLender_) external;
