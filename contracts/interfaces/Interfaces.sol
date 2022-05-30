@@ -58,6 +58,8 @@ interface IMapleLoanLike {
 
     function rejectNewTerms(address refinancer_, uint256 deadline_, bytes[] calldata calls_) external;
 
+    function setPendingLender(address pendingLender_) external;
+
 }
 
 interface IPoolLike {
