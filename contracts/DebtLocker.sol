@@ -111,7 +111,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
     }
 
     function setPendingLender(address newLender_) override external whenProtocolNotPaused {
-        require(msg.sender == _migrator, "DL:SPL:NOT_MIGRATOR");
+        require(msg.sender == _loanMigrator, "DL:SPL:NOT_MIGRATOR");
 
         IMapleLoanLike(_loan).setPendingLender(newLender_);
     }
@@ -284,6 +284,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
 
     function loan() external view override returns (address loan_) {
         return _loan;
+    }
+
+    function loanMigrator() external view override returns (address loan_) {
+        return _loanMigrator;
     }
 
     function minRatio() external view override returns (uint256 minRatio_) {

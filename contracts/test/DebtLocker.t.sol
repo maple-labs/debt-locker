@@ -13,9 +13,11 @@ import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
 import { DebtLocker }            from "../DebtLocker.sol";
 import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
 import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
+import { DebtLockerV4Migrator }  from "../DebtLockerV4Migrator.sol";
 
 import { Governor }     from "./accounts/Governor.sol";
 import { PoolDelegate } from "./accounts/PoolDelegate.sol";
+import { LoanMigrator } from "./accounts/LoanMigrator.sol";
 
 import { DebtLockerHarness }       from "./mocks/DebtLockerHarness.sol";
 import { ManipulatableDebtLocker } from "./mocks/ManipulatableDebtLocker.sol";
@@ -683,19 +685,6 @@ contract DebtLockerTests is TestUtils {
         assertEq(debtLocker.minRatio(), 100 * 10 ** 6);
     }
 
-    function test_acl_poolDelete_setPendingLender() external {
-        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
-
-        address newLender_ = address(2);
-
-        assertEq(loan.pendingLender(), address(0));
-
-        assertTrue(!notPoolDelegate.try_debtLocker_setPendingLender(address(debtLocker), newLender_));
-        assertTrue(    poolDelegate.try_debtLocker_setPendingLender(address(debtLocker), newLender_));
-
-        assertEq(loan.pendingLender(), newLender_);
-    }
-
     function test_acl_poolDelegate_upgrade() external {
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 
@@ -1053,4 +1042,135 @@ contract DebtLockerTests is TestUtils {
         assertTrue(!debtLocker.isLiquidationActive());
     }
 
+}
+
+contract DebtLockerV4Migration is TestUtils {
+
+    DebtLockerFactory    internal dlFactory;
+    Governor             internal governor;
+    MapleLoanFactory     internal loanFactory;
+    MapleLoanInitializer internal loanInitializer;
+    MockERC20            internal collateralAsset;
+    MockERC20            internal fundsAsset;
+    MockGlobals          internal globals;
+    MockPool             internal pool;
+    MockPoolFactory      internal poolFactory;
+    PoolDelegate         internal notPoolDelegate;
+    PoolDelegate         internal poolDelegate;
+
+    Hevm internal hevm = Hevm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
+
+    function setUp() external {
+        governor        = new Governor();
+        notPoolDelegate = new PoolDelegate();
+        poolDelegate    = new PoolDelegate();
+
+        globals     = new MockGlobals(address(governor));
+        poolFactory = new MockPoolFactory(address(globals));
+        dlFactory   = new DebtLockerFactory(address(globals));
+        loanFactory = new MapleLoanFactory(address(globals));
+
+        pool = MockPool(poolFactory.createPool(address(poolDelegate)));
+
+        collateralAsset = new MockERC20("Collateral Asset", "CA", 18);
+        fundsAsset      = new MockERC20("Funds Asset",      "FA", 18);
+
+        globals.setValidCollateralAsset(address(collateralAsset), true);
+        globals.setValidLiquidityAsset(address(fundsAsset), true);
+
+        // Deploying and registering DebtLocker implementation and initializer
+        address debtLockerImplementation  = address(new DebtLocker());
+        address debtLockerImplementation2 = address(new DebtLocker());
+        address debtLockerInitializer     = address(new DebtLockerInitializer());
+        address debtLockerV4Migrator      = address(new DebtLockerV4Migrator());
+
+
+        governor.mapleProxyFactory_registerImplementation(address(dlFactory), 1, debtLockerImplementation, debtLockerInitializer);
+        governor.mapleProxyFactory_setDefaultVersion(address(dlFactory), 1);
+
+        governor.mapleProxyFactory_registerImplementation(address(dlFactory), 2, debtLockerImplementation2, debtLockerInitializer);
+        governor.mapleProxyFactory_enableUpgradePath(address(dlFactory), 1,2, debtLockerV4Migrator);
+
+        // Deploying and registering DebtLocker implementation and initializer
+        address loanImplementation = address(new MapleLoan());
+        loanInitializer            = new MapleLoanInitializer();
+
+        governor.mapleProxyFactory_registerImplementation(address(loanFactory), 1, loanImplementation, address(loanInitializer));
+        governor.mapleProxyFactory_setDefaultVersion(address(loanFactory), 1);
+
+        globals.setPrice(address(collateralAsset), 10 * 10 ** 8);  // 10 USD
+        globals.setPrice(address(fundsAsset),      1  * 10 ** 8);  // 1 USD
+    }
+
+    function test_acl_upgradeToV4() external {
+        MapleLoan loan_ = _createLoan(1e18, 1e18);
+
+        DebtLocker debtLocker_ = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan_)));
+
+        address loanMigrator = address(5);
+
+        assertTrue(!notPoolDelegate.try_debtLocker_upgrade(address(debtLocker_), 2, abi.encode(loanMigrator)));
+        assertTrue(    poolDelegate.try_debtLocker_upgrade(address(debtLocker_), 2, abi.encode(loanMigrator)));
+
+        assertEq(debtLocker_.loanMigrator(), loanMigrator);
+    }
+    
+
+    function test_acl_setPendingLender() external {
+        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
+
+        LoanMigrator loanMigrator    = new LoanMigrator();
+        LoanMigrator notLoanMigrator = new LoanMigrator();
+        address newLender       = address(3);
+
+        poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(loanMigrator));
+
+        assertEq(loan.pendingLender(), address(0));
+
+        
+        assertTrue(!notLoanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
+        assertTrue(    loanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
+
+
+        assertEq(loan.pendingLender(), newLender);
+    }
+
+    function _createLoan(uint256 principalRequested_, uint256 collateralRequired_) internal returns (MapleLoan loan_) {
+        address[2] memory assets      = [address(collateralAsset), address(fundsAsset)];
+        uint256[3] memory termDetails = [uint256(10 days), uint256(30 days), 6];
+        uint256[3] memory amounts     = [collateralRequired_, principalRequested_, 0];
+        uint256[4] memory rates       = [uint256(0.10e18), uint256(0), uint256(0), uint256(0)];
+
+        bytes memory arguments = loanInitializer.encodeArguments(address(this), assets, termDetails, amounts, rates);
+        bytes32 salt           = keccak256(abi.encodePacked("salt"));
+
+        // Create Loan
+        loan_ = MapleLoan(loanFactory.createInstance(arguments, salt));
+    }
+
+    function _fundAndDrawdownLoan(address loan_, address debtLocker_) internal {
+        MapleLoan loan = MapleLoan(loan_);
+
+        uint256 principalRequested = loan.principalRequested();
+        uint256 collateralRequired = loan.collateralRequired();
+
+        fundsAsset.mint(address(this), principalRequested);
+        fundsAsset.approve(loan_,      principalRequested);
+
+        loan.fundLoan(debtLocker_, principalRequested);
+
+        collateralAsset.mint(address(this), collateralRequired);
+        collateralAsset.approve(loan_,      collateralRequired);
+
+        loan.drawdownFunds(loan.drawableFunds(), address(1));  // Drawdown to empty funds from loan
+    }
+
+    function _createFundAndDrawdownLoan(uint256 principalRequested_, uint256 collateralRequired_) internal returns (MapleLoan loan_, DebtLocker debtLocker_) {
+        loan_ = _createLoan(principalRequested_, collateralRequired_);
+
+        debtLocker_ = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan_)));
+
+        _fundAndDrawdownLoan(address(loan_), address(debtLocker_));
+    }
+    
 }

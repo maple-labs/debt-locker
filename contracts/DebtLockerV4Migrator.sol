@@ -21,7 +21,7 @@ contract DebtLockerV4Migrator is IDebtLockerV4Migrator, DebtLockerStorage {
         // Taking the migrator_ address as argument for now, but ideally this would be hardcoded in the debtLocker migrator registered in the factory
         ( address migrator_ ) = decodeArguments(msg.data);
 
-        _migrator = migrator_;
+        _loanMigrator = migrator_;
     }
 
 }
