@@ -1,15 +1,15 @@
 [submodule "modules/erc20"]
 	path = modules/erc20
-	url = https://github.com/maple-labs/erc20.git
+	url = git@github.com:maple-labs/erc20.git
 [submodule "modules/erc20-helper"]
 	path = modules/erc20-helper
-	url = https://github.com/maple-labs/erc20-helper.git
+	url = git@github.com:maple-labs/erc20-helper.git
 [submodule "modules/contract-test-utils"]
 	path = modules/contract-test-utils
-	url = https://github.com/maple-labs/contract-test-utils.git
+	url = git@github.com:maple-labs/contract-test-utils.git
 [submodule "modules/liquidations"]
 	path = modules/liquidations
-	url = https://github.com/maple-labs/liquidations
+	url = git@github.com:maple-labs/liquidations
 [submodule "modules/maple-proxy-factory"]
 	path = modules/maple-proxy-factory
 	url = git@github.com:maple-labs/maple-proxy-factory.git
