@@ -1,0 +1,3059 @@
+{
+  "_format": "ethers-rs-sol-cache-3",
+  "paths": {
+    "artifacts": "out",
+    "build_infos": "out/build-info",
+    "sources": "contracts",
+    "tests": "tests",
+    "scripts": "script",
+    "libraries": [
+      "modules"
+    ]
+  },
+  "files": {
+    "contracts/DebtLocker.sol": {
+      "lastModificationDate": 1661517914012,
+      "contentHash": "ea03719cf06f8b1170f0c9231704e145",
+      "sourceName": "contracts/DebtLocker.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/DebtLockerStorage.sol",
+        "contracts/interfaces/IDebtLocker.sol",
+        "contracts/interfaces/Interfaces.sol",
+        "modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/liquidations/contracts/Liquidator.sol",
+        "modules/liquidations/contracts/interfaces/ILiquidator.sol",
+        "modules/liquidations/contracts/interfaces/Interfaces.sol",
+        "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLocker": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLocker.sol/DebtLocker.json"
+        }
+      }
+    },
+    "contracts/DebtLockerFactory.sol": {
+      "lastModificationDate": 1640542832983,
+      "contentHash": "cb10e4156c5c35e3de7a50762dcf4a77",
+      "sourceName": "contracts/DebtLockerFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/interfaces/IDebtLockerFactory.sol",
+        "modules/maple-proxy-factory/contracts/MapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLockerFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLockerFactory.sol/DebtLockerFactory.json"
+        }
+      }
+    },
+    "contracts/DebtLockerInitializer.sol": {
+      "lastModificationDate": 1640542832983,
+      "contentHash": "4090fb0dd8e3f8bdf6444cf4ebd65511",
+      "sourceName": "contracts/DebtLockerInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/DebtLockerStorage.sol",
+        "contracts/interfaces/IDebtLockerInitializer.sol",
+        "contracts/interfaces/Interfaces.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLockerInitializer": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLockerInitializer.sol/DebtLockerInitializer.json"
+        }
+      }
+    },
+    "contracts/DebtLockerStorage.sol": {
+      "lastModificationDate": 1661517914013,
+      "contentHash": "82afd818f292b0cb7393bbb3004f6fcf",
+      "sourceName": "contracts/DebtLockerStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLockerStorage": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLockerStorage.sol/DebtLockerStorage.json"
+        }
+      }
+    },
+    "contracts/DebtLockerV4Migrator.sol": {
+      "lastModificationDate": 1661517914014,
+      "contentHash": "d110108a4de01faa7c7fca732e3a4d49",
+      "sourceName": "contracts/DebtLockerV4Migrator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/DebtLockerStorage.sol",
+        "contracts/interfaces/IDebtLockerV4Migrator.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLockerV4Migrator": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLockerV4Migrator.sol/DebtLockerV4Migrator.json"
+        }
+      }
+    },
+    "contracts/interfaces/IDebtLocker.sol": {
+      "lastModificationDate": 1661517914014,
+      "contentHash": "3c3481c7e1ebea4ed7838d9b46e04412",
+      "sourceName": "contracts/interfaces/IDebtLocker.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IDebtLocker": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IDebtLocker.sol/IDebtLocker.json"
+        }
+      }
+    },
+    "contracts/interfaces/IDebtLockerFactory.sol": {
+      "lastModificationDate": 1640542832983,
+      "contentHash": "27d215a9979c739dfdbd4a0893e7e456",
+      "sourceName": "contracts/interfaces/IDebtLockerFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IDebtLockerFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IDebtLockerFactory.sol/IDebtLockerFactory.json"
+        }
+      }
+    },
+    "contracts/interfaces/IDebtLockerInitializer.sol": {
+      "lastModificationDate": 1640542832984,
+      "contentHash": "6e5dc035465915414bf2593ddc6d40bc",
+      "sourceName": "contracts/interfaces/IDebtLockerInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IDebtLockerInitializer": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IDebtLockerInitializer.sol/IDebtLockerInitializer.json"
+        }
+      }
+    },
+    "contracts/interfaces/IDebtLockerV4Migrator.sol": {
+      "lastModificationDate": 1661517914015,
+      "contentHash": "e020634f27344d95ba7e2141edb89bdf",
+      "sourceName": "contracts/interfaces/IDebtLockerV4Migrator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IDebtLockerV4Migrator": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IDebtLockerV4Migrator.sol/IDebtLockerV4Migrator.json"
+        }
+      }
+    },
+    "contracts/interfaces/Interfaces.sol": {
+      "lastModificationDate": 1661517914015,
+      "contentHash": "bed82b022fc21589bfdb14e02c05298a",
+      "sourceName": "contracts/interfaces/Interfaces.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IERC20Like": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IERC20Like.json"
+        },
+        "ILiquidatorLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/ILiquidatorLike.json"
+        },
+        "IMapleGlobalsLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IMapleGlobalsLike.json"
+        },
+        "IMapleLoanLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IMapleLoanLike.json"
+        },
+        "IPoolFactoryLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IPoolFactoryLike.json"
+        },
+        "IPoolLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IPoolLike.json"
+        },
+        "IUniswapRouterLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IUniswapRouterLike.json"
+        }
+      }
+    },
+    "modules/contract-test-utils/contracts/DSTest.sol": {
+      "lastModificationDate": 1661523296970,
+      "contentHash": "544bc935b974fde9b6d40677a83231fa",
+      "sourceName": "modules/contract-test-utils/contracts/DSTest.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.4.23",
+      "artifacts": {
+        "DSTest": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DSTest.sol/DSTest.json"
+        }
+      }
+    },
+    "modules/contract-test-utils/contracts/interfaces.sol": {
+      "lastModificationDate": 1661523296971,
+      "contentHash": "8990a64c2b479c80a056ebc8fe299328",
+      "sourceName": "modules/contract-test-utils/contracts/interfaces.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IERC20Like": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/interfaces.sol/IERC20Like.json"
+        },
+        "Vm": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces.sol/Vm.json"
+        }
+      }
+    },
+    "modules/contract-test-utils/contracts/test.sol": {
+      "lastModificationDate": 1661523296971,
+      "contentHash": "3ba0e7a023d20a45bd274eacb67e1bc9",
+      "sourceName": "modules/contract-test-utils/contracts/test.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/contract-test-utils/contracts/DSTest.sol",
+        "modules/contract-test-utils/contracts/interfaces.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "InvariantTest": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "test.sol/InvariantTest.json"
+        },
+        "TestUtils": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "test.sol/TestUtils.json"
+        }
+      }
+    },
+    "modules/erc20/contracts/ERC20.sol": {
+      "lastModificationDate": 1661523297424,
+      "contentHash": "eb28361af59560d551635e2d7a485d62",
+      "sourceName": "modules/erc20/contracts/ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/erc20/contracts/interfaces/IERC20.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "ERC20": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "ERC20.sol/ERC20.json"
+        }
+      }
+    },
+    "modules/erc20/contracts/interfaces/IERC20.sol": {
+      "lastModificationDate": 1661523297425,
+      "contentHash": "098fb4b9fb0856f4f097b47c12cfdb3b",
+      "sourceName": "modules/erc20/contracts/interfaces/IERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IERC20": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IERC20.sol/IERC20.json"
+        }
+      }
+    },
+    "modules/erc20/contracts/test/mocks/MockERC20.sol": {
+      "lastModificationDate": 1661523297425,
+      "contentHash": "57900788d303de1b95abcb9ed67f5739",
+      "sourceName": "modules/erc20/contracts/test/mocks/MockERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/erc20/contracts/ERC20.sol",
+        "modules/erc20/contracts/interfaces/IERC20.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MockERC20": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MockERC20.sol/MockERC20.json"
+        }
+      }
+    },
+    "modules/erc20-helper/src/ERC20Helper.sol": {
+      "lastModificationDate": 1661523298372,
+      "contentHash": "cb989f7dbce103263241aafb20039f66",
+      "sourceName": "modules/erc20-helper/src/ERC20Helper.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/erc20-helper/src/interfaces/IERC20Like.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ERC20Helper": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "ERC20Helper.sol/ERC20Helper.json"
+        }
+      }
+    },
+    "modules/erc20-helper/src/interfaces/IERC20Like.sol": {
+      "lastModificationDate": 1661523298372,
+      "contentHash": "00f962f6c3143bb171642e857a2c3ecf",
+      "sourceName": "modules/erc20-helper/src/interfaces/IERC20Like.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IERC20Like": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IERC20Like.sol/IERC20Like.json"
+        }
+      }
+    },
+    "modules/liquidations/contracts/Liquidator.sol": {
+      "lastModificationDate": 1661523299313,
+      "contentHash": "72068ddf585bc79b7ba98c0c0fc29b8e",
+      "sourceName": "modules/liquidations/contracts/Liquidator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/liquidations/contracts/interfaces/ILiquidator.sol",
+        "modules/liquidations/contracts/interfaces/Interfaces.sol",
+        "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "Liquidator": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Liquidator.sol/Liquidator.json"
+        }
+      }
+    },
+    "modules/liquidations/contracts/interfaces/ILiquidator.sol": {
+      "lastModificationDate": 1661523299314,
+      "contentHash": "de41f97490eede557314dfe0fe07fd39",
+      "sourceName": "modules/liquidations/contracts/interfaces/ILiquidator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "ILiquidator": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "ILiquidator.sol/ILiquidator.json"
+        }
+      }
+    },
+    "modules/liquidations/contracts/interfaces/Interfaces.sol": {
+      "lastModificationDate": 1661523299315,
+      "contentHash": "b558c9517d07def3f6f93e7a42d8a4fc",
+      "sourceName": "modules/liquidations/contracts/interfaces/Interfaces.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IAuctioneerLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IAuctioneerLike.json"
+        },
+        "IERC20Like": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/Interfaces.sol/IERC20Like.json"
+        },
+        "ILiquidatorLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/Interfaces.sol/ILiquidatorLike.json"
+        },
+        "IMapleGlobalsLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/Interfaces.sol/IMapleGlobalsLike.json"
+        },
+        "IOracleLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/IOracleLike.json"
+        },
+        "IUniswapRouterLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/Interfaces.sol/IUniswapRouterLike.json"
+        }
+      }
+    },
+    "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol": {
+      "lastModificationDate": 1661523301282,
+      "contentHash": "cb989f7dbce103263241aafb20039f66",
+      "sourceName": "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ERC20Helper": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "src/ERC20Helper.sol/ERC20Helper.json"
+        }
+      }
+    },
+    "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol": {
+      "lastModificationDate": 1661523301283,
+      "contentHash": "00f962f6c3143bb171642e857a2c3ecf",
+      "sourceName": "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IERC20Like": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/IERC20Like.sol/IERC20Like.json"
+        }
+      }
+    },
+    "modules/loan/contracts/MapleLoan.sol": {
+      "lastModificationDate": 1661523302257,
+      "contentHash": "5ebcb15ef0cba7cc79bc905398e92f02",
+      "sourceName": "modules/loan/contracts/MapleLoan.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/MapleLoanInternals.sol",
+        "modules/loan/contracts/interfaces/IMapleLoan.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanEvents.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+        "modules/loan/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/loan/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleLoan": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MapleLoan.sol/MapleLoan.json"
+        }
+      }
+    },
+    "modules/loan/contracts/MapleLoanFactory.sol": {
+      "lastModificationDate": 1661523302258,
+      "contentHash": "1ea1d56b0f85b135c9808e54a5da9078",
+      "sourceName": "modules/loan/contracts/MapleLoanFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleLoanFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MapleLoanFactory.sol/MapleLoanFactory.json"
+        }
+      }
+    },
+    "modules/loan/contracts/MapleLoanInitializer.sol": {
+      "lastModificationDate": 1661523302258,
+      "contentHash": "6466c6e859d000d0ba5ddfd01873007d",
+      "sourceName": "modules/loan/contracts/MapleLoanInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/MapleLoanInternals.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanEvents.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanInitializer.sol",
+        "modules/loan/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/loan/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleLoanInitializer": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MapleLoanInitializer.sol/MapleLoanInitializer.json"
+        }
+      }
+    },
+    "modules/loan/contracts/MapleLoanInternals.sol": {
+      "lastModificationDate": 1661523302258,
+      "contentHash": "123d93f19240e373af63603aa640fe78",
+      "sourceName": "modules/loan/contracts/MapleLoanInternals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+        "modules/loan/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/loan/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleLoanInternals": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MapleLoanInternals.sol/MapleLoanInternals.json"
+        }
+      }
+    },
+    "modules/loan/contracts/Refinancer.sol": {
+      "lastModificationDate": 1661523302258,
+      "contentHash": "9933c99b751876bbe74fc7bef4bac6c4",
+      "sourceName": "modules/loan/contracts/Refinancer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/MapleLoanInternals.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+        "modules/loan/contracts/interfaces/IRefinancer.sol",
+        "modules/loan/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/loan/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "Refinancer": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Refinancer.sol/Refinancer.json"
+        }
+      }
+    },
+    "modules/loan/contracts/interfaces/IMapleLoan.sol": {
+      "lastModificationDate": 1661523302259,
+      "contentHash": "76719ba39b0720fb78b61f8979646a9f",
+      "sourceName": "modules/loan/contracts/interfaces/IMapleLoan.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/interfaces/IMapleLoanEvents.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleLoan": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IMapleLoan.sol/IMapleLoan.json"
+        }
+      }
+    },
+    "modules/loan/contracts/interfaces/IMapleLoanEvents.sol": {
+      "lastModificationDate": 1661523302259,
+      "contentHash": "2ba7090e022825e4d80dc98ca4d4321f",
+      "sourceName": "modules/loan/contracts/interfaces/IMapleLoanEvents.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleLoanEvents": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IMapleLoanEvents.sol/IMapleLoanEvents.json"
+        }
+      }
+    },
+    "modules/loan/contracts/interfaces/IMapleLoanFactory.sol": {
+      "lastModificationDate": 1661523302259,
+      "contentHash": "84d79bd2e2e888cf8f956045a6734b9c",
+      "sourceName": "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleLoanFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IMapleLoanFactory.sol/IMapleLoanFactory.json"
+        }
+      }
+    },
+    "modules/loan/contracts/interfaces/IMapleLoanInitializer.sol": {
+      "lastModificationDate": 1661523302259,
+      "contentHash": "c1ebf31bfb574e15cb2d9186b8b456eb",
+      "sourceName": "modules/loan/contracts/interfaces/IMapleLoanInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/contracts/interfaces/IMapleLoanEvents.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleLoanInitializer": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IMapleLoanInitializer.sol/IMapleLoanInitializer.json"
+        }
+      }
+    },
+    "modules/loan/contracts/interfaces/IRefinancer.sol": {
+      "lastModificationDate": 1661523302259,
+      "contentHash": "a1b99c413a5cc2483e2b10afeb4db98c",
+      "sourceName": "modules/loan/contracts/interfaces/IRefinancer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IRefinancer": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IRefinancer.sol/IRefinancer.json"
+        }
+      }
+    },
+    "modules/loan/contracts/interfaces/Interfaces.sol": {
+      "lastModificationDate": 1661523302260,
+      "contentHash": "3e4e847ffd525c4f625243dea4aebce4",
+      "sourceName": "modules/loan/contracts/interfaces/Interfaces.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "ILenderLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Interfaces.sol/ILenderLike.json"
+        },
+        "IMapleGlobalsLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/interfaces/Interfaces.sol/IMapleGlobalsLike.json"
+        }
+      }
+    },
+    "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol": {
+      "lastModificationDate": 1661523303274,
+      "contentHash": "098fb4b9fb0856f4f097b47c12cfdb3b",
+      "sourceName": "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IERC20": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/IERC20.sol/IERC20.json"
+        }
+      }
+    },
+    "modules/loan/modules/erc20-helper/src/ERC20Helper.sol": {
+      "lastModificationDate": 1661523304341,
+      "contentHash": "cb989f7dbce103263241aafb20039f66",
+      "sourceName": "modules/loan/modules/erc20-helper/src/ERC20Helper.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ERC20Helper": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "erc20-helper/src/ERC20Helper.sol/ERC20Helper.json"
+        }
+      }
+    },
+    "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol": {
+      "lastModificationDate": 1661523304341,
+      "contentHash": "00f962f6c3143bb171642e857a2c3ecf",
+      "sourceName": "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IERC20Like": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "src/interfaces/IERC20Like.sol/IERC20Like.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol": {
+      "lastModificationDate": 1661523305302,
+      "contentHash": "0e21622e6626dd9e4244be57c36ff1b7",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleProxiedInternals": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/MapleProxiedInternals.sol/MapleProxiedInternals.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/contracts/MapleProxyFactory.sol": {
+      "lastModificationDate": 1661523305302,
+      "contentHash": "84ba4306403895608ab64c0bc179ec91",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/contracts/MapleProxyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleProxyFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/MapleProxyFactory.sol/MapleProxyFactory.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol": {
+      "lastModificationDate": 1661523305302,
+      "contentHash": "5e4647c91a99c75816c3c7fc60d75d74",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleProxied": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/IMapleProxied.sol/IMapleProxied.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol": {
+      "lastModificationDate": 1661523305303,
+      "contentHash": "ade6bba2437acee45491beca1890198c",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleProxyFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/IMapleProxyFactory.sol/IMapleProxyFactory.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol": {
+      "lastModificationDate": 1661523305303,
+      "contentHash": "2d786d19d283fc2e573cb622df60e27a",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleGlobalsLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "maple-proxy-factory/contracts/interfaces/Interfaces.sol/IMapleGlobalsLike.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol": {
+      "lastModificationDate": 1661523306272,
+      "contentHash": "e02882e2904644f99e71fd836f3d03fa",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ProxiedInternals": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/ProxiedInternals.sol/ProxiedInternals.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol": {
+      "lastModificationDate": 1661523306272,
+      "contentHash": "8f2c4553f81b215a9126eda16147787a",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "Proxy": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/Proxy.sol/Proxy.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol": {
+      "lastModificationDate": 1661523306272,
+      "contentHash": "f237d55b1a8815b6a4dd436a7566af63",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ProxyFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/ProxyFactory.sol/ProxyFactory.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol": {
+      "lastModificationDate": 1661523306273,
+      "contentHash": "585ab831451b7e4aa652ab3bee5e9a8a",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "SlotManipulatable": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "contracts/SlotManipulatable.sol/SlotManipulatable.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol": {
+      "lastModificationDate": 1661523306273,
+      "contentHash": "c49c6f35ffce4c1ec79f7c7f8bd449ae",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IDefaultImplementationBeacon": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/IDefaultImplementationBeacon.sol/IDefaultImplementationBeacon.json"
+        }
+      }
+    },
+    "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol": {
+      "lastModificationDate": 1661523306273,
+      "contentHash": "de201769e342c0a8830a5ca9afcc0f3b",
+      "sourceName": "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IProxied": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "interfaces/IProxied.sol/IProxied.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol": {
+      "lastModificationDate": 1661523307231,
+      "contentHash": "0e21622e6626dd9e4244be57c36ff1b7",
+      "sourceName": "modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleProxiedInternals": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MapleProxiedInternals.sol/MapleProxiedInternals.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/MapleProxyFactory.sol": {
+      "lastModificationDate": 1661523307232,
+      "contentHash": "84ba4306403895608ab64c0bc179ec91",
+      "sourceName": "modules/maple-proxy-factory/contracts/MapleProxyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MapleProxyFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "MapleProxyFactory.sol/MapleProxyFactory.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol": {
+      "lastModificationDate": 1661523307232,
+      "contentHash": "5e4647c91a99c75816c3c7fc60d75d74",
+      "sourceName": "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleProxied": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IMapleProxied.sol/IMapleProxied.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol": {
+      "lastModificationDate": 1661523307232,
+      "contentHash": "ade6bba2437acee45491beca1890198c",
+      "sourceName": "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleProxyFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IMapleProxyFactory.sol/IMapleProxyFactory.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol": {
+      "lastModificationDate": 1661523307232,
+      "contentHash": "2d786d19d283fc2e573cb622df60e27a",
+      "sourceName": "modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "IMapleGlobalsLike": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol/IMapleGlobalsLike.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/test/accounts/Governor.sol": {
+      "lastModificationDate": 1661523307232,
+      "contentHash": "f92c049fc2bdd955174bedbdc75bf6c6",
+      "sourceName": "modules/maple-proxy-factory/contracts/test/accounts/Governor.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "Governor": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "accounts/Governor.sol/Governor.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/contracts/test/accounts/User.sol": {
+      "lastModificationDate": 1661523307232,
+      "contentHash": "e32bccc786687756f328436db90053b6",
+      "sourceName": "modules/maple-proxy-factory/contracts/test/accounts/User.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "User": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "User.sol/User.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol": {
+      "lastModificationDate": 1661523308212,
+      "contentHash": "e02882e2904644f99e71fd836f3d03fa",
+      "sourceName": "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ProxiedInternals": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "ProxiedInternals.sol/ProxiedInternals.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol": {
+      "lastModificationDate": 1661523308212,
+      "contentHash": "8f2c4553f81b215a9126eda16147787a",
+      "sourceName": "modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "Proxy": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Proxy.sol/Proxy.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol": {
+      "lastModificationDate": 1661523308212,
+      "contentHash": "f237d55b1a8815b6a4dd436a7566af63",
+      "sourceName": "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "ProxyFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "ProxyFactory.sol/ProxyFactory.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol": {
+      "lastModificationDate": 1661523308213,
+      "contentHash": "585ab831451b7e4aa652ab3bee5e9a8a",
+      "sourceName": "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "SlotManipulatable": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "SlotManipulatable.sol/SlotManipulatable.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol": {
+      "lastModificationDate": 1661523308213,
+      "contentHash": "c49c6f35ffce4c1ec79f7c7f8bd449ae",
+      "sourceName": "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IDefaultImplementationBeacon": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IDefaultImplementationBeacon.sol/IDefaultImplementationBeacon.json"
+        }
+      }
+    },
+    "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol": {
+      "lastModificationDate": 1661523308213,
+      "contentHash": "de201769e342c0a8830a5ca9afcc0f3b",
+      "sourceName": "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.7",
+      "artifacts": {
+        "IProxied": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "IProxied.sol/IProxied.json"
+        }
+      }
+    },
+    "tests/DebtLocker.t.sol": {
+      "lastModificationDate": 1661523503861,
+      "contentHash": "ab7789a945ba4b583493f01f965c8c79",
+      "sourceName": "tests/DebtLocker.t.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/DebtLocker.sol",
+        "contracts/DebtLockerFactory.sol",
+        "contracts/DebtLockerInitializer.sol",
+        "contracts/DebtLockerStorage.sol",
+        "contracts/DebtLockerV4Migrator.sol",
+        "contracts/interfaces/IDebtLocker.sol",
+        "contracts/interfaces/IDebtLockerFactory.sol",
+        "contracts/interfaces/IDebtLockerInitializer.sol",
+        "contracts/interfaces/IDebtLockerV4Migrator.sol",
+        "contracts/interfaces/Interfaces.sol",
+        "modules/contract-test-utils/contracts/DSTest.sol",
+        "modules/contract-test-utils/contracts/interfaces.sol",
+        "modules/contract-test-utils/contracts/test.sol",
+        "modules/erc20/contracts/ERC20.sol",
+        "modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/erc20/contracts/test/mocks/MockERC20.sol",
+        "modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/liquidations/contracts/Liquidator.sol",
+        "modules/liquidations/contracts/interfaces/ILiquidator.sol",
+        "modules/liquidations/contracts/interfaces/Interfaces.sol",
+        "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/loan/contracts/MapleLoan.sol",
+        "modules/loan/contracts/MapleLoanFactory.sol",
+        "modules/loan/contracts/MapleLoanInitializer.sol",
+        "modules/loan/contracts/MapleLoanInternals.sol",
+        "modules/loan/contracts/Refinancer.sol",
+        "modules/loan/contracts/interfaces/IMapleLoan.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanEvents.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanFactory.sol",
+        "modules/loan/contracts/interfaces/IMapleLoanInitializer.sol",
+        "modules/loan/contracts/interfaces/IRefinancer.sol",
+        "modules/loan/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/loan/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/loan/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/MapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/loan/modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol",
+        "modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/maple-proxy-factory/contracts/MapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/Interfaces.sol",
+        "modules/maple-proxy-factory/contracts/test/accounts/Governor.sol",
+        "modules/maple-proxy-factory/contracts/test/accounts/User.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/Proxy.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol",
+        "tests/accounts/Governor.sol",
+        "tests/accounts/LoanMigrator.sol",
+        "tests/accounts/PoolDelegate.sol",
+        "tests/mocks/DebtLockerHarness.sol",
+        "tests/mocks/ManipulatableDebtLocker.sol",
+        "tests/mocks/Mocks.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLockerTests": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLocker.t.sol/DebtLockerTests.json"
+        },
+        "DebtLockerV4Migration": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLocker.t.sol/DebtLockerV4Migration.json"
+        },
+        "Hevm": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLocker.t.sol/Hevm.json"
+        }
+      }
+    },
+    "tests/accounts/Governor.sol": {
+      "lastModificationDate": 1661523584022,
+      "contentHash": "49b8e1b288862fed01531ae95196b843",
+      "sourceName": "tests/accounts/Governor.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/test/accounts/Governor.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "Governor": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Governor.sol/Governor.json"
+        }
+      }
+    },
+    "tests/accounts/LoanMigrator.sol": {
+      "lastModificationDate": 1661523588764,
+      "contentHash": "1a77fca3ae9e41e16084b52ab124ee6a",
+      "sourceName": "tests/accounts/LoanMigrator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/interfaces/IDebtLocker.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "LoanMigrator": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "LoanMigrator.sol/LoanMigrator.json"
+        }
+      }
+    },
+    "tests/accounts/PoolDelegate.sol": {
+      "lastModificationDate": 1661523596855,
+      "contentHash": "d50abee5587a4813cab480bccf0bb07f",
+      "sourceName": "tests/accounts/PoolDelegate.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/interfaces/IDebtLocker.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/contracts/test/accounts/User.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "PoolDelegate": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "PoolDelegate.sol/PoolDelegate.json"
+        }
+      }
+    },
+    "tests/mocks/DebtLockerHarness.sol": {
+      "lastModificationDate": 1661523512835,
+      "contentHash": "a4aae33d853298f6e49471ce8c388701",
+      "sourceName": "tests/mocks/DebtLockerHarness.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/DebtLocker.sol",
+        "contracts/DebtLockerStorage.sol",
+        "contracts/interfaces/IDebtLocker.sol",
+        "contracts/interfaces/Interfaces.sol",
+        "modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/liquidations/contracts/Liquidator.sol",
+        "modules/liquidations/contracts/interfaces/ILiquidator.sol",
+        "modules/liquidations/contracts/interfaces/Interfaces.sol",
+        "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "DebtLockerHarness": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "DebtLockerHarness.sol/DebtLockerHarness.json"
+        }
+      }
+    },
+    "tests/mocks/ManipulatableDebtLocker.sol": {
+      "lastModificationDate": 1661523526428,
+      "contentHash": "2b4593f35e1776e531b84bec887dd254",
+      "sourceName": "tests/mocks/ManipulatableDebtLocker.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/DebtLocker.sol",
+        "contracts/DebtLockerStorage.sol",
+        "contracts/interfaces/IDebtLocker.sol",
+        "contracts/interfaces/Interfaces.sol",
+        "modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/liquidations/contracts/Liquidator.sol",
+        "modules/liquidations/contracts/interfaces/ILiquidator.sol",
+        "modules/liquidations/contracts/interfaces/Interfaces.sol",
+        "modules/liquidations/modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/liquidations/modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/maple-proxy-factory/contracts/MapleProxiedInternals.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/ProxiedInternals.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/SlotManipulatable.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "ManipulatableDebtLocker": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "ManipulatableDebtLocker.sol/ManipulatableDebtLocker.json"
+        }
+      }
+    },
+    "tests/mocks/Mocks.sol": {
+      "lastModificationDate": 1661523560879,
+      "contentHash": "b34deb643bf1793dd2b1800bf6ccfff4",
+      "sourceName": "tests/mocks/Mocks.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "contracts/interfaces/IDebtLocker.sol",
+        "contracts/interfaces/IDebtLockerFactory.sol",
+        "modules/erc20/contracts/ERC20.sol",
+        "modules/erc20/contracts/interfaces/IERC20.sol",
+        "modules/erc20/contracts/test/mocks/MockERC20.sol",
+        "modules/erc20-helper/src/ERC20Helper.sol",
+        "modules/erc20-helper/src/interfaces/IERC20Like.sol",
+        "modules/liquidations/contracts/interfaces/Interfaces.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxied.sol",
+        "modules/maple-proxy-factory/contracts/interfaces/IMapleProxyFactory.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IDefaultImplementationBeacon.sol",
+        "modules/maple-proxy-factory/modules/proxy-factory/contracts/interfaces/IProxied.sol"
+      ],
+      "versionRequirement": "=0.8.7",
+      "artifacts": {
+        "MockGlobals": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Mocks.sol/MockGlobals.json"
+        },
+        "MockLiquidationStrategy": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Mocks.sol/MockLiquidationStrategy.json"
+        },
+        "MockLoan": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Mocks.sol/MockLoan.json"
+        },
+        "MockMigrator": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Mocks.sol/MockMigrator.json"
+        },
+        "MockPool": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Mocks.sol/MockPool.json"
+        },
+        "MockPoolFactory": {
+          "0.8.7+commit.e28d00a7.Darwin.appleclang": "Mocks.sol/MockPoolFactory.json"
+        }
+      }
+    }
+  }
+}

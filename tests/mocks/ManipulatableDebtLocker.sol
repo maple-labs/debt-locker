@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.8.7;
 
-import { IMapleLoanLike } from "../../interfaces/Interfaces.sol";
+import { IMapleLoanLike } from "../../contracts/interfaces/Interfaces.sol";
 
-import { DebtLocker } from "../../DebtLocker.sol";
+import { DebtLocker } from "../../contracts/DebtLocker.sol";
 
 contract ManipulatableDebtLocker is DebtLocker {
 

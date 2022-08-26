@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.8.7;
 
-import { TestUtils }            from "../../modules/contract-test-utils/contracts/test.sol";
-import { MockERC20 }            from "../../modules/erc20/contracts/test/mocks/MockERC20.sol";
-import { MapleLoan }            from "../../modules/loan/contracts/MapleLoan.sol";
-import { MapleLoanFactory }     from "../../modules/loan/contracts/MapleLoanFactory.sol";
-import { MapleLoanInitializer } from "../../modules/loan/contracts/MapleLoanInitializer.sol";
-import { Refinancer }           from "../../modules/loan/contracts/Refinancer.sol";
+import { TestUtils }            from "../modules/contract-test-utils/contracts/test.sol";
+import { MockERC20 }            from "../modules/erc20/contracts/test/mocks/MockERC20.sol";
+import { MapleLoan }            from "../modules/loan/contracts/MapleLoan.sol";
+import { MapleLoanFactory }     from "../modules/loan/contracts/MapleLoanFactory.sol";
+import { MapleLoanInitializer } from "../modules/loan/contracts/MapleLoanInitializer.sol";
+import { Refinancer }           from "../modules/loan/contracts/Refinancer.sol";
 
-import { ILiquidatorLike } from "../interfaces/Interfaces.sol";
+import { ILiquidatorLike } from "../contracts/interfaces/Interfaces.sol";
 
-import { DebtLocker }            from "../DebtLocker.sol";
-import { DebtLockerFactory }     from "../DebtLockerFactory.sol";
-import { DebtLockerInitializer } from "../DebtLockerInitializer.sol";
-import { DebtLockerV4Migrator }  from "../DebtLockerV4Migrator.sol";
+import { DebtLocker }            from "../contracts/DebtLocker.sol";
+import { DebtLockerFactory }     from "../contracts/DebtLockerFactory.sol";
+import { DebtLockerInitializer } from "../contracts/DebtLockerInitializer.sol";
+import { DebtLockerV4Migrator }  from "../contracts/DebtLockerV4Migrator.sol";
 
 import { Governor }     from "./accounts/Governor.sol";
 import { PoolDelegate } from "./accounts/PoolDelegate.sol";
@@ -1113,20 +1113,20 @@ contract DebtLockerV4Migration is TestUtils {
 
         assertEq(debtLocker_.loanMigrator(), loanMigrator);
     }
-    
+
 
     function test_acl_setPendingLender() external {
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
         LoanMigrator loanMigrator    = new LoanMigrator();
         LoanMigrator notLoanMigrator = new LoanMigrator();
-        
+
         address newLender = address(3);
 
         poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
 
         assertEq(loan.pendingLender(), address(0));
-        
+
         assertTrue(!notLoanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
         assertTrue(    loanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
 
@@ -1170,5 +1170,5 @@ contract DebtLockerV4Migration is TestUtils {
 
         _fundAndDrawdownLoan(address(loan_), address(debtLocker_));
     }
-    
+
 }
