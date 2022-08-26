@@ -110,6 +110,12 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
         emit FundsToCaptureSet(_fundsToCapture = amount_);
     }
 
+    function setPendingLender(address newLender_) override external whenProtocolNotPaused {
+        require(msg.sender == _loanMigrator, "DL:SPL:NOT_MIGRATOR");
+
+        IMapleLoanLike(_loan).setPendingLender(newLender_);
+    }
+
     function setMinRatio(uint256 minRatio_) external override whenProtocolNotPaused {
         require(msg.sender == _getPoolDelegate(), "DL:SMR:NOT_PD");
 
@@ -278,6 +284,10 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
 
     function loan() external view override returns (address loan_) {
         return _loan;
+    }
+
+    function loanMigrator() external view override returns (address loan_) {
+        return _loanMigrator;
     }
 
     function minRatio() external view override returns (uint256 minRatio_) {

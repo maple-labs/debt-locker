@@ -5,3 +5,4 @@ hevm*
 artifacts/*
 docs/*
 metadata.json
+cache

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.8.7;
 
-import { User as ProxyUser } from "../../../modules/maple-proxy-factory/contracts/test/accounts/User.sol";
+import { User as ProxyUser } from "../../modules/maple-proxy-factory/contracts/test/accounts/User.sol";
 
-import { IDebtLocker, IMapleProxied } from "../../interfaces/IDebtLocker.sol";
+import { IDebtLocker, IMapleProxied } from "../../contracts/interfaces/IDebtLocker.sol";
 
 contract PoolDelegate is ProxyUser {
 
