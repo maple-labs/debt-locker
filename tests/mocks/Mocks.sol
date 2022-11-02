@@ -74,7 +74,15 @@ contract MockLoan {
         return 0;
     }
 
+    function acceptLender() external {
+        // Empty, just testing ACL
+    }
+
     function acceptNewTerms(address refinancer_, bytes[] calldata calls_, uint256 amount_) external {
+        // Empty, just testing ACL
+    }
+
+    function setPendingLender(address lender_) external {
         // Empty, just testing ACL
     }
 

@@ -1114,7 +1114,6 @@ contract DebtLockerV4Migration is TestUtils {
         assertEq(debtLocker_.loanMigrator(), loanMigrator);
     }
 
-
     function test_acl_setPendingLender() external {
         ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
@@ -1131,6 +1130,22 @@ contract DebtLockerV4Migration is TestUtils {
         assertTrue(    loanMigrator.try_debtLocker_setPendingLender(address(debtLocker), newLender));
 
         assertEq(loan.pendingLender(), newLender);
+    }
+
+    function test_acl_acceptLender() external {
+        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
+
+        LoanMigrator loanMigrator    = new LoanMigrator();
+        LoanMigrator notLoanMigrator = new LoanMigrator();
+
+        address newLender = address(3);
+
+        poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
+
+        loanMigrator.debtLocker_setPendingLender(address(debtLocker), address(debtLocker));  // Set pending lender in Loan to get ACL to work
+
+        assertTrue(!notLoanMigrator.try_debtLocker_acceptLender(address(debtLocker)));
+        assertTrue(    loanMigrator.try_debtLocker_acceptLender(address(debtLocker)));
     }
 
     function _createLoan(uint256 principalRequested_, uint256 collateralRequired_) internal returns (MapleLoan loan_) {
