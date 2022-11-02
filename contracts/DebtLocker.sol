@@ -50,7 +50,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
     /*************************************/
 
     function acceptLender() override external whenProtocolNotPaused {
-        require(msg.sender == _loanMigrator, "DL:SPL:NOT_MIGRATOR");
+        require(msg.sender == _loanMigrator, "DL:AL:NOT_MIGRATOR");
 
         IMapleLoanLike(_loan).acceptLender();
     }

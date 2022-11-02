@@ -35,6 +35,8 @@ interface Hevm {
     // Sets block timestamp to `x`.
     function warp(uint256 x) external view;
 
+    function expectRevert(bytes calldata) external;
+
 }
 
 contract DebtLockerTests is TestUtils {
@@ -1133,19 +1135,19 @@ contract DebtLockerV4Migration is TestUtils {
     }
 
     function test_acl_acceptLender() external {
-        ( MapleLoan loan, DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
+        ( , DebtLocker debtLocker ) = _createFundAndDrawdownLoan(1_000_000, 30_000);
 
         LoanMigrator loanMigrator    = new LoanMigrator();
         LoanMigrator notLoanMigrator = new LoanMigrator();
-
-        address newLender = address(3);
 
         poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
 
         loanMigrator.debtLocker_setPendingLender(address(debtLocker), address(debtLocker));  // Set pending lender in Loan to get ACL to work
 
-        assertTrue(!notLoanMigrator.try_debtLocker_acceptLender(address(debtLocker)));
-        assertTrue(    loanMigrator.try_debtLocker_acceptLender(address(debtLocker)));
+        vm.expectRevert("DL:AL:NOT_MIGRATOR");
+        notLoanMigrator.debtLocker_acceptLender(address(debtLocker));
+
+        loanMigrator.try_debtLocker_acceptLender(address(debtLocker));
     }
 
     function _createLoan(uint256 principalRequested_, uint256 collateralRequired_) internal returns (MapleLoan loan_) {
