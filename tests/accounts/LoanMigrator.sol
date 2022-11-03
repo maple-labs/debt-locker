@@ -5,8 +5,16 @@ import { IDebtLocker } from "../../contracts/interfaces/IDebtLocker.sol";
 
 contract LoanMigrator {
 
+    function debtLocker_acceptLender(address debtLocker_) external {
+        IDebtLocker(debtLocker_).acceptLender();
+    }
+
     function debtLocker_setPendingLender(address debtLocker_, address newLender_) external {
         IDebtLocker(debtLocker_).setPendingLender(newLender_);
+    }
+
+    function try_debtLocker_acceptLender(address debtLocker_) external returns (bool ok_) {
+        ( ok_, ) = debtLocker_.call(abi.encodeWithSelector(IDebtLocker.acceptLender.selector));
     }
 
     function try_debtLocker_setPendingLender(address debtLocker_, address newLender_) external returns (bool ok_) {

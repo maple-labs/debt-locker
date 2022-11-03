@@ -44,6 +44,11 @@ interface IDebtLocker is IMapleProxied {
     /*****************/
 
     /**
+     * @dev Accepts the lender on a Maple Loan.
+     */
+    function acceptLender() external;
+
+    /**
      * @dev   Accept the new loan terms and trigger a refinance.
      * @param refinancer_ The address of the refinancer contract.
      * @param deadline_   The deadline of the new terms proposal.
