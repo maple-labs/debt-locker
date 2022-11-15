@@ -17,8 +17,8 @@ contract MockPoolFactory {
         globals = globals_;
     }
 
-    function createPool(address poolDelegate_) external returns (address) {
-        return address(new MockPool(poolDelegate_));
+    function createPool(address poolDelegate_) external returns (address pool_) {
+        pool_ = address(new MockPool(poolDelegate_));
     }
 
 }
@@ -33,16 +33,16 @@ contract MockPool {
         superFactory = msg.sender;
     }
 
-    function createDebtLocker(address dlFactory, address loan) external returns (address) {
-        return IDebtLockerFactory(dlFactory).newLocker(loan);
+    function createDebtLocker(address dlFactory, address loan) external returns (address debtLocker_) {
+        debtLocker_ = IDebtLockerFactory(dlFactory).newLocker(loan);
     }
 
-    function claim(address debtLocker) external returns (uint256[7] memory) {
-        return IDebtLocker(debtLocker).claim();
+    function claim(address debtLocker) external returns (uint256[7] memory claimInfo_) {
+        claimInfo_ = IDebtLocker(debtLocker).claim();
     }
 
     function triggerDefault(address debtLocker) external {
-        return IDebtLocker(debtLocker).triggerDefault();
+        IDebtLocker(debtLocker).triggerDefault();
     }
 
 }
@@ -71,7 +71,7 @@ contract MockLiquidationStrategy {
 contract MockLoan {
 
     function principalRequested() external view returns (uint256 principalRequested_) {
-        return 0;
+        principalRequested_ = 0;
     }
 
     function acceptLender() external {
@@ -91,6 +91,7 @@ contract MockLoan {
 contract MockGlobals {
 
     address public governor;
+    address public globalAdmin;
 
     mapping(address => bool) public isValidCollateralAsset;
     mapping(address => bool) public isValidLiquidityAsset;
@@ -104,11 +105,15 @@ contract MockGlobals {
     }
 
     function getLatestPrice(address asset_) external view returns (uint256 price_) {
-        return assetPrices[asset_];
+        price_ = assetPrices[asset_];
     }
 
     function setPrice(address asset_, uint256 price_) external {
         assetPrices[asset_] = price_;
+    }
+
+    function setGlobalAdmin(address newGlobalAdmin_) external {
+        globalAdmin = newGlobalAdmin_;
     }
 
     function setProtocolPause(bool paused_) external {
@@ -116,15 +121,15 @@ contract MockGlobals {
     }
 
     function investorFee() external pure returns (uint256 investorFee_) {
-        return 50;
+        investorFee_ = 50;
     }
 
     function treasuryFee() external pure returns (uint256 treasuryFee_) {
-        return 50;
+        treasuryFee_ = 50;
     }
 
     function mapleTreasury() external pure returns (address mapleTreasury_) {
-        return address(1);
+        mapleTreasury_ = address(1);
     }
 
     function setValidCollateralAsset(address asset_, bool valid_) external {

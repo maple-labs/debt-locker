@@ -20,6 +20,8 @@ interface IMapleGlobalsLike {
 
    function getLatestPrice(address asset_) external view returns (uint256 price_);
 
+   function globalAdmin() external view returns (address);
+
    function investorFee() external view returns (uint256 investorFee_);
 
    function isValidCollateralAsset(address asset_) external view returns (bool isValid_);

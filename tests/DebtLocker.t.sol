@@ -15,6 +15,7 @@ import { DebtLockerFactory }     from "../contracts/DebtLockerFactory.sol";
 import { DebtLockerInitializer } from "../contracts/DebtLockerInitializer.sol";
 import { DebtLockerV4Migrator }  from "../contracts/DebtLockerV4Migrator.sol";
 
+import { GlobalAdmin }  from "./accounts/GlobalAdmin.sol";
 import { Governor }     from "./accounts/Governor.sol";
 import { PoolDelegate } from "./accounts/PoolDelegate.sol";
 import { LoanMigrator } from "./accounts/LoanMigrator.sol";
@@ -42,6 +43,8 @@ interface Hevm {
 contract DebtLockerTests is TestUtils {
 
     DebtLockerFactory    internal dlFactory;
+    GlobalAdmin          internal globalAdmin;
+    GlobalAdmin          internal notGlobalAdmin;
     Governor             internal governor;
     MapleLoanFactory     internal loanFactory;
     MapleLoanInitializer internal loanInitializer;
@@ -58,7 +61,9 @@ contract DebtLockerTests is TestUtils {
     uint256 internal constant MAX_TOKEN_AMOUNT = 1e12 * 1e18;
 
     function setUp() external {
+        globalAdmin     = new GlobalAdmin();
         governor        = new Governor();
+        notGlobalAdmin  = new GlobalAdmin();
         notPoolDelegate = new PoolDelegate();
         poolDelegate    = new PoolDelegate();
 
@@ -74,6 +79,7 @@ contract DebtLockerTests is TestUtils {
 
         globals.setValidCollateralAsset(address(collateralAsset), true);
         globals.setValidLiquidityAsset(address(fundsAsset), true);
+        globals.setGlobalAdmin(address(globalAdmin));
 
         // Deploying and registering DebtLocker implementation and initializer
         address debtLockerImplementation = address(new DebtLocker());
@@ -687,7 +693,7 @@ contract DebtLockerTests is TestUtils {
         assertEq(debtLocker.minRatio(), 100 * 10 ** 6);
     }
 
-    function test_acl_poolDelegate_upgrade() external {
+    function test_acl_globalAdmin_upgrade() external {
         MapleLoan loan = _createLoan(1_000_000, 30_000);
 
         DebtLocker debtLocker = DebtLocker(pool.createDebtLocker(address(dlFactory), address(loan)));
@@ -705,8 +711,8 @@ contract DebtLockerTests is TestUtils {
 
         bytes memory arguments = new bytes(0);
 
-        assertTrue(!notPoolDelegate.try_debtLocker_upgrade(address(debtLocker), 2, arguments));  // Non-PD can't set
-        assertTrue(    poolDelegate.try_debtLocker_upgrade(address(debtLocker), 2, arguments));  // PD can set
+        assertTrue(!notGlobalAdmin.try_debtLocker_upgrade(address(debtLocker), 2, arguments));  // Non-GA can't set
+        assertTrue(    globalAdmin.try_debtLocker_upgrade(address(debtLocker), 2, arguments));  // GA can set
 
         assertEq(debtLocker.implementation(), dlFactory.implementationOf(2));
     }
@@ -1049,6 +1055,8 @@ contract DebtLockerTests is TestUtils {
 contract DebtLockerV4Migration is TestUtils {
 
     DebtLockerFactory    internal dlFactory;
+    GlobalAdmin          internal globalAdmin;
+    GlobalAdmin          internal notGlobalAdmin;
     Governor             internal governor;
     MapleLoanFactory     internal loanFactory;
     MapleLoanInitializer internal loanInitializer;
@@ -1063,7 +1071,9 @@ contract DebtLockerV4Migration is TestUtils {
     Hevm internal hevm = Hevm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
 
     function setUp() external {
+        globalAdmin     = new GlobalAdmin();
         governor        = new Governor();
+        notGlobalAdmin  = new GlobalAdmin();
         notPoolDelegate = new PoolDelegate();
         poolDelegate    = new PoolDelegate();
 
@@ -1079,6 +1089,7 @@ contract DebtLockerV4Migration is TestUtils {
 
         globals.setValidCollateralAsset(address(collateralAsset), true);
         globals.setValidLiquidityAsset(address(fundsAsset), true);
+        globals.setGlobalAdmin(address(globalAdmin));
 
         // Deploying and registering DebtLocker implementation and initializer
         address debtLockerImplementation  = address(new DebtLocker());
@@ -1110,8 +1121,8 @@ contract DebtLockerV4Migration is TestUtils {
 
         address loanMigrator = address(5);
 
-        assertTrue(!notPoolDelegate.try_debtLocker_upgrade(address(debtLocker_), 2, abi.encode(loanMigrator)));
-        assertTrue(    poolDelegate.try_debtLocker_upgrade(address(debtLocker_), 2, abi.encode(loanMigrator)));
+        assertTrue(!notGlobalAdmin.try_debtLocker_upgrade(address(debtLocker_), 2, abi.encode(loanMigrator)));
+        assertTrue(    globalAdmin.try_debtLocker_upgrade(address(debtLocker_), 2, abi.encode(loanMigrator)));
 
         assertEq(debtLocker_.loanMigrator(), loanMigrator);
     }
@@ -1124,7 +1135,7 @@ contract DebtLockerV4Migration is TestUtils {
 
         address newLender = address(3);
 
-        poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
+        globalAdmin.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
 
         assertEq(loan.pendingLender(), address(0));
 
@@ -1140,7 +1151,7 @@ contract DebtLockerV4Migration is TestUtils {
         LoanMigrator loanMigrator    = new LoanMigrator();
         LoanMigrator notLoanMigrator = new LoanMigrator();
 
-        poolDelegate.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
+        globalAdmin.debtLocker_upgrade(address(debtLocker), 2, abi.encode(address(loanMigrator)));
 
         loanMigrator.debtLocker_setPendingLender(address(debtLocker), address(debtLocker));  // Set pending lender in Loan to get ACL to work
 

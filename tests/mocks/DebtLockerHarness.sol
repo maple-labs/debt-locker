@@ -9,16 +9,16 @@ contract DebtLockerHarness is DebtLocker {
     /*** Harness Functions ***/
     /*************************/
 
-    function getGlobals() external view returns (address) {
-        return _getGlobals();
+    function getGlobals() external view returns (address globals_) {
+        globals_ = _getGlobals();
     }
 
-    function getPoolDelegate() external view returns(address) {
-        return _getPoolDelegate();
+    function getPoolDelegate() external view returns(address poolDelegate_) {
+        poolDelegate_ = _getPoolDelegate();
     }
 
-    function isLiquidationActive() external view returns (bool) {
-        return _isLiquidationActive();
+    function isLiquidationActive() external view returns (bool isLiquidationActive_) {
+        isLiquidationActive_ = _isLiquidationActive();
     }
 
 }
