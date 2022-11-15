@@ -38,7 +38,7 @@ contract DebtLocker is IDebtLocker, DebtLockerStorage, MapleProxiedInternals {
     }
 
     function upgrade(uint256 toVersion_, bytes calldata arguments_) external override {
-        require(msg.sender == _getPoolDelegate(), "DL:U:NOT_POOL_DELEGATE");
+        require(msg.sender == IMapleGlobalsLike(_getGlobals()).globalAdmin(), "DL:U:NOT_GLOBAL_ADMIN");
 
         emit Upgraded(toVersion_, arguments_);
 
