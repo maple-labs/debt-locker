@@ -40,13 +40,13 @@ This project was built using [dapptools](https://github.com/dapphub/dapptools).
 - Accept refinance terms
 - Set `fundsToCapture`, a variable that represents extra funds in the DebtLocker that should be sent to the Pool and registered as interest.
 
-## Audit Reports
-| Auditor | Report link |
+## Security
+
+| Auditor | Report Link |
 |---|---|
-| Trail of Bits - DebtLockerV2 | [ToB Report - Dec 28, 2021](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-core/files/7847684/Maple.Finance.-.Final.Report_v3.pdf) |
-| Code 4rena - DebtLockerV2 | [C4 Report - Jan 5, 2022](https://code4rena.com/reports/2021-12-maple/) |
-| Trail of Bits - DebtLockerV3 | [ToB Report - April 12, 2022](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-core/files/8507237/Maple.Finance.-.Final.Report.-.Fixes.pdf) |
-| Code 4rena - DebtLockerV3 | [C4 Report - April 20, 2022](https://code4rena.com/reports/2022-03-maple/) |
+| Trail of Bits | [`2022-08-24 - Trail of Bits Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10223544/Maple.Finance.v2.-.Trail.of.Bits.-.Final.Report.pdf) |
+| Spearbit | [`2022-10-17 - Spearbit Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10223545/Maple.Finance.v2.-.Spearbit.pdf) |
+| Three Sigma | [`2022-10-24 - Three Sigma Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10223541/three-sigma_maple-finance_code-audit_v1.1.1.pdf) |
 
 ## Bug Bounty
 
