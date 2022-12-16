@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/maple-labs/debt-locker/tree/main.svg?style=svg)](https://circleci.com/gh/maple-labs/debt-locker/tree/main) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-DebtLocker is a smart contract that allows Pools to interact with different versions of Loans. 
+DebtLocker is a smart contract that allows Pools to interact with different versions of Loans.
 
 This contract has the following capabilities:
 1. Claim funds from a loan, accounting for interest and principal respectively.
@@ -12,7 +12,7 @@ This contract has the following capabilities:
 4. Claim recovered funds from a liquidation, accounting for the amount that was recovered as principal in the context of the Pool, and registering the shortfall.
 
 ### Dependencies/Inheritance
-The `DebtLocker` contract is deployed using the `MapleProxyFactory`, which can be found in the modules or on GitHub [here](https://github.com/maple-labs/maple-proxy-factory). 
+The `DebtLocker` contract is deployed using the `MapleProxyFactory`, which can be found in the modules or on GitHub [here](https://github.com/maple-labs/maple-proxy-factory).
 
 `MapleProxyFactory` inherits from the generic `ProxyFactory` contract which can be found [here](https://github.com/maple-labs/proxy-factory).
 
@@ -44,13 +44,13 @@ This project was built using [dapptools](https://github.com/dapphub/dapptools).
 
 | Auditor | Report Link |
 |---|---|
-| Trail of Bits | [`2022-08-24 - Trail of Bits Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10223544/Maple.Finance.v2.-.Trail.of.Bits.-.Final.Report.pdf) |
+| Trail of Bits | [`2022-08-24 - Trail of Bits Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10246688/Maple.Finance.v2.-.Final.Report.-.Fixed.-.2022.pdf) |
 | Spearbit | [`2022-10-17 - Spearbit Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10223545/Maple.Finance.v2.-.Spearbit.pdf) |
 | Three Sigma | [`2022-10-24 - Three Sigma Report`](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-v2-audits/files/10223541/three-sigma_maple-finance_code-audit_v1.1.1.pdf) |
 
 ## Bug Bounty
 
-For all information related to the ongoing bug bounty for these contracts run by [Immunefi](https://immunefi.com/), please visit this [site](https://immunefi.com/bounty/maple/). 
+For all information related to the ongoing bug bounty for these contracts run by [Immunefi](https://immunefi.com/), please visit this [site](https://immunefi.com/bounty/maple/).
 
 | Severity of Finding | Payout |
 |---|---|
