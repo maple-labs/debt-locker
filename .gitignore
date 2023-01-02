@@ -6,3 +6,4 @@ artifacts/*
 docs/*
 metadata.json
 cache
+.git/
